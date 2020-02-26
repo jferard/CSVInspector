@@ -26,7 +26,9 @@ import javafx.event.EventHandler
 import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.input.KeyCode
+import javafx.scene.layout.ColumnConstraints
 import javafx.scene.layout.GridPane
+import javafx.scene.layout.RowConstraints
 import javafx.scene.text.TextFlow
 
 
@@ -54,6 +56,14 @@ class CSVInspectorGUIFactory(private val executionContext: ExecutionContext) {
                             outPane: ScrollPane,
                             codeArea: TextArea): Scene {
         val root = GridPane()
+        val colConstraints = ColumnConstraints()
+        colConstraints.percentWidth = 50.0
+        val rowConstraints = RowConstraints()
+        rowConstraints.percentHeight = 50.0
+        root.columnConstraints.add(colConstraints)
+        root.columnConstraints.add(colConstraints)
+        root.rowConstraints.add(rowConstraints)
+        root.rowConstraints.add(rowConstraints)
         val codePane = codePane(codeArea)
         root.add(csvPane, 0, 0, 2, 1)
         root.add(codePane, 0, 1)

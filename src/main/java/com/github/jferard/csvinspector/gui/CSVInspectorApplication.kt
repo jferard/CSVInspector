@@ -41,6 +41,7 @@ class CSVInspectorApplication : Application() {
 
     override fun start(primaryStage: Stage?) {
         with(primaryStage!!) {
+            this.isMaximized = true
             this.title = "CSVInspector (c) J. Férard"
             this.scene = gui.scene
             this.show()
