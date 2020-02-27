@@ -36,9 +36,8 @@ import org.fxmisc.richtext.CodeArea
 class CSVInspectorGUIFactory(private val executionContext: ExecutionContext) {
     fun create(): CSVInspectorGUI {
         val outArea = outArea()
-        //val list: ObservableList<List<String>> = FXCollections.observableArrayList()
         val codeArea = CodeAreaProvider().get()
-        val csvPane = tabPane()
+        val csvPane = csvPane()
 
         val outPane = outPane(outArea)
         val scene = createScene(csvPane, outPane, codeArea)
@@ -90,7 +89,7 @@ class CSVInspectorGUIFactory(private val executionContext: ExecutionContext) {
         return root
     }
 
-    private fun tabPane(): TabPane {
+    private fun csvPane(): TabPane {
         val csvPane = TabPane()
         csvPane.prefHeight = 500.0
         return csvPane

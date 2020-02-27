@@ -30,6 +30,7 @@ import javafx.scene.text.TextFlow
 import javafx.util.Callback
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
+import org.apache.commons.csv.CSVRecord
 import org.fxmisc.richtext.CodeArea
 import java.io.StringReader
 
@@ -112,15 +113,35 @@ class CSVInspectorGUI(private val csvPane: TabPane,
         val records = parse.records
         val types = records[0]
         val header = records[1]
-        tableView.columns.addAll(header.zip(types).withIndex().map {
-            val column = TableColumn<List<String>, String>("[${it.index}: ${it.value.second}]\n${it.value.first}")
-            column.cellValueFactory =
-                    Callback { row ->
-                        ReadOnlyStringWrapper(row.value[it.index])
-                    }
-            column
-        })
-        tableView.items.addAll(records.subList(2, records.size).map { it.toList() })
+
+        tableView.columns.add(createFirstColumn())
+        tableView.columns.addAll(createOtherColumns(header, types))
+        tableView.items.addAll(createRows(records))
         return tableView
     }
+
+    private fun createFirstColumn(): TableColumn<List<String>, String> {
+        val firstColumn = TableColumn<List<String>, String>("col")
+        firstColumn.cellValueFactory = Callback { row ->
+            ReadOnlyStringWrapper(row.value[0])
+        }
+        return firstColumn
+    }
+
+    private fun createOtherColumns(header: CSVRecord,
+                                   types: CSVRecord): List<TableColumn<List<String>, String>> {
+        return header.zip(types).withIndex().map {
+            val column = TableColumn<List<String>, String>(
+                    "[${it.index}: ${it.value.second}]\n${it.value.first}")
+            column.cellValueFactory =
+                    Callback { row ->
+                        ReadOnlyStringWrapper(row.value[it.index+1])
+                    }
+            column
+        }
+    }
+
+    private fun createRows(records: MutableList<CSVRecord>) =
+            records.subList(2, records.size).withIndex()
+                    .map { listOf(it.index.toString()) + it.value.toList() }
 }
