@@ -21,18 +21,31 @@
 package com.github.jferard.csvinspector.exec
 
 import com.google.common.eventbus.EventBus
-import java.io.*
+import java.io.BufferedReader
+import java.io.File
+import java.io.InputStreamReader
+import java.io.OutputStreamWriter
 import java.nio.file.Paths
+import kotlin.system.exitProcess
 
-class PythonExecutor(private val token: String,
+class PythonExecutor(private val pythonExe: String, private val token: String,
                      private val eventBus: EventBus) {
     fun start(): ExecutionContext {
-        val process = Runtime.getRuntime().exec(arrayOf("python3.6", "-m", "csv_inspector", token),
-                arrayOf("PYTHONPATH=${getPythonPath()}", "PYTHONIOENCODING=utf-8"))
-        val stdinWriter = OutputStreamWriter(process.outputStream, Charsets.UTF_8)
-        val stdoutReader = BufferedReader(InputStreamReader(process.inputStream, Charsets.UTF_8))
-        val stderrReader = BufferedReader(InputStreamReader(process.errorStream, Charsets.UTF_8))
-        return ExecutionContext(token, eventBus, stdinWriter, stdoutReader, stderrReader)
+        val cmdarray = arrayOf(pythonExe, "-m", "csv_inspector", token)
+        println("start python server: ${cmdarray.toList()}")
+        try {
+            val process = Runtime.getRuntime().exec(cmdarray,
+                    arrayOf("PYTHONPATH=${getPythonPath()}", "PYTHONIOENCODING=utf-8"))
+            val stdinWriter = OutputStreamWriter(process.outputStream, Charsets.UTF_8)
+            val stdoutReader =
+                    BufferedReader(InputStreamReader(process.inputStream, Charsets.UTF_8))
+            val stderrReader =
+                    BufferedReader(InputStreamReader(process.errorStream, Charsets.UTF_8))
+            return ExecutionContext(token, eventBus, stdinWriter, stdoutReader, stderrReader)
+        } catch (e: Exception) {
+            System.err.println("python server crashed")
+            exitProcess(-1)
+        }
     }
 
     private fun getPythonPath(): String {

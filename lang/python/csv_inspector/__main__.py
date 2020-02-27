@@ -45,7 +45,7 @@ while True:
     elif state == SCRIPT:
         if line == f"{TOKEN}end script":
             script = "\n".join(script_lines)
-            print("server/execute script: {} chars", len(script))
+            print("server/execute script: {} chars".format(len(script)))
             try:
                 exec(script, {"TOKEN": TOKEN})
             except Exception as e:

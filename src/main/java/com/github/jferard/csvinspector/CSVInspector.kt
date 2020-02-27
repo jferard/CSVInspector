@@ -22,8 +22,24 @@ package com.github.jferard.csvinspector
 
 import com.github.jferard.csvinspector.gui.CSVInspectorApplication
 import javafx.application.Application
+import java.io.File
+import java.util.*
 
 fun main(args: Array<String>) {
-    Application.launch(CSVInspectorApplication::class.java, *args)
+    val properties = Properties();
+    println(listOf(System.getProperty("user.dir"), System.getProperty("user.home"), "."))
+    for (dir in arrayOf(System.getProperty("user.dir"), System.getProperty("user.home"), ".")) {
+        val propertiesFile = File(dir, ".csv_inspector.properties")
+        if (propertiesFile.exists()) {
+            propertiesFile.reader(Charsets.UTF_8).use {
+                properties.load(it)
+            }
+            break
+        }
+    }
+    if (properties.isEmpty) {
+        properties.setProperty("python_exe", "python3.6")
+    }
+    Application.launch(CSVInspectorApplication::class.java, properties.getProperty("python_exe"))
 }
 

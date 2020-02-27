@@ -23,6 +23,7 @@ package com.github.jferard.csvinspector.exec
 import com.github.jferard.csvinspector.gui.*
 import com.google.common.eventbus.EventBus
 import java.io.BufferedReader
+import java.io.IOException
 import java.io.Writer
 
 class ExecutionContext(private val token: String,
@@ -36,7 +37,11 @@ class ExecutionContext(private val token: String,
         stdinWriter.write("${token}begin script\n")
         stdinWriter.write(code)
         stdinWriter.write("\n${token}end script\n")
-        stdinWriter.flush()
+        try {
+            stdinWriter.flush()
+        } catch (e: IOException) {
+            System.err.println("Script error")
+        }
     }
 
     fun listen() {

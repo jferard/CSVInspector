@@ -132,7 +132,6 @@ class CSVInspectorGUI(
 
     @Subscribe
     fun menuEventHandler(menuEvent: MenuEvent) {
-        println(menuEvent.name)
         when (menuEvent.name) {
             "LOAD" -> loadScript()
             "SAVE" -> saveScript()

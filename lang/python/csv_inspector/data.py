@@ -204,7 +204,7 @@ class DataGroupBy(object):
                 while len(item) > 1:
                     it, func, *item = item
                     for i in _to_indices(length, it):
-                        if columns[i] not in d:
+                        if i not in grouped_indices and columns[i] not in d:
                             d[columns[i]] = func
                 if len(item):
                     func = item[0]

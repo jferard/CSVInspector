@@ -26,7 +26,7 @@ import kotlin.streams.asSequence
 const val TOKEN_LENGTH = 100L
 const val charPool: String = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
-const val CODE_EXAMPLE = """#!/usr/bin/env python3.7
+const val CODE_EXAMPLE = """#!/usr/bin/env python3.6
 
 from csv_inspector import *
 
@@ -34,10 +34,25 @@ info = inspect("fixtures/datasets-2020-02-22-12-33.csv")
 info.show()
 
 data = info.open()
+data.show()
+# swap two columns
 data.swap[0][1]
 data.show()
-
-"""
+# shorten id
+data.map[1][lambda c: c.str[:4]]
+data.show()
+# select
+data.select[0:4, 9]
+data.show()
+# join on self
+data.ijoin[data][1][1]
+data.show()
+# groupby
+data.groupby[1][0:4, 'count', 'max']
+data.show()
+# merge
+data.merge[0,4][V(lambda x: x[0] + " (" + pd.to_datetime(x[4]).dt.year.astype('str') + ")"), "new"]
+data.show()"""
 
 /**
  * Generate a token for communication with script language.
