@@ -265,6 +265,24 @@ class DataFilter:
         return self._data
 
 
+class DataMap:
+    def __init__(self, data: "Data"):
+        self._data = data
+        self._target = None
+
+    def __getitem__(self, item):
+        if self._target is None:
+            self._target = item
+            return self
+        else:
+            columns = list(self._data.df.columns)
+            target_indices = _to_indices(len(columns), self._target)
+            for i in target_indices:
+                column = columns[i]
+                self._data.df[column] = item(self._data.df[column])
+            return self._data
+
+
 class Data:
     """
     """
@@ -468,6 +486,20 @@ class Data:
         2  4
         """
         return DataDrop(self)
+
+    @property
+    def map(self):
+        """
+        >>> data = Data(pd.DataFrame(
+        ...     {"A":[1, 5, 3], "B":[3, 2, 4],
+        ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
+        >>> data.map[0,3][lambda c: c+2]
+           A  B  C   D
+        0  3  3  2   6
+        1  7  2  2   9
+        2  5  4  7  10
+        """
+        return DataMap(self)
 
     def show(self, limit=100):
         print(f"{TOKEN}begin show")
