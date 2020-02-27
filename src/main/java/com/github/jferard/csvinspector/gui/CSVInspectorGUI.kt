@@ -30,12 +30,13 @@ import javafx.scene.text.TextFlow
 import javafx.util.Callback
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
+import org.fxmisc.richtext.CodeArea
 import java.io.StringReader
 
 
 class CSVInspectorGUI(private val csvPane: TabPane,
                       private val outArea: TextFlow,
-                      private val codeArea: TextArea,
+                      private val codeArea: CodeArea,
                       val scene: Scene) {
 
     @Subscribe

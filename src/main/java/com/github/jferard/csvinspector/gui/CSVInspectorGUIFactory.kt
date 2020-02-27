@@ -30,17 +30,18 @@ import javafx.scene.layout.ColumnConstraints
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.RowConstraints
 import javafx.scene.text.TextFlow
+import org.fxmisc.richtext.CodeArea
 
 
 class CSVInspectorGUIFactory(private val executionContext: ExecutionContext) {
     fun create(): CSVInspectorGUI {
         val outArea = outArea()
         //val list: ObservableList<List<String>> = FXCollections.observableArrayList()
-        val codeArea = TextArea()
+        val codeArea = CodeAreaProvider().get()
         val csvPane = tabPane()
 
         val outPane = outPane(outArea)
-        val scene = createScene(csvPane, outArea, outPane, codeArea)
+        val scene = createScene(csvPane, outPane, codeArea)
         return CSVInspectorGUI(csvPane, outArea, codeArea, scene)
     }
 
@@ -52,24 +53,19 @@ class CSVInspectorGUIFactory(private val executionContext: ExecutionContext) {
     }
 
     private fun createScene(csvPane: TabPane,
-                            outArea: TextFlow,
                             outPane: ScrollPane,
-                            codeArea: TextArea): Scene {
-        val root = GridPane()
-        val colConstraints = ColumnConstraints()
-        colConstraints.percentWidth = 50.0
-        val rowConstraints = RowConstraints()
-        rowConstraints.percentHeight = 50.0
-        root.columnConstraints.add(colConstraints)
-        root.columnConstraints.add(colConstraints)
-        root.rowConstraints.add(rowConstraints)
-        root.rowConstraints.add(rowConstraints)
+                            codeArea: CodeArea): Scene {
+        val root = createRoot()
         val codePane = codePane(codeArea)
         root.add(csvPane, 0, 0, 2, 1)
         root.add(codePane, 0, 1)
         root.add(outPane, 1, 1)
 
         val scene = Scene(root, 1000.0, 1000.0)
+        println(CSVInspectorGUI::class.java.getResource("."))
+        val resource = CSVInspectorGUI::class.java.getResource("/python.css")
+        scene.stylesheets
+                .add(resource.toExternalForm())
         scene.onKeyReleased = EventHandler {
             if (it.code == KeyCode.F5) {
                 csvPane.tabs.clear()
@@ -79,6 +75,19 @@ class CSVInspectorGUIFactory(private val executionContext: ExecutionContext) {
             }
         }
         return scene
+    }
+
+    private fun createRoot(): GridPane {
+        val root = GridPane()
+        val colConstraints = ColumnConstraints()
+        colConstraints.percentWidth = 50.0
+        val rowConstraints = RowConstraints()
+        rowConstraints.percentHeight = 50.0
+        root.columnConstraints.add(colConstraints)
+        root.columnConstraints.add(colConstraints)
+        root.rowConstraints.add(rowConstraints)
+        root.rowConstraints.add(rowConstraints)
+        return root
     }
 
     private fun tabPane(): TabPane {
@@ -96,10 +105,9 @@ class CSVInspectorGUIFactory(private val executionContext: ExecutionContext) {
         return outPane
     }
 
-    private fun codePane(codeArea: TextArea): ScrollPane {
+    private fun codePane(codeArea: CodeArea): ScrollPane {
         val codePane = ScrollPane()
-        codeArea.isWrapText = true
-        codeArea.text = CODE_EXAMPLE
+        codeArea.replaceText(0, 0, CODE_EXAMPLE)
         codePane.content = codeArea
 
         codePane.vbarPolicy = ScrollPane.ScrollBarPolicy.ALWAYS
