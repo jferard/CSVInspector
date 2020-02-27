@@ -283,6 +283,20 @@ class DataMap:
             return self._data
 
 
+class DataSort:
+    def __init__(self, data: "Data", reverse):
+        self._data = data
+        self._reverse = reverse
+
+    def __getitem__(self, item):
+        columns = list(self._data.df.columns)
+        indices = _to_indices(len(columns), item)
+        self._data.df = self._data.df.sort_values([columns[i] for i in indices],
+                                                  ascending=not self._reverse)
+                                                  #ignore_index=True)
+        return self._data
+
+
 class Data:
     """
     """
@@ -500,6 +514,34 @@ class Data:
         2  5  4  7  10
         """
         return DataMap(self)
+
+    @property
+    def sort(self):
+        """
+        >>> data = Data(pd.DataFrame(
+        ...     {"A":[1, 5, 3], "B":[3, 2, 4],
+        ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
+        >>> data.sort[1]
+           A  B  C  D
+        1  5  2  2  7
+        0  1  3  2  4
+        2  3  4  7  8
+        """
+        return DataSort(self, False)
+
+    @property
+    def rsort(self):
+        """
+        >>> data = Data(pd.DataFrame(
+        ...     {"A":[1, 5, 3], "B":[3, 2, 4],
+        ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
+        >>> data.rsort[1]
+           A  B  C  D
+        2  3  4  7  8
+        0  1  3  2  4
+        1  5  2  2  7
+        """
+        return DataSort(self, True)
 
     def show(self, limit=100):
         print(f"{TOKEN}begin show")
