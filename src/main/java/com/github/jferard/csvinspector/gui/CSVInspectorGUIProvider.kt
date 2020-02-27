@@ -22,26 +22,39 @@ package com.github.jferard.csvinspector.gui
 
 import com.github.jferard.csvinspector.exec.ExecutionContext
 import com.github.jferard.csvinspector.util.CODE_EXAMPLE
+import com.google.common.eventbus.EventBus
 import javafx.event.EventHandler
 import javafx.scene.Scene
-import javafx.scene.control.*
-import javafx.scene.input.KeyCode
+import javafx.scene.control.Label
+import javafx.scene.control.MenuItem
+import javafx.scene.control.ScrollPane
+import javafx.scene.control.TabPane
 import javafx.scene.layout.ColumnConstraints
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.RowConstraints
 import javafx.scene.text.TextFlow
+import javafx.stage.Stage
 import org.fxmisc.richtext.CodeArea
 
 
-class CSVInspectorGUIFactory(private val executionContext: ExecutionContext) {
-    fun create(): CSVInspectorGUI {
+class CSVInspectorGUIProvider(
+        private val executionContext: ExecutionContext,
+        private val eventBus: EventBus,
+        private val menuBarProvider: MenuBarProvider,
+        private val primaryStage: Stage) {
+    private lateinit var loadMenuItem: MenuItem
+    private lateinit var saveMenuItem: MenuItem
+    private lateinit var executeMenuItem: MenuItem
+    private lateinit var quitMenuItem: MenuItem
+
+    fun get(): CSVInspectorGUI {
         val outArea = outArea()
         val codeArea = CodeAreaProvider().get()
         val csvPane = csvPane()
 
         val outPane = outPane(outArea)
         val scene = createScene(csvPane, outPane, codeArea)
-        return CSVInspectorGUI(csvPane, outArea, codeArea, scene)
+        return CSVInspectorGUI(executionContext, primaryStage, csvPane, outArea, codeArea, scene)
     }
 
     private fun outArea(): TextFlow {
@@ -56,23 +69,18 @@ class CSVInspectorGUIFactory(private val executionContext: ExecutionContext) {
                             codeArea: CodeArea): Scene {
         val root = createRoot()
         val codePane = codePane(codeArea)
-        root.add(csvPane, 0, 0, 2, 1)
-        root.add(codePane, 0, 1)
-        root.add(outPane, 1, 1)
+        val menuBar = menuBarProvider.get()
+        root.add(menuBar, 0, 0, 2, 1)
+        root.add(csvPane, 0, 1, 2, 1)
+        root.add(codePane, 0, 2)
+        root.add(outPane, 1, 2)
 
         val scene = Scene(root, 1000.0, 1000.0)
         println(CSVInspectorGUI::class.java.getResource("."))
         val resource = CSVInspectorGUI::class.java.getResource("/python.css")
         scene.stylesheets
                 .add(resource.toExternalForm())
-        scene.onKeyReleased = EventHandler {
-            if (it.code == KeyCode.F5) {
-                csvPane.tabs.clear()
-                val code = codeArea.text
-                executionContext.executeScript(code)
-                executionContext.listen()
-            }
-        }
+        scene.onKeyReleased = EventHandler { eventBus.post(it) }
         return scene
     }
 
@@ -80,10 +88,13 @@ class CSVInspectorGUIFactory(private val executionContext: ExecutionContext) {
         val root = GridPane()
         val colConstraints = ColumnConstraints()
         colConstraints.percentWidth = 50.0
+        val rowConstraints0 = RowConstraints()
+        rowConstraints0.isFillHeight = true
         val rowConstraints = RowConstraints()
         rowConstraints.percentHeight = 50.0
         root.columnConstraints.add(colConstraints)
         root.columnConstraints.add(colConstraints)
+        root.rowConstraints.add(rowConstraints0)
         root.rowConstraints.add(rowConstraints)
         root.rowConstraints.add(rowConstraints)
         return root
@@ -106,7 +117,7 @@ class CSVInspectorGUIFactory(private val executionContext: ExecutionContext) {
 
     private fun codePane(codeArea: CodeArea): ScrollPane {
         val codePane = ScrollPane()
-        codeArea.replaceText(0, 0, CODE_EXAMPLE)
+        codeArea.replaceText(CODE_EXAMPLE)
         codePane.content = codeArea
 
         codePane.vbarPolicy = ScrollPane.ScrollBarPolicy.ALWAYS

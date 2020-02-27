@@ -55,6 +55,7 @@ class CodeAreaProvider {
                 }
             }
         }
+        codeArea.isWrapText = true
         return codeArea
     }
 

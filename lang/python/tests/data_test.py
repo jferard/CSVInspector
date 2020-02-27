@@ -15,8 +15,24 @@
 #  You should have received a copy of the GNU General Public License along with
 #  this program. If not, see <http://www.gnu.org/licenses/>.
 #
+import os
+import unittest
 
-from csv_inspector.inspector import *
+from csv_inspector import inspect
 
-# a shortcut
-V = pd.np.vectorize
+
+class DataTest(unittest.TestCase):
+    def setUp(self) -> None:
+        os.chdir("../../..")
+
+    def test_something(self):
+        print(os.getcwd())
+        info = inspect("fixtures/datasets-2020-02-22-12-33.csv")
+        data = info.open()
+        data
+        data.swap[0][1]
+        print(data.df)
+
+
+if __name__ == '__main__':
+    unittest.main()

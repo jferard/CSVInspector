@@ -20,13 +20,18 @@
 
 package com.github.jferard.csvinspector.gui
 
+import com.github.jferard.csvinspector.exec.ExecutionContext
 import com.google.common.eventbus.Subscribe
 import javafx.beans.property.ReadOnlyStringWrapper
 import javafx.scene.Scene
 import javafx.scene.control.*
+import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyEvent
 import javafx.scene.paint.Color.RED
 import javafx.scene.text.Text
 import javafx.scene.text.TextFlow
+import javafx.stage.FileChooser
+import javafx.stage.Stage
 import javafx.util.Callback
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
@@ -35,10 +40,13 @@ import org.fxmisc.richtext.CodeArea
 import java.io.StringReader
 
 
-class CSVInspectorGUI(private val csvPane: TabPane,
-                      private val outArea: TextFlow,
-                      private val codeArea: CodeArea,
-                      val scene: Scene) {
+class CSVInspectorGUI(
+        private val executionContext: ExecutionContext,
+        val primaryStage: Stage,
+        private val csvPane: TabPane,
+        private val outArea: TextFlow,
+        private val codeArea: CodeArea,
+        val scene: Scene) {
 
     @Subscribe
     private fun display(e: CSVEvent) {
@@ -108,6 +116,50 @@ class CSVInspectorGUI(private val csvPane: TabPane,
         csvPane.selectionModel.select(tab)
     }
 
+    @Subscribe
+    fun keyEventHandler(keyEvent: KeyEvent) {
+        if (keyEvent.code == KeyCode.F5) {
+            executeScript()
+        }
+    }
+
+    private fun executeScript() {
+        csvPane.tabs.clear()
+        val code = codeArea.text
+        executionContext.executeScript(code)
+        executionContext.listen()
+    }
+
+    @Subscribe
+    fun menuEventHandler(menuEvent: MenuEvent) {
+        println(menuEvent.name)
+        when (menuEvent.name) {
+            "LOAD" -> loadScript()
+            "SAVE" -> saveScript()
+            "EXECUTE" -> executeScript()
+            "QUIT" -> quitApplication()
+        }
+    }
+
+    private fun quitApplication() {
+        primaryStage.close()
+    }
+
+    private fun loadScript() {
+        val fileChooser = FileChooser()
+        fileChooser.title = "Open Script File"
+        val selectedFile = fileChooser.showOpenDialog(primaryStage)
+        val code = selectedFile.readText(Charsets.UTF_8)
+        codeArea.replaceText(code)
+    }
+
+    private fun saveScript() {
+        val fileChooser = FileChooser()
+        fileChooser.title = "Save Script File"
+        val selectedFile = fileChooser.showOpenDialog(primaryStage)
+        selectedFile.writeText(codeArea.text, Charsets.UTF_8)
+    }
+
     private fun tableView(parse: CSVParser): TableView<List<String>> {
         val tableView = TableView<List<String>>()
         val records = parse.records
@@ -121,7 +173,7 @@ class CSVInspectorGUI(private val csvPane: TabPane,
     }
 
     private fun createFirstColumn(): TableColumn<List<String>, String> {
-        val firstColumn = TableColumn<List<String>, String>("col")
+        val firstColumn = TableColumn<List<String>, String>("#")
         firstColumn.cellValueFactory = Callback { row ->
             ReadOnlyStringWrapper(row.value[0])
         }
@@ -135,7 +187,7 @@ class CSVInspectorGUI(private val csvPane: TabPane,
                     "[${it.index}: ${it.value.second}]\n${it.value.first}")
             column.cellValueFactory =
                     Callback { row ->
-                        ReadOnlyStringWrapper(row.value[it.index+1])
+                        ReadOnlyStringWrapper(row.value[it.index + 1])
                     }
             column
         }

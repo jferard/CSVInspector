@@ -27,20 +27,16 @@ import javafx.application.Application
 import javafx.stage.Stage
 
 class CSVInspectorApplication : Application() {
-    private val gui: CSVInspectorGUI
-
-    init {
+    override fun start(primaryStage: Stage) {
         val token = generateToken()
         val eventBus = EventBus()
         val executionContext = PythonExecutor(token, eventBus).start()
 
-        this.gui = CSVInspectorGUIFactory(executionContext).create()
+        val menuBarProvider = MenuBarProvider(eventBus)
+        val gui = CSVInspectorGUIProvider(executionContext, eventBus, menuBarProvider, primaryStage).get()
         eventBus.register(gui)
         eventBus.post(CSVEvent("TEXT\nPress F5\nTo execute\nthe code"))
-    }
-
-    override fun start(primaryStage: Stage?) {
-        with(primaryStage!!) {
+        with(primaryStage) {
             this.isMaximized = true
             this.title = "CSVInspector (c) J. Férard"
             this.scene = gui.scene
