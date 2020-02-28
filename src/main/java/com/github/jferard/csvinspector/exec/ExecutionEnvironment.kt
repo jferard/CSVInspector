@@ -18,14 +18,21 @@
  *
  */
 
-package com.github.jferard.csvinspector.gui
+package com.github.jferard.csvinspector.exec
 
-interface ScriptEvent {
-    val data: String
+import com.github.jferard.csvinspector.gui.ScriptEvent
+import com.google.common.eventbus.EventBus
+import javafx.collections.ObservableList
+import javafx.concurrent.Task
+import java.io.BufferedReader
+import java.io.Writer
+
+class ExecutionEnvironment(private val token: String,
+                           private val eventBus: EventBus,
+                           private val stdinWriter: Writer,
+                           private val stdoutReader: BufferedReader,
+                           private val stderrReader: BufferedReader) {
+    fun createTask(code: String): Task<Unit> {
+        return ExecutionContext(token, eventBus, code, stdinWriter, stdoutReader, stderrReader)
+    }
 }
-class CSVEvent(override val data: String) : ScriptEvent
-class ErrEvent(override val data: String): ScriptEvent
-class InfoEvent(override val data: String): ScriptEvent
-class OutEvent(override val data: String): ScriptEvent
-class SQLEvent(override val data: String): ScriptEvent
-class MenuEvent(val name: String)

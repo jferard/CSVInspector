@@ -22,18 +22,26 @@ package com.github.jferard.csvinspector.exec
 
 import com.github.jferard.csvinspector.gui.*
 import com.google.common.eventbus.EventBus
+import javafx.application.Platform
+import javafx.concurrent.Task
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.Writer
 
 class ExecutionContext(private val token: String,
                        private val eventBus: EventBus,
+                       private val code: String,
                        private val stdinWriter: Writer,
                        private val stdoutReader: BufferedReader,
-                       private val stderrReader: BufferedReader) {
+                       private val stderrReader: BufferedReader) : Task<Unit>() {
     private lateinit var state: State
 
-    fun executeScript(code: String) {
+    override fun call() {
+        executeScript(code)
+        listen()
+    }
+
+    private fun executeScript(code: String) {
         stdinWriter.write("${token}begin script\n")
         stdinWriter.write(code)
         stdinWriter.write("\n${token}end script\n")
@@ -51,9 +59,7 @@ class ExecutionContext(private val token: String,
             if (line == "${token}executed") {
                 break
             }
-            if (!this.state.handle(this, line)) {
-                break
-            }
+            this.state.handle(this, line)
             line = this.stdoutReader.readLine()
         }
         val errLines = mutableListOf<String>()
@@ -65,7 +71,12 @@ class ExecutionContext(private val token: String,
             errLines.add(errLine)
             errLine = this.stderrReader.readLine()
         }
-        eventBus.post(ErrEvent(errLines.joinToString("\n")))
+        if (errLines.isNotEmpty()) {
+            Platform.runLater {
+                val errMessage = errLines.joinToString("\n")
+                eventBus.post(ErrEvent(errMessage))
+            }
+        }
     }
 
     fun setState(state: State) {
@@ -73,31 +84,39 @@ class ExecutionContext(private val token: String,
     }
 
     fun info(line: String) {
-        eventBus.post(InfoEvent(line))
+        Platform.runLater {
+            eventBus.post(InfoEvent(line))
+        }
     }
 
     fun out(line: String) {
-        eventBus.post(OutEvent(line))
+        Platform.runLater {
+            eventBus.post(OutEvent(line))
+        }
     }
 
     fun show(data: String) {
-        eventBus.post(CSVEvent(data))
+        Platform.runLater {
+            eventBus.post(CSVEvent(data))
+        }
     }
 
     fun sql(sql: String) {
-        eventBus.post(SQLEvent(sql))
+        Platform.runLater {
+            eventBus.post(SQLEvent(sql))
+        }
     }
 }
 
 interface State {
-    fun handle(context: ExecutionContext, line: String): Boolean
+    fun handle(context: ExecutionContext, line: String)
 }
 
 class NormalState(private val token: String) : State {
-    override fun handle(context: ExecutionContext, line: String): Boolean {
+    override fun handle(context: ExecutionContext, line: String) {
         if (line.startsWith(token)) {
             when (val directive = line.substring(token.length)) {
-                "executed" -> return false
+                "executed" -> throw IllegalStateException()
                 "begin show" -> context.setState(ShowState(token))
                 "begin info" -> context.setState(InfoState(token))
                 "begin sql" -> context.setState(SQLState(token))
@@ -106,17 +125,16 @@ class NormalState(private val token: String) : State {
         } else {
             context.out(line)
         }
-        return true
     }
 }
 
 class ShowState(private val token: String) : State {
     private var cur = mutableListOf<String>()
 
-    override fun handle(context: ExecutionContext, line: String): Boolean {
+    override fun handle(context: ExecutionContext, line: String) {
         if (line.startsWith(token)) {
             when (val directive = line.substring(token.length)) {
-                "executed" -> return false
+                "executed" -> throw IllegalStateException()
                 "end show" -> {
                     context.show(cur.joinToString("\n"))
                     context.setState(NormalState(token))
@@ -126,7 +144,6 @@ class ShowState(private val token: String) : State {
         } else {
             cur.add(line)
         }
-        return true
     }
 
 }
@@ -134,10 +151,10 @@ class ShowState(private val token: String) : State {
 class InfoState(private val token: String) : State {
     private var cur = mutableListOf<String>()
 
-    override fun handle(context: ExecutionContext, line: String): Boolean {
+    override fun handle(context: ExecutionContext, line: String) {
         if (line.startsWith(token)) {
             when (val directive = line.substring(token.length)) {
-                "executed" -> return false
+                "executed" -> throw IllegalStateException()
                 "end info" -> {
                     context.info(cur.joinToString("\n"))
                     context.setState(NormalState(token))
@@ -147,17 +164,16 @@ class InfoState(private val token: String) : State {
         } else {
             cur.add(line)
         }
-        return true
     }
 }
 
 class SQLState(private val token: String) : State {
     private var cur = mutableListOf<String>()
 
-    override fun handle(context: ExecutionContext, line: String): Boolean {
+    override fun handle(context: ExecutionContext, line: String) {
         if (line.startsWith(token)) {
             when (val directive = line.substring(token.length)) {
-                "executed" -> return false
+                "executed" -> throw IllegalStateException()
                 "end sql" -> {
                     context.sql(cur.joinToString("\n"))
                     context.setState(NormalState(token))
@@ -167,6 +183,5 @@ class SQLState(private val token: String) : State {
         } else {
             cur.add(line)
         }
-        return true
     }
 }

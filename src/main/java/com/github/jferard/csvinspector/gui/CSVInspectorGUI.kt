@@ -20,13 +20,15 @@
 
 package com.github.jferard.csvinspector.gui
 
-import com.github.jferard.csvinspector.exec.ExecutionContext
+import com.github.jferard.csvinspector.exec.ExecutionEnvironment
 import com.google.common.eventbus.Subscribe
 import javafx.beans.property.ReadOnlyStringWrapper
+import javafx.beans.value.ChangeListener
+import javafx.collections.ListChangeListener
+import javafx.collections.ObservableList
+import javafx.concurrent.Task
 import javafx.scene.Scene
 import javafx.scene.control.*
-import javafx.scene.input.KeyCode
-import javafx.scene.input.KeyEvent
 import javafx.scene.paint.Color.RED
 import javafx.scene.text.Text
 import javafx.scene.text.TextFlow
@@ -41,7 +43,7 @@ import java.io.StringReader
 
 
 class CSVInspectorGUI(
-        private val executionContext: ExecutionContext,
+        private val executionEnvironment: ExecutionEnvironment,
         val primaryStage: Stage,
         private val csvPane: TabPane,
         private val outArea: TextFlow,
@@ -84,8 +86,8 @@ class CSVInspectorGUI(
 
     @Subscribe
     private fun display(e: ErrEvent) {
-        System.err.println(e.text)
-        val node = Text(e.text + "\n")
+        System.err.println(e.data)
+        val node = Text(e.data + "\n")
         node.fill = RED
         outArea.children.add(node)
     }
@@ -119,8 +121,8 @@ class CSVInspectorGUI(
     private fun executeScript() {
         csvPane.tabs.clear()
         val code = codeArea.text
-        executionContext.executeScript(code)
-        executionContext.listen()
+        val task: Task<Unit> = executionEnvironment.createTask(code)
+        Thread(task).start()
     }
 
     @Subscribe

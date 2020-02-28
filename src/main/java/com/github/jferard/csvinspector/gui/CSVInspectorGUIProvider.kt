@@ -20,7 +20,7 @@
 
 package com.github.jferard.csvinspector.gui
 
-import com.github.jferard.csvinspector.exec.ExecutionContext
+import com.github.jferard.csvinspector.exec.ExecutionEnvironment
 import com.github.jferard.csvinspector.util.CODE_EXAMPLE
 import com.google.common.eventbus.EventBus
 import javafx.scene.Scene
@@ -35,7 +35,7 @@ import org.fxmisc.richtext.CodeArea
 
 
 class CSVInspectorGUIProvider(
-        private val executionContext: ExecutionContext,
+        private val executionEnvironment: ExecutionEnvironment,
         private val eventBus: EventBus,
         private val menuBarProvider: MenuBarProvider,
         private val primaryStage: Stage) {
@@ -49,7 +49,7 @@ class CSVInspectorGUIProvider(
         val menuBar = menuBarProvider.get()
         val workbench = createWorkbench(csvPane, outPane, codeArea)
         val scene = createScene(menuBar, workbench)
-        return CSVInspectorGUI(executionContext, primaryStage, csvPane, outArea, codeArea, scene)
+        return CSVInspectorGUI(executionEnvironment, primaryStage, csvPane, outArea, codeArea, scene)
     }
 
     private fun outArea(): TextFlow {

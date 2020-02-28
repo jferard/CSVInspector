@@ -30,7 +30,7 @@ import kotlin.system.exitProcess
 
 class PythonExecutor(private val pythonExe: String, private val token: String,
                      private val eventBus: EventBus) {
-    fun start(): ExecutionContext {
+    fun start(): ExecutionEnvironment {
         val cmdarray = arrayOf(pythonExe, "-m", "csv_inspector", token)
         println("start python server: ${cmdarray.toList()}")
         try {
@@ -41,7 +41,7 @@ class PythonExecutor(private val pythonExe: String, private val token: String,
                     BufferedReader(InputStreamReader(process.inputStream, Charsets.UTF_8))
             val stderrReader =
                     BufferedReader(InputStreamReader(process.errorStream, Charsets.UTF_8))
-            return ExecutionContext(token, eventBus, stdinWriter, stdoutReader, stderrReader)
+            return ExecutionEnvironment(token, eventBus, stdinWriter, stdoutReader, stderrReader)
         } catch (e: Exception) {
             System.err.println("python server crashed")
             exitProcess(-1)
