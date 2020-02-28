@@ -155,7 +155,7 @@ class CSVInspectorGUI(
     private fun saveScript() {
         val fileChooser = FileChooser()
         fileChooser.title = "Save Script File"
-        val selectedFile = fileChooser.showOpenDialog(primaryStage)
+        val selectedFile = fileChooser.showSaveDialog(primaryStage)
         selectedFile.writeText(codeArea.text, Charsets.UTF_8)
     }
 
