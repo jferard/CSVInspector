@@ -25,6 +25,9 @@ import javafx.event.EventHandler
 import javafx.scene.control.Menu
 import javafx.scene.control.MenuBar
 import javafx.scene.control.MenuItem
+import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyCodeCombination
+import javafx.scene.input.KeyCombination
 
 class MenuBarProvider(private val eventBus: EventBus) {
     fun get(): MenuBar {
@@ -43,18 +46,22 @@ class MenuBarProvider(private val eventBus: EventBus) {
         loadMenuItem.onAction = EventHandler {
             eventBus.post(MenuEvent("LOAD"))
         }
+        loadMenuItem.accelerator = KeyCodeCombination(KeyCode.L, KeyCombination.CONTROL_DOWN)
         val saveMenuItem = MenuItem("Save");
         saveMenuItem.onAction = EventHandler {
             eventBus.post(MenuEvent("SAVE"))
         }
+        saveMenuItem.accelerator = KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN)
         val executeMenuItem = MenuItem("Execute");
         executeMenuItem.onAction = EventHandler {
             eventBus.post(MenuEvent("EXECUTE"))
         }
+        executeMenuItem.accelerator = KeyCodeCombination(KeyCode.F5)
         val quitMenuItem = MenuItem("Quit");
         quitMenuItem.onAction = EventHandler {
             eventBus.post(MenuEvent("QUIT"))
         }
+        quitMenuItem.accelerator = KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN)
         val menuFile = Menu("File")
         menuFile.items.add(loadMenuItem)
         menuFile.items.add(saveMenuItem)

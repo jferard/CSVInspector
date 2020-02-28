@@ -116,13 +116,6 @@ class CSVInspectorGUI(
         csvPane.selectionModel.select(tab)
     }
 
-    @Subscribe
-    fun keyEventHandler(keyEvent: KeyEvent) {
-        if (keyEvent.code == KeyCode.F5) {
-            executeScript()
-        }
-    }
-
     private fun executeScript() {
         csvPane.tabs.clear()
         val code = codeArea.text

@@ -80,7 +80,6 @@ class CSVInspectorGUIProvider(
         val resource = CSVInspectorGUI::class.java.getResource("/python.css")
         scene.stylesheets
                 .add(resource.toExternalForm())
-        scene.onKeyReleased = EventHandler { eventBus.post(it) }
         return scene
     }
 
