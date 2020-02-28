@@ -284,7 +284,7 @@ class DataMap:
 
 
 class DataSort:
-    def __init__(self, data: "Data", reverse):
+    def __init__(self, data: "Data", reverse: bool):
         self._data = data
         self._reverse = reverse
 
@@ -292,8 +292,8 @@ class DataSort:
         columns = list(self._data.df.columns)
         indices = _to_indices(len(columns), item)
         self._data.df = self._data.df.sort_values([columns[i] for i in indices],
-                                                  ascending=not self._reverse)
-                                                  #ignore_index=True)
+                                                  ascending=not self._reverse
+                                                  ).reset_index(drop=True)
         return self._data
 
 
@@ -523,8 +523,8 @@ class Data:
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
         >>> data.sort[1]
            A  B  C  D
-        1  5  2  2  7
-        0  1  3  2  4
+        0  5  2  2  7
+        1  1  3  2  4
         2  3  4  7  8
         """
         return DataSort(self, False)
@@ -537,9 +537,9 @@ class Data:
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
         >>> data.rsort[1]
            A  B  C  D
-        2  3  4  7  8
-        0  1  3  2  4
-        1  5  2  2  7
+        0  3  4  7  8
+        1  1  3  2  4
+        2  5  2  2  7
         """
         return DataSort(self, True)
 
