@@ -191,10 +191,34 @@ class CSVInspectorGUI(
     }
 
     private fun addCodePane(selectedFile: File) {
+        val cur = codePane.tabs.find { it.userData == selectedFile }
+        if (cur != null) {
+            codePane.selectionModel.select(cur)
+            return
+        }
         val code = selectedFile.readText(Charsets.UTF_8)
+        val codeTab = codeTab(selectedFile)
+        codePane.tabs.add(codePane.tabs.size - 1, codeTab)
+        codePane.selectionModel.select(codeTab)
         val codeArea = getCodeArea()
         codeArea.replaceText(code)
     }
+
+    private fun codeTab(file: File): Tab {
+        val codeArea = CodeAreaProvider().get()
+        val oneScriptPane = ScrollPane()
+        oneScriptPane.content = codeArea
+
+        oneScriptPane.vbarPolicy = ScrollPane.ScrollBarPolicy.ALWAYS
+        oneScriptPane.prefHeight = 500.0
+        oneScriptPane.isFitToWidth = true
+        oneScriptPane.isFitToHeight = true
+        val tab = Tab(file.name, oneScriptPane)
+        tab.userData = file
+        return tab
+    }
+
+
 
     private fun saveScript() {
         var selectedFile = getCodeTabFile()

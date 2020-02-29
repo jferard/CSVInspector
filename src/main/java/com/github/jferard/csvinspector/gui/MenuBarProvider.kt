@@ -42,7 +42,7 @@ class MenuBarProvider(private val eventBus: EventBus) {
     }
 
     private fun createFileMenu(): Menu {
-        val loadMenuItem = createItem("Open", "OPEN", KeyCode.O, KeyCombination.CONTROL_DOWN)
+        val openMenuItem = createItem("Open", "OPEN", KeyCode.O, KeyCombination.CONTROL_DOWN)
         val saveMenuItem = createItem("Save", "SAVE", KeyCode.S, KeyCombination.CONTROL_DOWN)
         val saveAsMenuItem =
                 createItem("Save as", "SAVE_AS", KeyCode.S, KeyCombination.CONTROL_DOWN,
@@ -51,7 +51,7 @@ class MenuBarProvider(private val eventBus: EventBus) {
         val quitMenuItem = createItem("Quit", "QUIT", KeyCode.Q, KeyCombination.CONTROL_DOWN)
         val menuFile = Menu("File")
         menuFile.items
-                .addAll(loadMenuItem, saveMenuItem, saveAsMenuItem, executeMenuItem, quitMenuItem)
+                .addAll(openMenuItem, saveMenuItem, saveAsMenuItem, executeMenuItem, quitMenuItem)
         return menuFile
     }
 
