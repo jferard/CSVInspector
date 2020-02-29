@@ -22,7 +22,6 @@ package com.github.jferard.csvinspector.gui
 
 import com.github.jferard.csvinspector.exec.ExecutionEnvironment
 import com.google.common.eventbus.Subscribe
-import com.sun.org.apache.bcel.internal.classfile.Code
 import javafx.beans.property.ReadOnlyStringWrapper
 import javafx.concurrent.Task
 import javafx.scene.Scene
@@ -131,6 +130,16 @@ class CSVInspectorGUI(
         return pane.content as CodeArea
     }
 
+    private fun getCodeTabName(): String {
+        val tab = codePane.selectionModel.selectedItem
+        return tab.text
+    }
+
+    private fun getCodeTabFile(): File? {
+        val tab = codePane.selectionModel.selectedItem
+        return tab.userData as File?
+    }
+
     @Subscribe
     fun menuEventHandler(menuEvent: MenuEvent) {
         when (menuEvent.name) {
@@ -187,11 +196,25 @@ class CSVInspectorGUI(
     }
 
     private fun saveScript() {
-        val fileChooser = FileChooser()
-        fileChooser.title = "Save Script File"
-        val selectedFile = fileChooser.showSaveDialog(primaryStage)
+        var selectedFile = getCodeTabFile()
+        if (selectedFile == null) {
+            selectedFile = saveTo() ?: return
+        }
         val codeArea = getCodeArea()
         selectedFile.writeText(codeArea.text, Charsets.UTF_8)
+        setCodeTabFile(selectedFile)
+    }
+
+    private fun setCodeTabFile(selectedFile: File) {
+        val tab = codePane.selectionModel.selectedItem
+        tab.userData = selectedFile
+        tab.text = selectedFile.name
+    }
+
+    private fun saveTo(): File? {
+        val fileChooser = FileChooser()
+        fileChooser.title = "Save Script File"
+        return fileChooser.showSaveDialog(primaryStage)
     }
 
     private fun tableView(parse: CSVParser): TableView<List<String>> {
