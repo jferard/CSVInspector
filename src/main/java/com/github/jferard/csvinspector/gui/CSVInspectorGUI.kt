@@ -145,6 +145,7 @@ class CSVInspectorGUI(
         when (menuEvent.name) {
             "OPEN" -> openScript()
             "SAVE" -> saveScript()
+            "SAVE_AS" -> saveAsScript()
             "EXECUTE" -> executeScript()
             "QUIT" -> quitApplication()
             "COPY" -> copy()
@@ -200,6 +201,13 @@ class CSVInspectorGUI(
         if (selectedFile == null) {
             selectedFile = saveTo() ?: return
         }
+        val codeArea = getCodeArea()
+        selectedFile.writeText(codeArea.text, Charsets.UTF_8)
+        setCodeTabFile(selectedFile)
+    }
+
+    private fun saveAsScript() {
+        val selectedFile = saveTo() ?: return
         val codeArea = getCodeArea()
         selectedFile.writeText(codeArea.text, Charsets.UTF_8)
         setCodeTabFile(selectedFile)
