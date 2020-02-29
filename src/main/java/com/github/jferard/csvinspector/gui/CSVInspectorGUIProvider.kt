@@ -22,7 +22,7 @@ package com.github.jferard.csvinspector.gui
 
 import com.github.jferard.csvinspector.exec.ExecutionEnvironment
 import com.github.jferard.csvinspector.util.CODE_EXAMPLE
-import com.google.common.eventbus.EventBus
+import javafx.event.EventHandler
 import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.layout.ColumnConstraints
@@ -36,7 +36,6 @@ import org.fxmisc.richtext.CodeArea
 
 class CSVInspectorGUIProvider(
         private val executionEnvironment: ExecutionEnvironment,
-        private val eventBus: EventBus,
         private val menuBarProvider: MenuBarProvider,
         private val primaryStage: Stage) {
 
@@ -47,9 +46,11 @@ class CSVInspectorGUIProvider(
 
         val outPane = outPane(outArea)
         val menuBar = menuBarProvider.get()
-        val workbench = createWorkbench(csvPane, outPane, codeArea)
+        val codePane = codePane(codeArea)
+        val workbench = createWorkbench(csvPane, outPane, codePane)
         val scene = createScene(menuBar, workbench)
-        return CSVInspectorGUI(executionEnvironment, primaryStage, csvPane, outArea, codeArea, scene)
+        return CSVInspectorGUI(executionEnvironment, primaryStage, csvPane, outArea, codeArea,
+                scene)
     }
 
     private fun outArea(): TextFlow {
@@ -79,7 +80,7 @@ class CSVInspectorGUIProvider(
 
     private fun createWorkbench(csvPane: TabPane,
                                 outPane: ScrollPane,
-                                codeArea: CodeArea): GridPane {
+                                codePane: TabPane): GridPane {
         val root = GridPane()
         val colConstraints = ColumnConstraints()
         colConstraints.percentWidth = 50.0
@@ -89,7 +90,6 @@ class CSVInspectorGUIProvider(
         root.columnConstraints.add(colConstraints)
         root.rowConstraints.add(rowConstraints)
         root.rowConstraints.add(rowConstraints)
-        val codePane = codePane(codeArea)
         root.add(csvPane, 0, 0, 2, 1)
         root.add(codePane, 0, 1)
         root.add(outPane, 1, 1)
@@ -111,7 +111,7 @@ class CSVInspectorGUIProvider(
         return outPane
     }
 
-    private fun codePane(codeArea: CodeArea): ScrollPane {
+    private fun codePane(codeArea: CodeArea): TabPane {
         val codePane = ScrollPane()
         codeArea.replaceText(CODE_EXAMPLE)
         codePane.content = codeArea
@@ -120,6 +120,15 @@ class CSVInspectorGUIProvider(
         codePane.prefHeight = 500.0
         codePane.isFitToWidth = true
         codePane.isFitToHeight = true
-        return codePane
+        val tab = Tab("Code", codePane)
+        val tabPlus = Tab("+")
+        tabPlus.isClosable = false
+        tabPlus.onSelectionChanged = EventHandler{
+            println("++")
+        }
+        val codePane0 = TabPane()
+        codePane0.tabs.addAll(tab, tabPlus)
+        codePane0.selectionModel.select(tab)
+        return codePane0
     }
 }

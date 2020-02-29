@@ -34,7 +34,7 @@ class CSVInspectorApplication : Application() {
         val executionContext = PythonExecutor(pythonExe, token, eventBus).start()
 
         val menuBarProvider = MenuBarProvider(eventBus)
-        val gui = CSVInspectorGUIProvider(executionContext, eventBus, menuBarProvider, primaryStage).get()
+        val gui = CSVInspectorGUIProvider(executionContext, menuBarProvider, primaryStage).get()
         eventBus.register(gui)
         eventBus.post(CSVEvent("TEXT\nPress F5\nTo execute\nthe code"))
         with(primaryStage) {
