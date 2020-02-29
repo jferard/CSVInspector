@@ -22,10 +22,8 @@ package com.github.jferard.csvinspector.gui
 
 import com.github.jferard.csvinspector.exec.ExecutionEnvironment
 import com.google.common.eventbus.Subscribe
+import com.sun.org.apache.bcel.internal.classfile.Code
 import javafx.beans.property.ReadOnlyStringWrapper
-import javafx.beans.value.ChangeListener
-import javafx.collections.ListChangeListener
-import javafx.collections.ObservableList
 import javafx.concurrent.Task
 import javafx.scene.Scene
 import javafx.scene.control.*
@@ -39,6 +37,7 @@ import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
 import org.apache.commons.csv.CSVRecord
 import org.fxmisc.richtext.CodeArea
+import java.io.File
 import java.io.StringReader
 
 
@@ -47,7 +46,7 @@ class CSVInspectorGUI(
         val primaryStage: Stage,
         private val csvPane: TabPane,
         private val outArea: TextFlow,
-        private val codeArea: CodeArea,
+        private val codePane: TabPane,
         val scene: Scene) {
 
     @Subscribe
@@ -120,9 +119,16 @@ class CSVInspectorGUI(
 
     private fun executeScript() {
         csvPane.tabs.clear()
+        val codeArea = getCodeArea()
         val code = codeArea.text
         val task: Task<Unit> = executionEnvironment.createTask(code)
         Thread(task).start()
+    }
+
+    private fun getCodeArea(): CodeArea {
+        val tab = codePane.selectionModel.selectedItem
+        val pane = tab.content as ScrollPane
+        return pane.content as CodeArea
     }
 
     @Subscribe
@@ -140,6 +146,7 @@ class CSVInspectorGUI(
     }
 
     private fun copy() {
+        val codeArea = getCodeArea()
         when (scene.focusOwner) {
             codeArea -> codeArea.copy()
             else -> throw NotImplementedError()
@@ -147,6 +154,7 @@ class CSVInspectorGUI(
     }
 
     private fun cut() {
+        val codeArea = getCodeArea()
         when (scene.focusOwner) {
             codeArea -> codeArea.cut()
             else -> throw NotImplementedError()
@@ -154,6 +162,7 @@ class CSVInspectorGUI(
     }
 
     private fun paste() {
+        val codeArea = getCodeArea()
         when (scene.focusOwner) {
             codeArea -> codeArea.paste()
             else -> throw NotImplementedError()
@@ -168,7 +177,12 @@ class CSVInspectorGUI(
         val fileChooser = FileChooser()
         fileChooser.title = "Open Script File"
         val selectedFile = fileChooser.showOpenDialog(primaryStage)
+        addCodePane(selectedFile)
+    }
+
+    private fun addCodePane(selectedFile: File) {
         val code = selectedFile.readText(Charsets.UTF_8)
+        val codeArea = getCodeArea()
         codeArea.replaceText(code)
     }
 
@@ -176,6 +190,7 @@ class CSVInspectorGUI(
         val fileChooser = FileChooser()
         fileChooser.title = "Save Script File"
         val selectedFile = fileChooser.showSaveDialog(primaryStage)
+        val codeArea = getCodeArea()
         selectedFile.writeText(codeArea.text, Charsets.UTF_8)
     }
 

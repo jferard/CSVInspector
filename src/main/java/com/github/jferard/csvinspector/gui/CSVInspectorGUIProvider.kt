@@ -31,7 +31,6 @@ import javafx.scene.layout.RowConstraints
 import javafx.scene.layout.VBox
 import javafx.scene.text.TextFlow
 import javafx.stage.Stage
-import org.fxmisc.richtext.CodeArea
 
 
 class CSVInspectorGUIProvider(
@@ -41,15 +40,14 @@ class CSVInspectorGUIProvider(
 
     fun get(): CSVInspectorGUI {
         val outArea = outArea()
-        val codeArea = CodeAreaProvider().get()
         val csvPane = csvPane()
 
         val outPane = outPane(outArea)
         val menuBar = menuBarProvider.get()
-        val codePane = codePane(codeArea)
+        val codePane = codePane()
         val workbench = createWorkbench(csvPane, outPane, codePane)
         val scene = createScene(menuBar, workbench)
-        return CSVInspectorGUI(executionEnvironment, primaryStage, csvPane, outArea, codeArea,
+        return CSVInspectorGUI(executionEnvironment, primaryStage, csvPane, outArea, codePane,
                 scene)
     }
 
@@ -111,24 +109,34 @@ class CSVInspectorGUIProvider(
         return outPane
     }
 
-    private fun codePane(codeArea: CodeArea): TabPane {
-        val codePane = ScrollPane()
-        codeArea.replaceText(CODE_EXAMPLE)
-        codePane.content = codeArea
+    private fun codePane(): TabPane {
+        val tab = codeTab()
+        val tabPlus = plusTab()
+        val codePane = TabPane()
+        codePane.tabs.addAll(tab, tabPlus)
+        codePane.selectionModel.select(tab)
+        return codePane
+    }
 
-        codePane.vbarPolicy = ScrollPane.ScrollBarPolicy.ALWAYS
-        codePane.prefHeight = 500.0
-        codePane.isFitToWidth = true
-        codePane.isFitToHeight = true
-        val tab = Tab("Code", codePane)
+    private fun codeTab(): Tab {
+        val codeArea = CodeAreaProvider().get()
+        val oneScriptPane = ScrollPane()
+        codeArea.replaceText(CODE_EXAMPLE)
+        oneScriptPane.content = codeArea
+
+        oneScriptPane.vbarPolicy = ScrollPane.ScrollBarPolicy.ALWAYS
+        oneScriptPane.prefHeight = 500.0
+        oneScriptPane.isFitToWidth = true
+        oneScriptPane.isFitToHeight = true
+        return Tab("Untitled", oneScriptPane)
+    }
+
+    private fun plusTab(): Tab {
         val tabPlus = Tab("+")
         tabPlus.isClosable = false
-        tabPlus.onSelectionChanged = EventHandler{
+        tabPlus.onSelectionChanged = EventHandler {
             println("++")
         }
-        val codePane0 = TabPane()
-        codePane0.tabs.addAll(tab, tabPlus)
-        codePane0.selectionModel.select(tab)
-        return codePane0
+        return tabPlus
     }
 }
