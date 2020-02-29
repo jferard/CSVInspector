@@ -143,7 +143,7 @@ class CSVInspectorGUI(
     @Subscribe
     fun menuEventHandler(menuEvent: MenuEvent) {
         when (menuEvent.name) {
-            "LOAD" -> loadScript()
+            "OPEN" -> openScript()
             "SAVE" -> saveScript()
             "EXECUTE" -> executeScript()
             "QUIT" -> quitApplication()
@@ -182,7 +182,7 @@ class CSVInspectorGUI(
         primaryStage.close()
     }
 
-    private fun loadScript() {
+    private fun openScript() {
         val fileChooser = FileChooser()
         fileChooser.title = "Open Script File"
         val selectedFile = fileChooser.showOpenDialog(primaryStage)
