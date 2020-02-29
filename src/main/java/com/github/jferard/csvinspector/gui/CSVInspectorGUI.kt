@@ -132,6 +132,31 @@ class CSVInspectorGUI(
             "SAVE" -> saveScript()
             "EXECUTE" -> executeScript()
             "QUIT" -> quitApplication()
+            "COPY" -> copy()
+            "CUT" -> cut()
+            "PASTE" -> paste()
+            else -> throw IllegalArgumentException("menu: ${menuEvent.name}")
+        }
+    }
+
+    private fun copy() {
+        when (scene.focusOwner) {
+            codeArea -> codeArea.copy()
+            else -> throw NotImplementedError()
+        }
+    }
+
+    private fun cut() {
+        when (scene.focusOwner) {
+            codeArea -> codeArea.cut()
+            else -> throw NotImplementedError()
+        }
+    }
+
+    private fun paste() {
+        when (scene.focusOwner) {
+            codeArea -> codeArea.paste()
+            else -> throw NotImplementedError()
         }
     }
 

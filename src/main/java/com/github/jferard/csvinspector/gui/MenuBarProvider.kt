@@ -42,37 +42,33 @@ class MenuBarProvider(private val eventBus: EventBus) {
     }
 
     private fun createFileMenu(): Menu {
-        val loadMenuItem = MenuItem("Load");
-        loadMenuItem.onAction = EventHandler {
-            eventBus.post(MenuEvent("LOAD"))
-        }
-        loadMenuItem.accelerator = KeyCodeCombination(KeyCode.L, KeyCombination.CONTROL_DOWN)
-        val saveMenuItem = MenuItem("Save");
-        saveMenuItem.onAction = EventHandler {
-            eventBus.post(MenuEvent("SAVE"))
-        }
-        saveMenuItem.accelerator = KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN)
-        val executeMenuItem = MenuItem("Execute");
-        executeMenuItem.onAction = EventHandler {
-            eventBus.post(MenuEvent("EXECUTE"))
-        }
-        executeMenuItem.accelerator = KeyCodeCombination(KeyCode.F5)
-        val quitMenuItem = MenuItem("Quit");
-        quitMenuItem.onAction = EventHandler {
-            eventBus.post(MenuEvent("QUIT"))
-        }
-        quitMenuItem.accelerator = KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN)
+        val loadMenuItem = createItem("Load", "LOAD", KeyCode.L, KeyCombination.CONTROL_DOWN)
+        val saveMenuItem = createItem("Save", "SAVE", KeyCode.S, KeyCombination.CONTROL_DOWN)
+        val executeMenuItem = createItem("Execute", "EXECUTE", KeyCode.F5)
+        val quitMenuItem = createItem("Quit", "QUIT", KeyCode.Q, KeyCombination.CONTROL_DOWN)
         val menuFile = Menu("File")
-        menuFile.items.add(loadMenuItem)
-        menuFile.items.add(saveMenuItem)
-        menuFile.items.add(executeMenuItem)
-        menuFile.items.add(quitMenuItem)
+        menuFile.items.addAll(loadMenuItem, saveMenuItem, executeMenuItem, quitMenuItem)
         return menuFile
     }
 
     private fun createEditMenu(): Menu {
         val menuEdit = Menu("Edit")
+        val cutMenuItem = createItem("Cut", "CUT", KeyCode.X, KeyCombination.CONTROL_DOWN)
+        val copyMenuItem = createItem("Copy", "COPY", KeyCode.C, KeyCombination.CONTROL_DOWN)
+        val pasteMenuItem = createItem("Paste", "PASTE", KeyCode.V, KeyCombination.CONTROL_DOWN)
+        menuEdit.items.addAll(cutMenuItem, copyMenuItem, pasteMenuItem)
         return menuEdit
+    }
+
+    private fun createItem(itemText: String, itemCode: String,
+                           itemKey: KeyCode,
+                           vararg modifiers: KeyCombination.Modifier): MenuItem {
+        val menuItem = MenuItem(itemText)
+        menuItem.onAction = EventHandler {
+            eventBus.post(MenuEvent(itemCode))
+        }
+        menuItem.accelerator = KeyCodeCombination(itemKey, *modifiers)
+        return menuItem
     }
 
     private fun createHelpMenu(): Menu {
