@@ -148,6 +148,7 @@ class CSVInspectorGUI(
             "SAVE_AS" -> saveAsScript()
             "EXECUTE" -> executeScript()
             "QUIT" -> quitApplication()
+            "NEW_TAB" -> addEmptyCodePane()
             "COPY" -> copy()
             "CUT" -> cut()
             "PASTE" -> paste()
@@ -205,6 +206,12 @@ class CSVInspectorGUI(
     }
 
     private fun codeTab(file: File): Tab {
+        val tab = codeTab(file.name)
+        tab.userData = file
+        return tab
+    }
+
+    private fun codeTab(name: String): Tab {
         val codeArea = CodeAreaProvider().get()
         val oneScriptPane = ScrollPane()
         oneScriptPane.content = codeArea
@@ -213,12 +220,14 @@ class CSVInspectorGUI(
         oneScriptPane.prefHeight = 500.0
         oneScriptPane.isFitToWidth = true
         oneScriptPane.isFitToHeight = true
-        val tab = Tab(file.name, oneScriptPane)
-        tab.userData = file
-        return tab
+        return Tab(name, oneScriptPane)
     }
 
-
+    private fun addEmptyCodePane() {
+        val codeTab = codeTab("Untitled")
+        codePane.tabs.add(codePane.tabs.size - 1, codeTab)
+        codePane.selectionModel.select(codeTab)
+    }
 
     private fun saveScript() {
         var selectedFile = getCodeTabFile()

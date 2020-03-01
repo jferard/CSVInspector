@@ -25,6 +25,7 @@ import javafx.event.EventHandler
 import javafx.scene.control.Menu
 import javafx.scene.control.MenuBar
 import javafx.scene.control.MenuItem
+import javafx.scene.control.SeparatorMenuItem
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCodeCombination
 import javafx.scene.input.KeyCombination
@@ -51,16 +52,17 @@ class MenuBarProvider(private val eventBus: EventBus) {
         val quitMenuItem = createItem("Quit", "QUIT", KeyCode.Q, KeyCombination.CONTROL_DOWN)
         val menuFile = Menu("File")
         menuFile.items
-                .addAll(openMenuItem, saveMenuItem, saveAsMenuItem, executeMenuItem, quitMenuItem)
+                .addAll(openMenuItem, saveMenuItem, saveAsMenuItem, SeparatorMenuItem(), executeMenuItem, SeparatorMenuItem(), quitMenuItem)
         return menuFile
     }
 
     private fun createEditMenu(): Menu {
         val menuEdit = Menu("Edit")
+        val tabMenuItem = createItem("Add new tab", "NEW_TAB", KeyCode.T, KeyCombination.CONTROL_DOWN)
         val cutMenuItem = createItem("Cut", "CUT", KeyCode.X, KeyCombination.CONTROL_DOWN)
         val copyMenuItem = createItem("Copy", "COPY", KeyCode.C, KeyCombination.CONTROL_DOWN)
         val pasteMenuItem = createItem("Paste", "PASTE", KeyCode.V, KeyCombination.CONTROL_DOWN)
-        menuEdit.items.addAll(cutMenuItem, copyMenuItem, pasteMenuItem)
+        menuEdit.items.addAll(tabMenuItem, SeparatorMenuItem(), cutMenuItem, SeparatorMenuItem(), copyMenuItem, pasteMenuItem)
         return menuEdit
     }
 

@@ -22,6 +22,7 @@ package com.github.jferard.csvinspector.gui
 
 import com.github.jferard.csvinspector.exec.ExecutionEnvironment
 import com.github.jferard.csvinspector.util.CODE_EXAMPLE
+import com.google.common.eventbus.EventBus
 import javafx.event.EventHandler
 import javafx.scene.Scene
 import javafx.scene.control.*
@@ -34,6 +35,7 @@ import javafx.stage.Stage
 
 
 class CSVInspectorGUIProvider(
+        private val eventBus: EventBus,
         private val executionEnvironment: ExecutionEnvironment,
         private val menuBarProvider: MenuBarProvider,
         private val primaryStage: Stage) {
@@ -135,7 +137,9 @@ class CSVInspectorGUIProvider(
         val tabPlus = Tab("+")
         tabPlus.isClosable = false
         tabPlus.onSelectionChanged = EventHandler {
-            println("++")
+            if (tabPlus.isSelected) {
+                eventBus.post(MenuEvent("NEW_TAB"))
+            }
         }
         return tabPlus
     }
