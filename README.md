@@ -4,22 +4,30 @@ Copyright (C) 2020 J. Férard <https://github.com/jferard>
 
 License: GPLv3
 
+# Use case
+CSVInspector main goal is to help user performing repetitive tasks on small data sets. Those tasks may be data aggregation, table join, column selection or creation, ...
+
+Typical use case is:
+* load one or two light csv files (< 10 k lines)
+* aggregate some columns in both tables
+* add some columns
+* join files
+* save the result.
+
 # Overview
 CSVInspector is a very basic client/server application:
 * The server is a Python module that wraps some features of Pandas to handle CSV data.
 * The client is a Kotlin/JavaFX GUI that sends Python scripts to the server and displays the result
 
 # Install & run
-Python:
+Python (won't work for now in a virtual env): 
 
     $ pushd lang/python
-    $ virtualenv venv 
-    $ source venv/bin/activate
-    $ pip install -r requirements.txt 
-
+    $ pip install --user -r requirements.txt
+    $ popd
+    
 Kotlin:
     
-    $ popd
     $ mvn clean install
     $ /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java -jar target/csv_inspector-1.0-SNAPSHOT.jar
 
