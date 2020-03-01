@@ -40,7 +40,7 @@ class CSVInspectorApplication : Application() {
         eventBus.post(CSVEvent("TEXT\nPress F5\nTo execute\nthe code"))
         with(primaryStage) {
             this.isMaximized = true
-            this.title = "CSVInspector (c) J. Férard"
+            this.title = "CSVInspector (C) 2020 - J. Férard"
             this.scene = gui.scene
             this.show()
         }
