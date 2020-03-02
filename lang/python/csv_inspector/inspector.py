@@ -147,7 +147,7 @@ class Inspection:
         return Data(self._df)
 
     def show(self):
-        print(f"{TOKEN}begin info")
+        begin_info()
         print(f"encoding: '{self.encoding}'")
         print(f"csvdialect.delimiter: {repr(self.delimiter)}")
         print(f"csvdialect.quotechar: {repr(self.quotechar)}")
@@ -157,7 +157,15 @@ class Inspection:
         print(f"csvdialect.quoting: {self.quoting}")
         print(f"coltypes:\n{self.coltypes}")
         print(f"dtype:\n{self._df.dtypes}")
-        print(f"{TOKEN}end info", flush=True)
+        end_info()
+
+
+def begin_info():
+    print(f"{TOKEN}begin info")
+
+
+def end_info():
+    print(f"{TOKEN}end info", flush=True)
 
 
 def inspect(file: Union[str, Path], chunk_size=1024 * 1024) -> Inspection:

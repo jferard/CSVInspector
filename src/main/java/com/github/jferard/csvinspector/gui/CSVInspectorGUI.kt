@@ -163,12 +163,12 @@ class CSVInspectorGUI(
     }
 
     private fun help() {
-        executeOneScript("""import csv_inspector
+        executeOneScript("""from csv_inspector import *
 
-print(f"{TOKEN}begin info")
-print(help(csv_inspector.inspect))
-print(help(csv_inspector.data.Data))
-print(f"{TOKEN}end info")""")
+begin_info()
+print(help(inspect))
+print(help(data.Data))
+end_info()""")
     }
 
     private fun copy() {
