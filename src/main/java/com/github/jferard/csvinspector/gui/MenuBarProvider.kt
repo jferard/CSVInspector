@@ -52,17 +52,22 @@ class MenuBarProvider(private val eventBus: EventBus) {
         val quitMenuItem = createItem("Quit", "QUIT", KeyCode.Q, KeyCombination.CONTROL_DOWN)
         val menuFile = Menu("File")
         menuFile.items
-                .addAll(openMenuItem, saveMenuItem, saveAsMenuItem, SeparatorMenuItem(), executeMenuItem, SeparatorMenuItem(), quitMenuItem)
+                .addAll(openMenuItem, saveMenuItem, saveAsMenuItem, SeparatorMenuItem(),
+                        executeMenuItem, SeparatorMenuItem(), quitMenuItem)
         return menuFile
     }
 
     private fun createEditMenu(): Menu {
         val menuEdit = Menu("Edit")
-        val tabMenuItem = createItem("Add new tab", "NEW_TAB", KeyCode.T, KeyCombination.CONTROL_DOWN)
+        val tabMenuItem =
+                createItem("Add new tab", "NEW_TAB", KeyCode.T, KeyCombination.CONTROL_DOWN)
         val cutMenuItem = createItem("Cut", "CUT", KeyCode.X, KeyCombination.CONTROL_DOWN)
         val copyMenuItem = createItem("Copy", "COPY", KeyCode.C, KeyCombination.CONTROL_DOWN)
         val pasteMenuItem = createItem("Paste", "PASTE", KeyCode.V, KeyCombination.CONTROL_DOWN)
-        menuEdit.items.addAll(tabMenuItem, SeparatorMenuItem(), cutMenuItem, SeparatorMenuItem(), copyMenuItem, pasteMenuItem)
+        val findMenuItem =
+                createItem("Find/Replace", "FIND", KeyCode.F, KeyCombination.CONTROL_DOWN)
+        menuEdit.items.addAll(tabMenuItem, SeparatorMenuItem(), cutMenuItem, SeparatorMenuItem(),
+                copyMenuItem, pasteMenuItem, SeparatorMenuItem(), findMenuItem)
         return menuEdit
     }
 
