@@ -22,32 +22,24 @@ package com.github.jferard.csvinspector.gui
 
 import com.github.jferard.csvinspector.exec.ExecutionEnvironment
 import com.google.common.eventbus.Subscribe
-import javafx.application.Platform
-import javafx.beans.property.ReadOnlyStringWrapper
 import javafx.concurrent.Task
-import javafx.geometry.Insets
 import javafx.scene.Scene
 import javafx.scene.control.*
-import javafx.scene.control.ButtonBar.ButtonData
-import javafx.scene.control.ButtonType
-import javafx.scene.layout.GridPane
 import javafx.scene.paint.Color.RED
 import javafx.scene.text.Text
 import javafx.scene.text.TextFlow
 import javafx.stage.FileChooser
 import javafx.stage.Stage
-import javafx.util.Callback
 import org.apache.commons.csv.CSVFormat
-import org.apache.commons.csv.CSVParser
-import org.apache.commons.csv.CSVRecord
 import org.fxmisc.richtext.CodeArea
 import java.io.File
 import java.io.StringReader
 
 
 class CSVInspectorGUI(
+        private val dynamicProvider: DynamicProvider,
         private val executionEnvironment: ExecutionEnvironment,
-        val primaryStage: Stage,
+        private val primaryStage: Stage,
         private val csvPane: TabPane,
         private val outArea: TextFlow,
         private val codePane: TabPane,
@@ -61,7 +53,7 @@ class CSVInspectorGUI(
         tabPane.prefHeight = 500.0
         tabPane.isFitToHeight = true
         tabPane.isFitToWidth = true
-        tabPane.content = tableView(CSVFormat.DEFAULT.parse(StringReader(e.data)))
+        tabPane.content = dynamicProvider.createTableView(CSVFormat.DEFAULT.parse(StringReader(e.data)))
         val tab = Tab("show ${csvPane.tabs.size}", tabPane)
         tab.isClosable = true
         csvPane.tabs.add(tab)
@@ -162,7 +154,7 @@ class CSVInspectorGUI(
             "QUIT" -> quitApplication()
 
             /* Edit */
-            "NEW_TAB" -> createEmptyCodePane()
+            "NEW_TAB" -> dynamicProvider.createEmptyCodePane(codePane)
 
             "COPY" -> copy()
             "CUT" -> cut()
@@ -178,53 +170,11 @@ class CSVInspectorGUI(
     }
 
     private fun find() {
-        val dialog: Dialog<Pair<String, String>> = createFindDialog()
+        val dialog: Dialog<Pair<String, String>> = dynamicProvider.createFindDialog()
         val result = dialog.showAndWait()
         result.ifPresent { findReplace ->
             println("Find=${findReplace.first}, Replace=${findReplace.second}")
         }
-    }
-
-    private fun createFindDialog(): Dialog<Pair<String, String>> {
-        val dialog: Dialog<Pair<String, String>> = Dialog()
-        dialog.title = "Find/Replace"
-        dialog.graphic = null
-        val okButtonType = ButtonType("Ok", ButtonData.OK_DONE)
-        dialog.dialogPane.buttonTypes.addAll(okButtonType, ButtonType.CANCEL)
-        val grid = GridPane()
-        grid.hgap = 10.0
-        grid.vgap = 10.0
-        grid.padding = Insets(20.0, 150.0, 10.0, 10.0)
-
-        val findText = TextField()
-        findText.promptText = "Find"
-        val replaceText = TextField()
-        replaceText.promptText = "Replace"
-
-        grid.add(Label("Find:"), 0, 0)
-        grid.add(findText, 1, 0)
-        grid.add(Label("Replace:"), 0, 1)
-        grid.add(replaceText, 1, 1)
-
-        val okButton = dialog.dialogPane.lookupButton(okButtonType)
-        okButton.isDisable = true
-
-        findText.textProperty().addListener { _, _, newValue ->
-            okButton.isDisable = newValue.trim().isEmpty()
-        }
-
-        dialog.dialogPane.content = grid
-
-        Platform.runLater { findText.requestFocus() }
-
-        dialog.setResultConverter { dialogButton: ButtonType ->
-            if (dialogButton == okButtonType) {
-                Pair(findText.text, replaceText.text)
-            } else {
-                null
-            }
-        }
-        return dialog
     }
 
     private fun about() {
@@ -290,35 +240,11 @@ end_info()""")
             return
         }
         val code = selectedFile.readText(Charsets.UTF_8)
-        val codeTab = createCodeTab(selectedFile)
+        val codeTab = dynamicProvider.createCodeTab(selectedFile)
         codePane.tabs.add(codePane.tabs.size - 1, codeTab)
         codePane.selectionModel.select(codeTab)
         val codeArea = getCodeArea()
         codeArea.replaceText(code)
-    }
-
-    private fun createCodeTab(file: File): Tab {
-        val tab = createCodeTab(file.name)
-        tab.userData = file
-        return tab
-    }
-
-    private fun createCodeTab(name: String): Tab {
-        val codeArea = CodeAreaProvider().get()
-        val oneScriptPane = ScrollPane()
-        oneScriptPane.content = codeArea
-
-        oneScriptPane.vbarPolicy = ScrollPane.ScrollBarPolicy.ALWAYS
-        oneScriptPane.prefHeight = 500.0
-        oneScriptPane.isFitToWidth = true
-        oneScriptPane.isFitToHeight = true
-        return Tab(name, oneScriptPane)
-    }
-
-    private fun createEmptyCodePane() {
-        val codeTab = createCodeTab("Untitled")
-        codePane.tabs.add(codePane.tabs.size - 1, codeTab)
-        codePane.selectionModel.select(codeTab)
     }
 
     private fun saveScript() {
@@ -349,41 +275,4 @@ end_info()""")
         fileChooser.title = "Save Script File"
         return fileChooser.showSaveDialog(primaryStage)
     }
-
-    private fun tableView(parse: CSVParser): TableView<List<String>> {
-        val tableView = TableView<List<String>>()
-        val records = parse.records
-        val types = records[0]
-        val header = records[1]
-
-        tableView.columns.add(createFirstColumn())
-        tableView.columns.addAll(createOtherColumns(header, types))
-        tableView.items.addAll(createRows(records))
-        return tableView
-    }
-
-    private fun createFirstColumn(): TableColumn<List<String>, String> {
-        val firstColumn = TableColumn<List<String>, String>("#")
-        firstColumn.cellValueFactory = Callback { row ->
-            ReadOnlyStringWrapper(row.value[0])
-        }
-        return firstColumn
-    }
-
-    private fun createOtherColumns(header: CSVRecord,
-                                   types: CSVRecord): List<TableColumn<List<String>, String>> {
-        return header.zip(types).withIndex().map {
-            val column = TableColumn<List<String>, String>(
-                    "[${it.index}: ${it.value.second}]\n${it.value.first}")
-            column.cellValueFactory =
-                    Callback { row ->
-                        ReadOnlyStringWrapper(row.value[it.index + 1])
-                    }
-            column
-        }
-    }
-
-    private fun createRows(records: MutableList<CSVRecord>) =
-            records.subList(2, records.size).withIndex()
-                    .map { listOf(it.index.toString()) + it.value.toList() }
 }

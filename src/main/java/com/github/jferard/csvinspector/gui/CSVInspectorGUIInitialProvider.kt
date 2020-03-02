@@ -34,7 +34,7 @@ import javafx.scene.text.TextFlow
 import javafx.stage.Stage
 
 
-class CSVInspectorGUIProvider(
+class CSVInspectorGUIInitialProvider(
         private val eventBus: EventBus,
         private val executionEnvironment: ExecutionEnvironment,
         private val menuBarProvider: MenuBarProvider,
@@ -49,7 +49,9 @@ class CSVInspectorGUIProvider(
         val codePane = codePane()
         val workbench = createWorkbench(csvPane, outPane, codePane)
         val scene = createScene(menuBar, workbench)
-        return CSVInspectorGUI(executionEnvironment, primaryStage, csvPane, outArea, codePane,
+        return CSVInspectorGUI(DynamicProvider(), executionEnvironment, primaryStage, csvPane,
+                outArea,
+                codePane,
                 scene)
     }
 
