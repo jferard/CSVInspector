@@ -22,10 +22,15 @@ package com.github.jferard.csvinspector.gui
 
 import com.github.jferard.csvinspector.exec.ExecutionEnvironment
 import com.google.common.eventbus.Subscribe
+import javafx.application.Platform
 import javafx.beans.property.ReadOnlyStringWrapper
 import javafx.concurrent.Task
+import javafx.geometry.Insets
 import javafx.scene.Scene
 import javafx.scene.control.*
+import javafx.scene.control.ButtonBar.ButtonData
+import javafx.scene.control.ButtonType
+import javafx.scene.layout.GridPane
 import javafx.scene.paint.Color.RED
 import javafx.scene.text.Text
 import javafx.scene.text.TextFlow
@@ -157,7 +162,7 @@ class CSVInspectorGUI(
             "QUIT" -> quitApplication()
 
             /* Edit */
-            "NEW_TAB" -> addEmptyCodePane()
+            "NEW_TAB" -> createEmptyCodePane()
 
             "COPY" -> copy()
             "CUT" -> cut()
@@ -173,7 +178,53 @@ class CSVInspectorGUI(
     }
 
     private fun find() {
-        throw NotImplementedError() //To change body of created functions use File | Settings | File Templates.
+        val dialog: Dialog<Pair<String, String>> = createFindDialog()
+        val result = dialog.showAndWait()
+        result.ifPresent { findReplace ->
+            println("Find=${findReplace.first}, Replace=${findReplace.second}")
+        }
+    }
+
+    private fun createFindDialog(): Dialog<Pair<String, String>> {
+        val dialog: Dialog<Pair<String, String>> = Dialog()
+        dialog.title = "Find/Replace"
+        dialog.graphic = null
+        val okButtonType = ButtonType("Ok", ButtonData.OK_DONE)
+        dialog.dialogPane.buttonTypes.addAll(okButtonType, ButtonType.CANCEL)
+        val grid = GridPane()
+        grid.hgap = 10.0
+        grid.vgap = 10.0
+        grid.padding = Insets(20.0, 150.0, 10.0, 10.0)
+
+        val findText = TextField()
+        findText.promptText = "Find"
+        val replaceText = TextField()
+        replaceText.promptText = "Replace"
+
+        grid.add(Label("Find:"), 0, 0)
+        grid.add(findText, 1, 0)
+        grid.add(Label("Replace:"), 0, 1)
+        grid.add(replaceText, 1, 1)
+
+        val okButton = dialog.dialogPane.lookupButton(okButtonType)
+        okButton.isDisable = true
+
+        findText.textProperty().addListener { _, _, newValue ->
+            okButton.isDisable = newValue.trim().isEmpty()
+        }
+
+        dialog.dialogPane.content = grid
+
+        Platform.runLater { findText.requestFocus() }
+
+        dialog.setResultConverter { dialogButton: ButtonType ->
+            if (dialogButton == okButtonType) {
+                Pair(findText.text, replaceText.text)
+            } else {
+                null
+            }
+        }
+        return dialog
     }
 
     private fun about() {
@@ -239,20 +290,20 @@ end_info()""")
             return
         }
         val code = selectedFile.readText(Charsets.UTF_8)
-        val codeTab = codeTab(selectedFile)
+        val codeTab = createCodeTab(selectedFile)
         codePane.tabs.add(codePane.tabs.size - 1, codeTab)
         codePane.selectionModel.select(codeTab)
         val codeArea = getCodeArea()
         codeArea.replaceText(code)
     }
 
-    private fun codeTab(file: File): Tab {
-        val tab = codeTab(file.name)
+    private fun createCodeTab(file: File): Tab {
+        val tab = createCodeTab(file.name)
         tab.userData = file
         return tab
     }
 
-    private fun codeTab(name: String): Tab {
+    private fun createCodeTab(name: String): Tab {
         val codeArea = CodeAreaProvider().get()
         val oneScriptPane = ScrollPane()
         oneScriptPane.content = codeArea
@@ -264,8 +315,8 @@ end_info()""")
         return Tab(name, oneScriptPane)
     }
 
-    private fun addEmptyCodePane() {
-        val codeTab = codeTab("Untitled")
+    private fun createEmptyCodePane() {
+        val codeTab = createCodeTab("Untitled")
         codePane.tabs.add(codePane.tabs.size - 1, codeTab)
         codePane.selectionModel.select(codeTab)
     }
