@@ -157,9 +157,21 @@ class CSVInspectorGUI(
             "CUT" -> cut()
             "PASTE" -> paste()
             "HELP" -> help()
-            "ABOUT" -> paste()
+            "ABOUT" -> about()
             else -> throw IllegalArgumentException("menu: ${menuEvent.name}")
         }
+    }
+
+    private fun about() {
+        val alert = Alert(Alert.AlertType.INFORMATION)
+
+        alert.title = "About CSVInspector"
+        alert.graphic = null
+        alert.headerText = "CSVInspector (C) 2020 J. Férard"
+        alert.contentText = """https://github.com/jferard/CSVInspector
+            
+License: GPLv3""".trimIndent()
+        alert.showAndWait()
     }
 
     private fun help() {
