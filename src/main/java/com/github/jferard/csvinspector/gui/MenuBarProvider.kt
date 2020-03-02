@@ -67,18 +67,23 @@ class MenuBarProvider(private val eventBus: EventBus) {
     }
 
     private fun createItem(itemText: String, itemCode: String,
-                           itemKey: KeyCode,
+                           itemKey: KeyCode?,
                            vararg modifiers: KeyCombination.Modifier): MenuItem {
         val menuItem = MenuItem(itemText)
         menuItem.onAction = EventHandler {
             eventBus.post(MenuEvent(itemCode))
         }
-        menuItem.accelerator = KeyCodeCombination(itemKey, *modifiers)
+        if (itemKey != null) {
+            menuItem.accelerator = KeyCodeCombination(itemKey, *modifiers)
+        }
         return menuItem
     }
 
     private fun createHelpMenu(): Menu {
+        val helpMenuItem = createItem("CSVInspector Help", "HELP", KeyCode.F1)
+        val aboutMenuItem = createItem("About CSVInspector", "ABOUT", null)
         val menuHelp = Menu("Help")
+        menuHelp.items.addAll(helpMenuItem, aboutMenuItem)
         return menuHelp
     }
 }

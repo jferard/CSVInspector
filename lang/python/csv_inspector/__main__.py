@@ -1,3 +1,4 @@
+# coding: utf-8
 #  CSVInspector - A graphical interactive tool to inspect and process CSV files.
 #      Copyright (C) 2020 J. Férard <https://github.com/jferard>
 #
