@@ -53,7 +53,8 @@ class CSVInspectorGUI(
         tabPane.prefHeight = 500.0
         tabPane.isFitToHeight = true
         tabPane.isFitToWidth = true
-        tabPane.content = dynamicProvider.createTableView(CSVFormat.DEFAULT.parse(StringReader(e.data)))
+        tabPane.content =
+                dynamicProvider.createTableView(CSVFormat.DEFAULT.parse(StringReader(e.data)))
         val tab = Tab("show ${csvPane.tabs.size}", tabPane)
         tab.isClosable = true
         csvPane.tabs.add(tab)
@@ -173,7 +174,21 @@ class CSVInspectorGUI(
         val dialog: Dialog<Pair<String, String>> = dynamicProvider.createFindDialog()
         val result = dialog.showAndWait()
         result.ifPresent { findReplace ->
-            println("Find=${findReplace.first}, Replace=${findReplace.second}")
+            val toFind = findReplace.first
+            val replacement = findReplace.second
+            highlightToFind(toFind)
+        }
+    }
+
+    private fun highlightToFind(toFind: String) {
+        val codeArea = getCodeArea()
+        val matches = Regex(toFind).findAll(codeArea.text)
+        matches.take(1).forEach {
+            codeArea.selectRange(it.range.first, it.range.last + 1)
+            codeArea.setStyleClass(it.range.first, it.range.last + 1, "highlight")
+        }
+        matches.drop(1).forEach {
+            codeArea.setStyleClass(it.range.first, it.range.last + 1, "highlight")
         }
     }
 
