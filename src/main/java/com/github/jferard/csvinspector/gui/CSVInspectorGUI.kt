@@ -120,6 +120,10 @@ class CSVInspectorGUI(
         csvPane.tabs.clear()
         val codeArea = getCodeArea()
         val code = codeArea.text
+        executeOneScript(code)
+    }
+
+    private fun executeOneScript(code: String) {
         val task: Task<Unit> = executionEnvironment.createTask(code)
         Thread(task).start()
     }
@@ -152,8 +156,19 @@ class CSVInspectorGUI(
             "COPY" -> copy()
             "CUT" -> cut()
             "PASTE" -> paste()
+            "HELP" -> help()
+            "ABOUT" -> paste()
             else -> throw IllegalArgumentException("menu: ${menuEvent.name}")
         }
+    }
+
+    private fun help() {
+        executeOneScript("""import csv_inspector
+
+print(f"{TOKEN}begin info")
+print(help(csv_inspector.inspect))
+print(help(csv_inspector.data.Data))
+print(f"{TOKEN}end info")""")
     }
 
     private fun copy() {
