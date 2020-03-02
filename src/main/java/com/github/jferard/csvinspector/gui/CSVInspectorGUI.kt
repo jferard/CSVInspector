@@ -147,19 +147,33 @@ class CSVInspectorGUI(
     @Subscribe
     fun menuEventHandler(menuEvent: MenuEvent) {
         when (menuEvent.name) {
+            /* File */
             "OPEN" -> openScript()
             "SAVE" -> saveScript()
             "SAVE_AS" -> saveAsScript()
+
             "EXECUTE" -> executeScript()
+
             "QUIT" -> quitApplication()
+
+            /* Edit */
             "NEW_TAB" -> addEmptyCodePane()
+
             "COPY" -> copy()
             "CUT" -> cut()
             "PASTE" -> paste()
+
+            "FIND" -> find()
+
+            /* Help */
             "HELP" -> help()
             "ABOUT" -> about()
             else -> throw IllegalArgumentException("menu: ${menuEvent.name}")
         }
+    }
+
+    private fun find() {
+        throw NotImplementedError() //To change body of created functions use File | Settings | File Templates.
     }
 
     private fun about() {
