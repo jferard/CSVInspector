@@ -86,9 +86,12 @@ class MenuBarProvider(private val eventBus: EventBus) {
 
     private fun createHelpMenu(): Menu {
         val helpMenuItem = createItem("CSVInspector Help", "HELP", KeyCode.F1)
+        val snippetMenu = Menu("Snippets")
+        val snippet1Menu = createItem("GroupBy/Join", "SNIPPET_1", null)
+        snippetMenu.items.add(snippet1Menu)
         val aboutMenuItem = createItem("About CSVInspector", "ABOUT", null)
         val menuHelp = Menu("Help")
-        menuHelp.items.addAll(helpMenuItem, aboutMenuItem)
+        menuHelp.items.addAll(helpMenuItem, SeparatorMenuItem(), snippetMenu, SeparatorMenuItem(), aboutMenuItem)
         return menuHelp
     }
 }
