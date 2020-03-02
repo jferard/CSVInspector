@@ -32,6 +32,7 @@ from csv_inspector import *
 
 info = inspect("fixtures/datasets-2020-02-22-12-33.csv")
 info.show()
+info.show_sql()
 
 data = info.open()
 data.show()

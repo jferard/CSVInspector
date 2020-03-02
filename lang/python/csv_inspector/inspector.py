@@ -19,23 +19,19 @@
 
 import csv
 import io
-import sys
 from pathlib import Path
 from typing import (Union)
 
 import chardet
+import numpy
 import pandas as pd
+from pandas import datetime
+
+from csv_inspector.bulk_query_provider import (get_provider)
 from csv_inspector.data import Data
+from csv_inspector.util import begin_info, end_info, to_standard
 
 sniffer = csv.Sniffer()
-
-try:
-    TOKEN
-except NameError:
-    if len(sys.argv) > 1:
-        TOKEN = sys.argv[1]
-    else:
-        TOKEN = None
 
 
 class Inspection:
@@ -120,7 +116,20 @@ class Inspection:
                                nrows=100, delimiter=self._csvdialect.delimiter,
                                dialect=self._csvdialect)
         self._set_col_types()
-        self._coltypes = list(self._df.dtypes)
+        self._coltypes = {col: self._dtype_to_sql(self._df[col].dtype) for col
+                          in self._df.columns}
+
+    def _dtype_to_sql(self, dtype: numpy.dtype) -> str:
+        if dtype.name.startswith('date'):
+            return "TIMESTAMP"
+        elif dtype.name.startswith('int') or dtype.name.startswith('uint'):
+            return "INT"
+        elif dtype.name.startswith('float'):
+            return "DECIMAL"
+        elif dtype.name.startswith('bool'):
+            return "BOOL"
+        else:
+            return "TEXT"
 
     def _set_col_types(self):
         for col in self._df.columns:
@@ -128,7 +137,7 @@ class Inspection:
                 try:
                     self._df[col] = pd.to_datetime(self._df[col])
                 except ValueError:
-                    self._df[col] = self._df[col].astype('str')
+                    pass
 
     @property
     def coltypes(self):
@@ -144,7 +153,27 @@ class Inspection:
                                delimiter=self._csvdialect.delimiter,
                                dialect=self._csvdialect)
         self._set_col_types()
-        return Data(self._df)
+        self._df.columns = [to_standard(c) for c in self._df.columns]
+        return Data(self._df, self._path.stem)
+
+    def show_sql(self, table_name=None, provider_name: str = 'pg'):
+        if table_name is None:
+            table_name = self._path.stem
+        force_null = [col for col in self._df.columns if
+                      self._df[col].dtype != object]
+
+        provider = get_provider(provider_name)(self.encoding, self._csvdialect,
+                                               self._path, table_name,
+                                               force_null)
+
+        begin_info()
+        print(f'DROP TABLE IF EXISTS "{table_name}";')
+        print(pd.io.sql.get_schema(self._df, table_name, dtype=self.coltypes))
+        print(";")
+        print(provider.prepare_copy())
+        print(provider.copy_stream())
+        print(provider.finalize_copy())
+        end_info()
 
     def show(self):
         begin_info()
@@ -156,16 +185,7 @@ class Inspection:
         print(f"csvdialect.lineterminator: {repr(self.lineterminator)}")
         print(f"csvdialect.quoting: {self.quoting}")
         print(f"coltypes:\n{self.coltypes}")
-        print(f"dtype:\n{self._df.dtypes}")
         end_info()
-
-
-def begin_info():
-    print(f"{TOKEN}begin info")
-
-
-def end_info():
-    print(f"{TOKEN}end info", flush=True)
 
 
 def inspect(file: Union[str, Path], chunk_size=1024 * 1024) -> Inspection:

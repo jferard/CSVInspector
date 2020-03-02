@@ -18,7 +18,8 @@
 #
 
 import pandas as pd
-from csv_inspector.inspector import inspect, begin_info, end_info
+from csv_inspector.inspector import inspect
+from csv_inspector.util import begin_info, end_info
 
 # a shortcut
 V = pd.np.vectorize

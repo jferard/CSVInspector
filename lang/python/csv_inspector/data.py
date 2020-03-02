@@ -26,13 +26,7 @@ import numpy
 import pandas as pd
 from typing.io import IO
 
-try:
-    TOKEN
-except NameError:
-    if len(sys.argv) > 1:
-        TOKEN = sys.argv[1]
-    else:
-        TOKEN = None
+from csv_inspector.util import end_csv, begin_csv
 
 
 class DataSwap:
@@ -302,8 +296,9 @@ class Data:
     """
     """
 
-    def __init__(self, df):
+    def __init__(self, df, table_name="<string>"):
         self.df = df
+        self._table_name = table_name
 
     def __getitem__(self, item):
         """
@@ -544,14 +539,14 @@ class Data:
         """
         return DataSort(self, True)
 
-    def show(self, limit=100):
-        print(f"{TOKEN}begin show")
+    def show(self, limit: int = 100):
+        begin_csv()
         if isinstance(self.df.dtypes, numpy.dtype):
             print(self.df.dtypes)
         else:
             print(",".join(map(str, self.df.dtypes)))
         self.df.iloc[:limit].to_csv(sys.stdout, encoding="utf-8", index=False)
-        print(f"{TOKEN}end show", flush=True)
+        end_csv()
 
     def save(self, destination: Union[str, Path, IO]):
         self.df.to_csv(destination, index=False, encoding='utf-8')

@@ -117,7 +117,7 @@ class NormalState(private val token: String) : State {
         if (line.startsWith(token)) {
             when (val directive = line.substring(token.length)) {
                 "executed" -> throw IllegalStateException()
-                "begin show" -> context.setState(ShowState(token))
+                "begin csv" -> context.setState(CSVState(token))
                 "begin info" -> context.setState(InfoState(token))
                 "begin sql" -> context.setState(SQLState(token))
                 else -> System.err.println("Unknown directive: $directive")
@@ -128,14 +128,14 @@ class NormalState(private val token: String) : State {
     }
 }
 
-class ShowState(private val token: String) : State {
+class CSVState(private val token: String) : State {
     private var cur = mutableListOf<String>()
 
     override fun handle(context: ExecutionContext, line: String) {
         if (line.startsWith(token)) {
             when (val directive = line.substring(token.length)) {
                 "executed" -> throw IllegalStateException()
-                "end show" -> {
+                "end csv" -> {
                     context.show(cur.joinToString("\n"))
                     context.setState(NormalState(token))
                 }

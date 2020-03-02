@@ -20,13 +20,8 @@
 import sys
 import traceback
 
-import pandas as pd
-import csv_inspector
-
-if len(sys.argv) > 1:
-    TOKEN = sys.argv[1]
-else:
-    TOKEN = None
+from csv_inspector.util import (executed, execute_script, END_SCRIPT,
+                                BEGIN_SCRIPT)
 
 IGNORE = 0
 SCRIPT = 1
@@ -38,23 +33,22 @@ script_lines = []
 while True:
     line = sys.stdin.readline().strip()
     if state == IGNORE:
-        if line == f"{TOKEN}begin script":
+        if line == BEGIN_SCRIPT:
             state = SCRIPT
             script_lines = []
         else:
             print(f"Garbage {line}", file=sys.stderr)
     elif state == SCRIPT:
-        if line == f"{TOKEN}end script":
+        if line == END_SCRIPT:
             script = "\n".join(script_lines)
             print("server/execute script: {} chars".format(len(script)))
             try:
-                exec(script, {"TOKEN": TOKEN})
+                execute_script(script)
             except Exception as e:
                 traceback.print_exc()
 
             print("server/script executed")
-            print(f"{TOKEN}executed", flush=True)
-            print(f"{TOKEN}executed", file=sys.stderr, flush=True)
+            executed()
             state = IGNORE
         else:
             script_lines.append(line)
