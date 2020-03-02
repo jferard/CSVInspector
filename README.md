@@ -97,8 +97,8 @@ Note the square brackets.
 > Same as `add`, but removes the merged columns and place the new column at the first merged index.
 
 `data.groupby[w][x, func_x, y, func_y, ..., last_func]`
-> `w`, `x` and `y` are indices, slices or tuples of slices/indices
-> `func_x` and `func_x` are functions of `Data` (use numeric indices)
+> `w`, `x`, `y`, ... are indices, slices or tuples of slices/indices
+> `func_x`, `func_y`, ... are functions of `Data` (use numeric indices)
 > `last_func` (opt) is a function for the remaining cols
 
 `data1.ljoin[data2][x][y]`
@@ -123,3 +123,13 @@ Note the square brackets.
 `data.drop[x]`
 > Drop some of the columns.
 > `x` is an index, slice or tuple of slices/indices
+
+`data.map[x][func]`
+> Map some columns using a function.
+> `x` is an index, slice or tuple of slices/indices
+> `func` is a function of `Data` (use numeric indices)
+
+`data.sort[x]`
+`data.rsort[x]`
+> Sort the rows.
+> `x` is the index, slice or tuple of slices/indices of the key

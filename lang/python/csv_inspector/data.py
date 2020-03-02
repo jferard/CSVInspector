@@ -316,6 +316,12 @@ class Data:
     @property
     def swap(self):
         """
+        Swap two sets of columns.
+
+        Syntax: `data.swap[x][y]`
+
+        `x` and `y` are indices, slices or tuples of slices/indices
+
         >>> data = Data(pd.DataFrame(
         ...     {"A":[1, 5, 3], "B":[3, 2, 4],
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
@@ -330,6 +336,14 @@ class Data:
     @property
     def add(self):
         """
+        Add a new column.
+
+        Syntax: `data.add[func, name, index]`
+
+        * `func` is a function of `Data` (use numeric indices)
+        * `name` is the name of the new column
+        * `index` (opt) is the index of the new column
+
         >>> data = Data(pd.DataFrame(
         ...     {"A":["1", "5", "3"], "B":[3, 2, 4],
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
@@ -344,6 +358,15 @@ class Data:
     @property
     def merge(self):
         """
+        Same as `add`, but removes the merged columns and place the new column
+        at the first merged index.
+
+        Syntax: `data.merge[x][func, name]`
+
+        * `x` is an index, a slice or a tuple of slices/indices
+        * `func` is a function of `Data` (use numeric indices)
+        * `name` is the name of the new column
+
         >>> data = Data(pd.DataFrame(
         ...     {"A":["1", "5", "3"], "B":[3, 2, 4],
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
@@ -358,6 +381,14 @@ class Data:
     @property
     def groupby(self):
         """
+        Group data on some columns. using an aggregation function.
+
+        Syntax: `data.groupby[w][x, func_x, y, func_y, ..., last_func]`
+
+        * `w`, `x` and `y` are indices, slices or tuples of slices/indices
+        * `func_x`, `func_y`, ... are functions of `Data` (use numeric indices)
+        * `last_func` (opt) is a function for the remaining cols
+
         >>> data = Data(pd.DataFrame(
         ...     {"A":[1, 1, 3, 3, 3], "B":[3, 2, 4, 7, 9],
         ...      "C":[2, 2, 7, 8, 9], "D":[4, 7, 8, 3, 5]}))
@@ -371,6 +402,13 @@ class Data:
     @property
     def ljoin(self):
         """
+        A left join.
+
+        Syntax: `data1.ijoin[data2][x][y]`
+
+        * `x` and `y` are indices, slices or tuples of slices/indices
+        * `data1` and `data2` are `Data` instances
+
         >>> data1 = Data(pd.DataFrame(
         ...     {"A":[1, 5, 3], "B":[3, 2, 4]}))
         >>> data2 = Data(pd.DataFrame(
@@ -386,52 +424,64 @@ class Data:
     @property
     def rjoin(self):
         """
-         >>> data1 = Data(pd.DataFrame(
-         ...     {"A":[1, 5, 3], "B":[3, 2, 4]}))
-         >>> data2 = Data(pd.DataFrame(
-         ...     {"C":[5, 2, 7], "D":[4, 7, 8]}))
-         >>> data1.rjoin[data2][0][0]
-              A    B  C  D
-         0  5.0  2.0  5  4
-         1  NaN  NaN  2  7
-         2  NaN  NaN  7  8
-         """
+        A right join. See `ljoin`.
+
+        >>> data1 = Data(pd.DataFrame(
+        ...     {"A":[1, 5, 3], "B":[3, 2, 4]}))
+        >>> data2 = Data(pd.DataFrame(
+        ...     {"C":[5, 2, 7], "D":[4, 7, 8]}))
+        >>> data1.rjoin[data2][0][0]
+             A    B  C  D
+        0  5.0  2.0  5  4
+        1  NaN  NaN  2  7
+        2  NaN  NaN  7  8
+        """
 
         return DataJoin(self, 'right')
 
     @property
     def ojoin(self):
         """
-         >>> data1 = Data(pd.DataFrame(
-         ...     {"A":[1, 5, 3], "B":[3, 2, 4]}))
-         >>> data2 = Data(pd.DataFrame(
-         ...     {"C":[5, 2, 7], "D":[4, 7, 8]}))
-         >>> data1.ojoin[data2][0][0]
-              A    B    C    D
-         0  1.0  3.0  NaN  NaN
-         1  5.0  2.0  5.0  4.0
-         2  3.0  4.0  NaN  NaN
-         3  NaN  NaN  2.0  7.0
-         4  NaN  NaN  7.0  8.0
-         """
+        An outer join. See `ljoin`.
+
+        >>> data1 = Data(pd.DataFrame(
+        ...     {"A":[1, 5, 3], "B":[3, 2, 4]}))
+        >>> data2 = Data(pd.DataFrame(
+        ...     {"C":[5, 2, 7], "D":[4, 7, 8]}))
+        >>> data1.ojoin[data2][0][0]
+             A    B    C    D
+        0  1.0  3.0  NaN  NaN
+        1  5.0  2.0  5.0  4.0
+        2  3.0  4.0  NaN  NaN
+        3  NaN  NaN  2.0  7.0
+        4  NaN  NaN  7.0  8.0
+        """
         return DataJoin(self, 'outer')
 
     @property
     def ijoin(self):
         """
-         >>> data1 = Data(pd.DataFrame(
-         ...     {"A":[1, 5, 3], "B":[3, 2, 4]}))
-         >>> data2 = Data(pd.DataFrame(
-         ...     {"C":[5, 2, 7], "D":[4, 7, 8]}))
-         >>> data1.ijoin[data2][0][0]
-            A  B  C  D
-         0  5  2  5  4
+        An inner join. See `ljoin`.
+
+        >>> data1 = Data(pd.DataFrame(
+        ...     {"A":[1, 5, 3], "B":[3, 2, 4]}))
+        >>> data2 = Data(pd.DataFrame(
+        ...     {"C":[5, 2, 7], "D":[4, 7, 8]}))
+        >>> data1.ijoin[data2][0][0]
+           A  B  C  D
+        0  5  2  5  4
          """
         return DataJoin(self, 'inner')
 
     @property
     def filter(self):
         """
+        Filter data on a sequence of functions.
+
+        Syntax: `data.filter[func1, ...]`.
+
+        `func1`, ... are functions of `Data` (use numeric indices)
+
         >>> data = Data(pd.DataFrame(
         ...     {"A":[1, 4, 3], "B":[3, 2, 4],
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
@@ -444,6 +494,14 @@ class Data:
     @property
     def move_before(self):
         """
+        Move some columns before a given index.
+
+        Syntax `data.move_before[idx][x]`
+
+        * `idx` is the destination index
+        * `x` is an index, slice or tuple of slices/indices of column that
+        should move before `idx`.
+
         >>> data = Data(pd.DataFrame(
         ...     {"A":[1, 5, 3], "B":[3, 2, 4],
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
@@ -458,6 +516,8 @@ class Data:
     @property
     def move_after(self):
         """
+        Move some columns before a given index. See `move_before`.
+
         >>> data = Data(pd.DataFrame(
         ...     {"A":[1, 5, 3], "B":[3, 2, 4],
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
@@ -472,6 +532,12 @@ class Data:
     @property
     def select(self):
         """
+        Select some of the columns.
+
+        Syntax: `data.select[x]`.
+
+        `x` is an index, slice or tuple of slices/indices
+
         >>> data = Data(pd.DataFrame(
         ...     {"A":[1, 5, 3], "B":[3, 2, 4],
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
@@ -486,6 +552,12 @@ class Data:
     @property
     def drop(self):
         """
+        Drop some of the columns.
+
+        Syntax: `data.drop[x]`.
+
+        `x` is an index, slice or tuple of slices/indices
+
         >>> data = Data(pd.DataFrame(
         ...     {"A":[1, 5, 3], "B":[3, 2, 4],
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
@@ -500,6 +572,13 @@ class Data:
     @property
     def map(self):
         """
+        Map some columns using a function.
+
+        Syntax: `data.map[x][func]`
+
+        * `x` is an index, slice or tuple of slices/indices
+        * `func` is a function of `Data` (use numeric indices)
+
         >>> data = Data(pd.DataFrame(
         ...     {"A":[1, 5, 3], "B":[3, 2, 4],
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
@@ -514,6 +593,12 @@ class Data:
     @property
     def sort(self):
         """
+        Sort the rows
+
+        Syntax: `data.sort[x]`
+
+        `x` is the index, slice or tuple of slices/indices of the key
+
         >>> data = Data(pd.DataFrame(
         ...     {"A":[1, 5, 3], "B":[3, 2, 4],
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
@@ -528,6 +613,12 @@ class Data:
     @property
     def rsort(self):
         """
+        Sort the rows in reverse order.
+
+        Syntax: `data.sort[x]`
+
+        `x` is the index, slice or tuple of slices/indices of the key
+
         >>> data = Data(pd.DataFrame(
         ...     {"A":[1, 5, 3], "B":[3, 2, 4],
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
@@ -540,6 +631,9 @@ class Data:
         return DataSort(self, True)
 
     def show(self, limit: int = 100):
+        """
+        Show the first rows of Data.
+        """
         begin_csv()
         if isinstance(self.df.dtypes, numpy.dtype):
             print(self.df.dtypes)
@@ -549,6 +643,9 @@ class Data:
         end_csv()
 
     def save(self, destination: Union[str, Path, IO]):
+        """
+        Save Data to a csv file.
+        """
         self.df.to_csv(destination, index=False, encoding='utf-8')
 
     def __repr__(self):
