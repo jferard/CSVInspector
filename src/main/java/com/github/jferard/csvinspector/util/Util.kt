@@ -26,6 +26,53 @@ import kotlin.streams.asSequence
 const val TOKEN_LENGTH = 100L
 const val charPool: String = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
+const val SHOW_SQL_EXAMPLE = """#!/usr/bin/env python3.6
+
+from csv_inspector import *
+
+info = inspect("fixtures/datasets-2020-02-22-12-33.csv")
+info.show()
+info.show_sql()
+"""
+
+const val SELECT_EXAMPLE = """#!/usr/bin/env python3.6
+
+from csv_inspector import *
+
+data = inspect("fixtures/datasets-2020-02-22-12-33.csv").open()
+data.show()
+# swap two columns
+data.swap[0][1]
+data.show()
+# shorten id
+data.map[1][lambda c: c.str[:4]]
+data.show()
+# select
+data.select[0:4, 10]
+data.show()
+"""
+
+const val GROUPBY_EXAMPLE = """#!/usr/bin/env python3.6
+
+from csv_inspector import *
+
+data = inspect("fixtures/datasets-2020-02-22-12-33.csv").open()
+# shorten id
+data.map[0][lambda c: c.str[:3]]
+data.groupby[0]['count']
+data.show()
+"""
+
+const val JOIN_EXAMPLE = """#!/usr/bin/env python3.6
+
+from csv_inspector import *
+
+data = inspect("fixtures/datasets-2020-02-22-12-33.csv").open()
+# join on self
+data.ijoin[data][0][0]
+data.show()
+"""
+
 const val CODE_EXAMPLE = """#!/usr/bin/env python3.6
 
 from csv_inspector import *
@@ -43,7 +90,7 @@ data.show()
 data.map[1][lambda c: c.str[:4]]
 data.show()
 # select
-data.select[0:4, 9]
+data.select[0:4, 10]
 data.show()
 # join on self
 data.ijoin[data][1][1]
@@ -54,6 +101,7 @@ data.show()
 # merge
 data.merge[0,4][V(lambda x: x[0] + " (" + pd.to_datetime(x[4]).dt.year.astype('str') + ")"), "new"]
 data.show()"""
+
 
 /**
  * Generate a token for communication with script language.

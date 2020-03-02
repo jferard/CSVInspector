@@ -21,6 +21,7 @@
 package com.github.jferard.csvinspector.gui
 
 import com.github.jferard.csvinspector.exec.ExecutionEnvironment
+import com.github.jferard.csvinspector.util.*
 import com.google.common.eventbus.Subscribe
 import javafx.concurrent.Task
 import javafx.scene.Scene
@@ -165,9 +166,19 @@ class CSVInspectorGUI(
 
             /* Help */
             "HELP" -> help()
+            "SNIPPET_1" -> snippet(SHOW_SQL_EXAMPLE)
+            "SNIPPET_2" -> snippet(SELECT_EXAMPLE)
+            "SNIPPET_3" -> snippet(GROUPBY_EXAMPLE)
+            "SNIPPET_4" -> snippet(JOIN_EXAMPLE)
+            "SNIPPET_5" -> snippet(CODE_EXAMPLE)
             "ABOUT" -> about()
             else -> throw IllegalArgumentException("menu: ${menuEvent.name}")
         }
+    }
+
+    private fun snippet(code: String) {
+        dynamicProvider.createEmptyCodePane(codePane)
+        getCodeArea().replaceText(code)
     }
 
     private fun find() {

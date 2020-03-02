@@ -125,7 +125,6 @@ class CSVInspectorGUIInitialProvider(
     private fun codeTab(): Tab {
         val codeArea = CodeAreaProvider().get()
         val oneScriptPane = ScrollPane()
-        codeArea.replaceText(CODE_EXAMPLE)
         oneScriptPane.content = codeArea
 
         oneScriptPane.vbarPolicy = ScrollPane.ScrollBarPolicy.ALWAYS
