@@ -176,19 +176,41 @@ class CSVInspectorGUI(
         result.ifPresent { findReplace ->
             val toFind = findReplace.first
             val replacement = findReplace.second
-            highlightToFind(toFind)
+            if (replacement.isBlank()) {
+                highlightToFind(toFind)
+            } else {
+                highlightReplaced(toFind, replacement)
+            }
         }
     }
 
     private fun highlightToFind(toFind: String) {
         val codeArea = getCodeArea()
-        val matches = Regex(toFind).findAll(codeArea.text)
-        matches.take(1).forEach {
-            codeArea.selectRange(it.range.first, it.range.last + 1)
-            codeArea.setStyleClass(it.range.first, it.range.last + 1, "highlight")
+        val ranges = Regex(toFind).findAll(codeArea.text).map { it.range }
+        highlightRanges(ranges, codeArea)
+    }
+
+    private fun highlightReplaced(toFind: String, replacement: String) {
+        val codeArea = getCodeArea()
+        val ranges = mutableListOf<IntRange>()
+        var match = Regex(toFind).find(codeArea.text)
+        while (match != null) {
+            val from = match.range.first
+            codeArea.replaceText(from, match.range.last + 1, replacement)
+            ranges.add(IntRange(from, from + replacement.length))
+            match = Regex(toFind).find(codeArea.text, from + replacement.length)
         }
-        matches.drop(1).forEach {
-            codeArea.setStyleClass(it.range.first, it.range.last + 1, "highlight")
+        highlightRanges(ranges.asSequence(), codeArea)
+    }
+
+    private fun highlightRanges(ranges: Sequence<IntRange>,
+                                codeArea: CodeArea) {
+        ranges.take(1).forEach {
+            codeArea.setStyleClass(it.first, it.last + 1, "highlight")
+        }
+        ranges.drop(1).forEach {
+            codeArea.selectRange(it.first, it.last + 1)
+            codeArea.setStyleClass(it.first, it.last + 1, "highlight")
         }
     }
 
