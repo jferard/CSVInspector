@@ -114,7 +114,7 @@ class Inspection:
         sample = self._data.decode(self._encoding, errors="ignore")
         self._df = pd.read_csv(io.StringIO(sample), index_col=False,
                                nrows=100, delimiter=self._csvdialect.delimiter,
-                               dialect=self._csvdialect)
+                               dialect=self._csvdialect, engine="python")
         self._set_col_types()
         self._coltypes = {col: self._dtype_to_sql(self._df[col].dtype) for col
                           in self._df.columns}
@@ -147,11 +147,11 @@ class Inspection:
     def coltypes(self, coltypes):
         self._coltypes = coltypes
 
-    def open(self) -> Data:
+    def open(self, **kwargs) -> Data:
         self._df = pd.read_csv(self._path, encoding=self._encoding,
                                index_col=False,
                                delimiter=self._csvdialect.delimiter,
-                               dialect=self._csvdialect)
+                               dialect=self._csvdialect, **kwargs)
         self._set_col_types()
         self._df.columns = [to_standard(c) for c in self._df.columns]
         return Data(self._df, self._path.stem)
