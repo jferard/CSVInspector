@@ -66,7 +66,9 @@ class PostgreSQLBulkProvider(SQLBulkProvider):
         options["FORCE_NULL"] = '("{}")'.format('", "'.join(self._force_null))
         options_str = ", ".join(f"{k} {v}" for k, v in options.items())
 
-        return f'COPY "{self._table_name}" FROM \'{self._file.absolute()}\' WITH ({options_str});'
+        return (f'COPY "{self._table_name}" '
+                f'FROM \'{self._file.absolute().as_posix()}\' '
+                f'WITH ({options_str});')
 
     def _escape_char(self, text: str) -> str:
         """
