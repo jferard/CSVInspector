@@ -18,16 +18,12 @@
 #
 
 import csv
-import io
 from pathlib import Path
 from typing import (Union)
 
 import chardet
-import numpy
 import pandas as pd
-from pandas import datetime
 
-from csv_inspector.bulk_query_provider import (get_provider)
 from csv_inspector.data import Data
 from csv_inspector.util import begin_info, end_info, to_standard
 
@@ -35,12 +31,14 @@ sniffer = csv.Sniffer()
 
 
 class Inspection:
-    def __init__(self, path: Path, data: bytes):
+    def __init__(self, path: Path, data: bytes, **kwargs):
         self._path = path
         self._data = data
-        self._encoding = "utf-8"
-        self._csvdialect = csv.unix_dialect
-        self._coltypes = []
+        self._kwargs = kwargs
+        self._encoding = self._kwargs.get("encoding", "utf-8")
+        self._csvdialect = self._kwargs.get("dialect", csv.unix_dialect)
+        self._kwargs.setdefault("engine", "python")
+        self._kwargs.setdefault("nrows", 100)
 
     @property
     def encoding(self):
@@ -50,11 +48,10 @@ class Inspection:
     def encoding(self, encoding):
         self._encoding = encoding
         self._guess_dialect()
-        self._guess_coltypes()
 
     def _guess_dialect(self):
         self._csvdialect = sniffer.sniff(
-            self._data.decode(self._encoding, errors="ignore"))
+                self._data.decode(self._encoding, errors="ignore"))
 
     @property
     def delimiter(self):
@@ -63,7 +60,6 @@ class Inspection:
     @delimiter.setter
     def delimiter(self, delimiter):
         self._csvdialect.delimiter = delimiter
-        self._guess_coltypes()
 
     @property
     def quotechar(self):
@@ -72,7 +68,6 @@ class Inspection:
     @quotechar.setter
     def quotechar(self, quotechar):
         self._csvdialect.quotechar = quotechar
-        self._guess_coltypes()
 
     @property
     def doublequote(self):
@@ -81,7 +76,6 @@ class Inspection:
     @doublequote.setter
     def doublequote(self, doublequote):
         self._csvdialect.doublequote = doublequote
-        self._guess_coltypes()
 
     @property
     def skipinitialspace(self):
@@ -90,7 +84,6 @@ class Inspection:
     @skipinitialspace.setter
     def skipinitialspace(self, skipinitialspace):
         self._csvdialect.skipinitialspace = skipinitialspace
-        self._guess_coltypes()
 
     @property
     def lineterminator(self):
@@ -99,7 +92,6 @@ class Inspection:
     @lineterminator.setter
     def lineterminator(self, lineterminator):
         self._csvdialect.lineterminator = lineterminator
-        self._guess_coltypes()
 
     @property
     def quoting(self):
@@ -108,72 +100,16 @@ class Inspection:
     @quoting.setter
     def quoting(self, quoting):
         self._csvdialect.quoting = quoting
-        self._guess_coltypes()
-
-    def _guess_coltypes(self):
-        sample = self._data.decode(self._encoding, errors="ignore")
-        self._df = pd.read_csv(io.StringIO(sample), index_col=False,
-                               nrows=100, delimiter=self._csvdialect.delimiter,
-                               dialect=self._csvdialect, engine="python")
-        self._set_col_types()
-        self._coltypes = {col: self._dtype_to_sql(self._df[col].dtype) for col
-                          in self._df.columns}
-
-    def _dtype_to_sql(self, dtype: numpy.dtype) -> str:
-        if dtype.name.startswith('date'):
-            return "TIMESTAMP"
-        elif dtype.name.startswith('int') or dtype.name.startswith('uint'):
-            return "INT"
-        elif dtype.name.startswith('float'):
-            return "DECIMAL"
-        elif dtype.name.startswith('bool'):
-            return "BOOL"
-        else:
-            return "TEXT"
-
-    def _set_col_types(self):
-        for col in self._df.columns:
-            if self._df[col].dtype == object:
-                try:
-                    self._df[col] = pd.to_datetime(self._df[col])
-                except ValueError:
-                    pass
-
-    @property
-    def coltypes(self):
-        return self._coltypes
-
-    @coltypes.setter
-    def coltypes(self, coltypes):
-        self._coltypes = coltypes
 
     def open(self, **kwargs) -> Data:
         self._df = pd.read_csv(self._path, encoding=self._encoding,
                                index_col=False,
                                delimiter=self._csvdialect.delimiter,
-                               dialect=self._csvdialect, **kwargs)
-        self._set_col_types()
+                               dialect=self._csvdialect,
+                               keep_default_na=False, **kwargs)
         self._df.columns = [to_standard(c) for c in self._df.columns]
-        return Data(self._df, self._path.stem)
-
-    def show_sql(self, table_name=None, provider_name: str = 'pg'):
-        if table_name is None:
-            table_name = self._path.stem
-        force_null = [col for col in self._df.columns if
-                      self._df[col].dtype != object]
-
-        provider = get_provider(provider_name)(self.encoding, self._csvdialect,
-                                               self._path, table_name,
-                                               force_null)
-
-        begin_info()
-        print(f'DROP TABLE IF EXISTS "{table_name}";')
-        print(pd.io.sql.get_schema(self._df, table_name, dtype=self.coltypes))
-        print(";")
-        print(provider.prepare_copy())
-        print(provider.copy_stream())
-        print(provider.finalize_copy())
-        end_info()
+        return Data(self._df, to_standard(self._path.stem),
+                    self._path, self._encoding, self._csvdialect)
 
     def show(self):
         begin_info()
@@ -184,18 +120,18 @@ class Inspection:
         print(f"csvdialect.skipinitialspace: {self.skipinitialspace}")
         print(f"csvdialect.lineterminator: {repr(self.lineterminator)}")
         print(f"csvdialect.quoting: {self.quoting}")
-        print(f"coltypes:\n{self.coltypes}")
         end_info()
 
 
-def inspect(file: Union[str, Path], chunk_size=1024 * 1024) -> Inspection:
+def inspect(file: Union[str, Path], chunk_size=1024 * 1024,
+            **kwargs) -> Inspection:
     if isinstance(file, str):
         path = Path(file)
     else:
         path = file
     with path.open("rb") as source:
         data = source.read(chunk_size)
-        inspection = Inspection(path, data)
+        inspection = Inspection(path, data, **kwargs)
         inspection.encoding = chardet.detect(data)["encoding"]
 
     return inspection
