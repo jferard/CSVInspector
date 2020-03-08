@@ -16,7 +16,6 @@
 #  You should have received a copy of the GNU General Public License along with
 #  this program. If not, see <http://www.gnu.org/licenses/>.
 #
-
 import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -26,7 +25,9 @@ import numpy
 import pandas as pd
 from typing.io import IO
 
-from csv_inspector.util import end_csv, begin_csv
+from csv_inspector.bulk_query_provider import get_provider
+from csv_inspector.util import (end_csv, begin_csv, to_standard, begin_info,
+                                end_info)
 
 
 class DataSwap:
@@ -296,9 +297,12 @@ class Data:
     """
     """
 
-    def __init__(self, df, table_name="<string>"):
+    def __init__(self, df, table_name, path, encoding, csvdialect):
         self.df = df
         self._table_name = table_name
+        self._path = path
+        self._encoding = encoding
+        self._csvdialect = csvdialect
 
     def __getitem__(self, item):
         """
@@ -648,11 +652,79 @@ class Data:
         """
         self.df.to_csv(destination, index=False, encoding='utf-8')
 
+    def guess_types(self):
+        for col in self.df.columns:
+            dt = _get_col_dtype(self.df[col])
+            print(f"Col {col} -> {dt}")
+            self.df[col] = self.df[col].astype(dt, errors='ignore')
+
+    def show_sql(self, table_name=None, provider_name: str = 'pg'):
+        if table_name is None:
+            table_name = self._table_name
+        else:
+            table_name = to_standard(table_name)
+        force_null = [col for col in self.df.columns if
+                      self.df[col].dtype != object]
+
+        provider = get_provider(provider_name)(self._encoding, self._csvdialect,
+                                               self._path, table_name,
+                                               force_null)
+
+        begin_info()
+        print(f'DROP TABLE IF EXISTS "{table_name}";')
+        print(pd.io.sql.get_schema(self.df, table_name))
+        print(";")
+        print(provider.prepare_copy())
+        print(provider.copy_stream())
+        print(provider.finalize_copy())
+        end_info()
+
     def __repr__(self):
         return repr(self.df)
+
+
+def _dtype_to_sql(self, dtype: numpy.dtype) -> str:
+    if dtype.name.startswith('date'):
+        return "TIMESTAMP"
+    elif dtype.name.startswith('int') or dtype.name.startswith('uint'):
+        return "INT"
+    elif dtype.name.startswith('float'):
+        return "DECIMAL"
+    elif dtype.name.startswith('bool'):
+        return "BOOL"
+    else:
+        return "TEXT"
+
+
+def _get_col_dtype(col):
+    """
+    Infer datatype of a pandas column, process only if the column dtype is object.
+    input:   col: a pandas Series representing a df column.
+    """
+
+    if col.dtype == "object":
+        # try numeric
+        unique_col = col.dropna().unique()
+        try:
+            col_new = pd.to_datetime(unique_col)
+            return col_new.dtype
+        except:
+            try:
+                col_new = pd.to_numeric(unique_col)
+                return col_new.dtype
+            except:
+                try:
+                    col_new = pd.to_timedelta(unique_col)
+                    return col_new.dtype
+                except:
+                    return "object"
+
+    return col.dtype
 
 
 if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
+
+
