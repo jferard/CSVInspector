@@ -17,6 +17,7 @@
 #  this program. If not, see <http://www.gnu.org/licenses/>.
 #
 import sys
+import string
 
 try:
     TOKEN
@@ -70,7 +71,7 @@ def sanitize(text: str) -> str:
     try:
         text = unicodedata.normalize('NFKD', text).encode('ascii',
                                                           'ignore').decode(
-            'ascii')
+                'ascii')
     except UnicodeError:
         pass
     return text
@@ -78,12 +79,19 @@ def sanitize(text: str) -> str:
 
 def to_standard(text: str) -> str:
     """
-    >>> to_standard("Code Départ’ement")
+    >>> to_standard("Code Départ'ement")
     'code_departement'
 
     :param text:
     :return:
     """
-    return sanitize(text.replace(" ", "_")).casefold()
+    def remove_chars(c):
+        return c in string.ascii_letters + string.digits + "_"
+
+    text = sanitize(text.replace(" ", "_")).casefold()
+    return "".join(filter(remove_chars, text))
 
 
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
