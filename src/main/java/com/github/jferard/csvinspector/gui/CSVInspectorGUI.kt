@@ -46,6 +46,10 @@ class CSVInspectorGUI(
         private val codePane: TabPane,
         val scene: Scene) {
 
+    init {
+        this.executeOneScript("print('Python server ready...')")
+    }
+
     @Subscribe
     private fun display(e: CSVEvent) {
         val tabPane = ScrollPane()
