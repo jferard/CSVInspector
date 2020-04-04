@@ -58,7 +58,6 @@ class CSVInspectorGUIInitialProvider(
     private fun outArea(): TextFlow {
         val outArea = TextFlow()
         outArea.prefWidth = 500.0
-//        outArea.e.isEditable = false
         return outArea
     }
 

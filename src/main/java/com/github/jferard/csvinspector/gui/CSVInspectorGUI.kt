@@ -90,6 +90,7 @@ class CSVInspectorGUI(
         System.err.println(e.data)
         val node = Text(e.data + "\n")
         node.fill = RED
+        node.style = "-fx-font-family: 'monospaced'"
         outArea.children.add(node)
     }
 
@@ -97,6 +98,7 @@ class CSVInspectorGUI(
     private fun display(e: OutEvent) {
         System.err.println(e.data)
         val node = Text(e.data + "\n")
+        node.style = "-fx-font-family: 'monospaced'"
         outArea.children.add(node)
     }
 
