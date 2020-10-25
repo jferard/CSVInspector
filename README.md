@@ -28,6 +28,11 @@ CSVInspector is a very basic client/server application:
 * The server is a Python module that wraps some features of Pandas to handle CSV data.
 * The client is a Kotlin/JavaFX GUI that sends Python scripts to the server and displays the results.
 
+# Test
+
+    $ mvn clean install
+    $ PYTHONPATH=lang/python:$PYTHONPATH /path/to/jre8/java -jar target/csv_inspector-0.0.1-SNAPSHOT.jar
+
 # Install & run
 Python (won't work for now in a virtual env): 
 
