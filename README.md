@@ -14,7 +14,7 @@ Code samples are in the menu Help > Snippets.
 
 # What it looks like
 
-![alt text](https://raw.githubusercontent.com/wiki/jferard/CSVInspector/images/CSVInspector_capture.png)
+![A screenshot of the application, showing the table, some code and the server response](https://raw.githubusercontent.com/wiki/jferard/CSVInspector/images/CSVInspector_capture.png)
 
 # Use case
 CSVInspector main goal is to help user performing repetitive one shot tasks on small data sets. Those tasks may be data aggregation, table join, column selection or creation, ...
