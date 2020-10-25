@@ -85,7 +85,8 @@
                     <include>**/*</include>
                 </includes>
             </resource>
-        </resources>        <plugins>
+        </resources>
+        <plugins>
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>

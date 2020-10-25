@@ -4,6 +4,14 @@ Copyright (C) 2020 J. Férard <https://github.com/jferard>
 
 License: GPLv3
 
+# Quick start
+CSVInspector needs JRE8 (with embedded JavaFX):
+
+    $ mvn clean install
+    $ PYTHONPATH=lang/python:$PYTHONPATH /path/to/jre8/java -jar target/csv_inspector-0.0.1-SNAPSHOT.jar
+
+Code samples are in the menu Help > Snippets.
+
 # What it looks like
 
 ![alt text](https://raw.githubusercontent.com/wiki/jferard/CSVInspector/images/CSVInspector_capture.png)
@@ -21,17 +29,10 @@ Typical use case is:
 * join files;
 * save the result.
 
-
-
 # Overview
 CSVInspector is a very basic client/server application:
 * The server is a Python module that wraps some features of Pandas to handle CSV data.
 * The client is a Kotlin/JavaFX GUI that sends Python scripts to the server and displays the results.
-
-# Test
-
-    $ mvn clean install
-    $ PYTHONPATH=lang/python:$PYTHONPATH /path/to/jre8/java -jar target/csv_inspector-0.0.1-SNAPSHOT.jar
 
 # Install & run
 Python (won't work for now in a virtual env): 
