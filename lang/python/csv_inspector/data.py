@@ -279,6 +279,26 @@ class DataMap:
             return self._data
 
 
+class DataMapIf:
+    def __init__(self, data: "Data"):
+        self._data = data
+        self._target = None
+
+    def __getitem__(self, item):
+        if self._target is None:
+            self._target = item
+            return self
+        else:
+            test, if_true, if_false = item
+            columns = list(self._data.df.columns)
+            target_indices = _to_indices(len(columns), self._target)
+            for i in target_indices:
+                column = columns[i]
+                c = self._data.df[column]
+                self._data.df[column] = pd.np.where(test(c), if_true(c), if_false(c))
+            return self._data
+
+
 class DataSort:
     def __init__(self, data: "Data", reverse: bool):
         self._data = data
@@ -593,6 +613,29 @@ class Data:
         2  5  4  7  10
         """
         return DataMap(self)
+
+    @property
+    def mapif(self):
+        """
+        Map some columns using a function.
+
+        Syntax: `data.mapif[x][test, if_true, if_false]
+
+        * `x` is an index, slice or tuple of slices/indices
+        * `test` is a test
+        * `if_true`
+        * `if_false`
+
+        >>> data = Data(pd.DataFrame(
+        ...     {"A":[1, 5, 3], "B":[3, 2, 4],
+        ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
+        >>> data.mapif[0][data[1]>2, data[0], data[1]]
+           A  B  C   D
+        0  3  3  2   6
+        1  7  2  2   9
+        2  5  4  7  10
+        """
+        return DataMapIf(self)
 
     @property
     def sort(self):
