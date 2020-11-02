@@ -29,6 +29,14 @@ class SQLBulkProvider(metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    def drop_table(self):
+        pass
+
+    @abstractmethod
+    def create_schema(self):
+        pass
+
+    @abstractmethod
     def prepare_copy(self):
         pass
 
@@ -49,6 +57,12 @@ class PostgreSQLBulkProvider(SQLBulkProvider):
         self._file = file
         self._table_name = table_name
         self._force_null = force_null
+
+    def drop_table(self):
+        return f'DROP TABLE IF EXISTS "{self._table_name}";'
+
+    def create_schema(self):
+        return f'not implemented yet;'
 
     def prepare_copy(self) -> str:
         return f'TRUNCATE "{self._table_name}";'
@@ -73,7 +87,7 @@ class PostgreSQLBulkProvider(SQLBulkProvider):
     def _escape_char(self, text: str) -> str:
         """
         See 4.1.2.2. String Constants with C-style Escapes
-        :param text:
+        :ascending text:
         :return:
         """
         if text == "\\":

@@ -17,9 +17,5 @@
 #  this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import pandas as pd
 from csv_inspector.inspector import inspect
 from csv_inspector.util import begin_info, end_info
-
-# a shortcut
-V = pd.np.vectorize

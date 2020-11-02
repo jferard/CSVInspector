@@ -45,7 +45,7 @@ data.show()
 data.swap[0][1]
 data.show()
 # shorten id
-data.map[1][lambda c: c.str[:4]]
+data.map[1][lambda c: c[:4]]
 data.show()
 # select
 data.select[0:4, 10]
@@ -58,8 +58,8 @@ from csv_inspector import *
 
 data = inspect("fixtures/datasets-2020-02-22-12-33.csv").open()
 # shorten id
-data.map[0][lambda c: c.str[:3]]
-data.groupby[0]['count']
+data.map[0][lambda c: c[:3]]
+data.groupby[0][len]
 data.show()
 """
 
@@ -76,6 +76,7 @@ data.show()
 const val CODE_EXAMPLE = """#!/usr/bin/env python3.6
 
 from csv_inspector import *
+from datetime import datetime as dt
 
 info = inspect("fixtures/datasets-2020-02-22-12-33.csv")
 info.show()
@@ -87,7 +88,7 @@ data.show()
 data.swap[0][1]
 data.show()
 # shorten id
-data.map[1][lambda c: c.str[:4]]
+data.map[1][lambda c: c[:4]]
 data.show()
 # select
 data.select[0:4, 10]
@@ -96,10 +97,10 @@ data.show()
 data.ijoin[data][1][1]
 data.show()
 # groupby
-data.groupby[1][0:4, 'count', 'max']
+data.groupby[1][0:4, len, max]
 data.show()
 # merge
-data.merge[0,4][V(lambda x: x[0] + " (" + pd.to_datetime(x[4]).dt.year.astype('str') + ")"), "new"]
+data.merge[0,4][lambda x: f"{x[0]} {'('+dt.strptime(x[1], '%Y-%m-%d').year+')' if x[1] else ''}", "new"]
 data.show()"""
 
 

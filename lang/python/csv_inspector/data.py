@@ -16,173 +16,191 @@
 #  You should have received a copy of the GNU General Public License along with
 #  this program. If not, see <http://www.gnu.org/licenses/>.
 #
+import csv
 import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Union, Tuple, List
+from typing import (Union, Callable, Tuple, Iterable, Any, List, Sequence,
+                    Mapping, Type, Optional, Collection)
 
-import numpy
-import pandas as pd
 from typing.io import IO
 
 from csv_inspector.bulk_query_provider import get_provider
 from csv_inspector.util import (end_csv, begin_csv, to_standard, begin_info,
-                                end_info)
+                                end_info, to_indices, SomeIndices,
+                                _get_col_dtype, is_some_indices, ColumnGroup,
+                                Column, T)
 
 
 class DataSwap:
+    """
+    Swap two column_group or ranges [first range][second range].
+    """
+
     def __init__(self, data: "Data"):
-        self.data = data
+        self._data = data
         self._source = None
 
-    def __getitem__(self, item: Union[tuple, int, slice]):
+    def __getitem__(self, item: SomeIndices) -> Union[
+        "DataSwap", "Data"]:
+        assert is_some_indices(item)
         if self._source is None:
-            self._source = item
-            return self
+            return self._init_source(item)
         else:
-            columns = list(self.data.df.columns)
-            length = len(columns)
-            source_indices = _to_indices(length, self._source)
-            dest_indices = _to_indices(length, item)
-            for i, j in zip(source_indices, dest_indices):
-                columns[i], columns[j] = columns[j], columns[i]
-            self.data.df = self.data.df.reindex(columns=columns)
-        return self.data
+            return self._swap_source_with(item)
+
+    def _init_source(self, item: SomeIndices):
+        self._source = item
+        return self
+
+    def _swap_source_with(self, item: SomeIndices):
+        source_indices = self._data._to_indices(self._source)
+        dest_indices = self._data._to_indices(item)
+        for i, j in zip(source_indices, dest_indices):
+            self._data._swap_cols(i, j)
+        return self._data
 
 
 class DataMove(ABC):
     def __init__(self, data: "Data"):
         self._data = data
-        self._index = None
+        self._pivot_index = None
 
-    def __getitem__(self, item) -> Union["DataMove", "Data"]:
-        if self._index is None:
-            columns = list(self._data.df.columns)
-            self._index = item % len(columns)
-            return self
+    def __getitem__(self, item: Union[int, SomeIndices]) -> Union[
+        "DataMove", "Data"]:
+        if self._pivot_index is None:
+            assert isinstance(item, int)
+            return self._init_pivot(item)
         else:
-            return self._move(item)
+            assert is_some_indices(item)
+            return self._move_before(item)
 
-    def _move(self, item):
-        assert isinstance(item, (tuple, slice, int))
-        columns = list(self._data.df.columns)
-        length = len(columns)
-        indices_to_move = _to_indices(length, item)
-        new_indices = self._new_indices(indices_to_move, length)
-        self._data.df = self._data.df.reindex(
-            columns=[columns[ni] for ni in new_indices])
+    def _init_pivot(self, item: int):
+        self._pivot_index = item % self._data.column_count()
+        return self
+
+    def _move_before(self, item: SomeIndices):
+        indices_to_move = self._data._to_indices(item)
+        self._move_columns(self._pivot_index, indices_to_move)
         return self._data
 
     @abstractmethod
-    def _new_indices(self, indices_to_move, length):
+    def _move_columns(self, pivot_index: int, new_indices: Collection[int]):
         pass
 
 
-def _to_indices(length: int,
-                item: Union[Tuple[Union[slice, int]], slice, int]) -> List[int]:
-    """
-    >>> _to_indices(5, (0, slice(2, None, None)))
-    [0, 2, 3, 4]
-    """
-    if isinstance(item, tuple):
-        return sorted(
-            set(i for it in item for i in _to_indices(length, it)))
-    elif isinstance(item, slice):
-        return list(range(*item.indices(length)))
-    elif isinstance(item, int):
-        return [item]
-    else:
-        raise ValueError(f"{item} is not a tuple, slice or int")
-
-
 class DataMoveBefore(DataMove):
+    """
+    Move indices before: [index][to_move]
+    """
+
     def __init__(self, data):
         DataMove.__init__(self, data)
 
-    def _new_indices(self, indices_to_move, length):
-        S = set(indices_to_move)
-        new_indices = ([k for k in range(self._index) if k not in S]
-                       + indices_to_move
-                       + [k for k in range(self._index, length) if
-                          k not in S])
-        return new_indices
+    def _move_columns(self, pivot_index: int, indices: Collection[int]):
+        self._data._move_before(pivot_index, indices)
 
 
 class DataMoveAfter(DataMove):
+    """
+    Move indices after: [index][to_move]
+    """
+
     def __init__(self, data):
         DataMove.__init__(self, data)
 
-    def _new_indices(self, indices_to_move, length):
-        S = set(indices_to_move)
-        new_indices = ([k for k in range(self._index + 1) if k not in S]
-                       + indices_to_move
-                       + [k for k in range(self._index + 1, length) if
-                          k not in S])
-        return new_indices
+    def _move_columns(self, pivot_index: int, indices: Collection[int]):
+        self._data._move_after(pivot_index, indices)
 
 
 class DataSelect:
+    """
+    Select indices: [indices]
+    """
+
     def __init__(self, data: "Data"):
         self._data = data
 
-    def __getitem__(self, item):
-        columns = list(self._data.df.columns)
-        length = len(columns)
-        indices = set(_to_indices(length, item))
-        cols = [i in indices for i in range(length)]
-        self._data.df = self._data.df.iloc[:, cols]
+    def __getitem__(self, item: SomeIndices) -> "Data":
+        indices = self._data._to_indices(item)
+        self._data._select_indices(indices)
         return self._data
 
 
 class DataDrop(object):
+    """
+    Drop indices: [indices]
+    """
+
     def __init__(self, data: "Data"):
         self._data = data
 
-    def __getitem__(self, item):
-        columns = list(self._data.df.columns)
-        length = len(columns)
-        indices = set(_to_indices(length, item))
-        cols = [i not in indices for i in range(length)]
-        self._data.df = self._data.df.iloc[:, cols]
+    def __getitem__(self, item: SomeIndices) -> "Data":
+        indices = self._data._to_indices(item)
+        self._data._drop_indices(indices)
         return self._data
 
 
 class DataAdd:
+    """
+    Add a column_index: [func, name, index]
+    """
+
     def __init__(self, data: "Data"):
         self._data = data
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: Union[
+        Tuple[Callable, str], Tuple[Callable, str, int]]) -> "Data":
         func, name, *index = item
-        self._data.df[name] = func(self._data)
+        col_type = func.__annotations__.get('return', Any)
         if index:
             index = index[0]
-            columns = list(self._data.df.columns)
-            new_columns = columns[:index] + [name] + columns[index:-1]
-            self._data.df = (self._data.df.reindex(columns=new_columns))
+            self._data._insert_col(name, col_type, self._data._apply(func), index)
+        else:
+            self._data._append_col(name, col_type, self._data._apply(func))
         return self._data
 
 
 class DataMerge:
+    """
+    Merge some indices: [indices][func, name]
+    """
+
     def __init__(self, data: "Data"):
         self._data = data
         self._source = None
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: Union[SomeIndices, Tuple[Callable, str]]
+                    ) -> Union["DataMerge", "Data"]:
         if self._source is None:
-            self._source = item
-            return self
+            assert is_some_indices(item)
+            return self._init_to_merge(item)
         else:
-            func, name = item
-            columns = list(self._data.df.columns)
-            self._data.df[name] = func(self._data)
-            source_indices = _to_indices(len(columns), self._source)
-            new_columns = [name if i == source_indices[0] else c for i, c in
-                           enumerate(columns) if i not in source_indices[1:]]
-            self._data.df = (self._data.df.reindex(columns=new_columns))
+            assert isinstance(item, Tuple)
+            return self._merge(item)
+
+    def _init_to_merge(self, item: SomeIndices) -> "DataMerge":
+        self._source = self._data._to_indices(item)
+        return self
+
+    def _merge(self, item: Tuple[Callable, str]) -> "Data":
+        func, name = item
+
+        def f(vs):
+            return func([v for i, v in enumerate(vs) if i in self._source])
+
+        col_type = func.__annotations__.get('return', Any)
+
+        self._data._append_col(name, col_type, self._data._apply(f))
+        self._data._drop_indices(self._source)
         return self._data
 
 
-class DataGroupBy(object):
+class DataGroupBy:
+    """
+    Group by index: [grouped][fun
+    """
+
     def __init__(self, data: "Data"):
         self._data = data
         self._grouped = None
@@ -192,59 +210,60 @@ class DataGroupBy(object):
             self._grouped = item
             return self
         else:
-            columns = list(self._data.df.columns)
-            length = len(columns)
-            grouped_indices = _to_indices(length, self._grouped)
-            d = {}
-            if isinstance(item, tuple):
-                while len(item) > 1:
-                    it, func, *item = item
-                    for i in _to_indices(length, it):
-                        if i not in grouped_indices and columns[i] not in d:
-                            d[columns[i]] = func
-                if len(item):
-                    func = item[0]
-                    for i in range(length):
-                        if i not in grouped_indices and columns[i] not in d:
-                            d[columns[i]] = func
-            else:  # function
-                for i in range(length):
-                    if i not in grouped_indices:
-                        d[columns[i]] = item
-
-            self._data.df = self._data.df.groupby(
-                [columns[g] for g in grouped_indices], as_index=False).agg(d)
+            grouped_indices = self._data._to_indices(self._grouped)
+            func_by_colindex = self._get_func_by_colindex(grouped_indices, item)
+            self._data._group_by(grouped_indices, func_by_colindex)
             return self._data
+
+    def _get_func_by_colindex(self, grouped_indices: List[int],
+                              item: Union[Tuple[SomeIndices, ...], Callable]
+                              ) -> Mapping[int, Callable]:
+        columns = self._data.columns()
+        length = len(columns)
+        func_by_colindex = {}
+        if isinstance(item, tuple):
+            while len(item) >= 2:
+                indices, func, *item = item
+                for i in self._data._to_indices(indices):
+                    if not (i in grouped_indices or i in func_by_colindex):
+                        func_by_colindex[i] = func
+            if len(item):  # a last func for remaining indices
+                func = item[0]
+                for i in range(length):
+                    if not (i in grouped_indices or i in func_by_colindex):
+                        func_by_colindex[i] = func
+        else:  # a single function
+            for i in range(length):
+                if i not in grouped_indices:
+                    func_by_colindex[i] = item
+        return func_by_colindex
 
 
 class DataJoin:
+    """
+    Make a join between two tables: [other][left][right]
+    """
+
     def __init__(self, data: "Data", how: str):
         self._data = data
         self._how = how
         self._other = None
-        self._left_on = None
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: Union["Data", SomeIndices, SomeIndices]
+                    ) -> Union["DataJoin", "Data"]:
         if self._other is None:
             assert isinstance(item, Data)
             self._other = item
             return self
-        elif self._left_on is None:
-            self._left_on = item
-            return self
         else:
-            if item == slice(None, None, None):
-                right_on = self._left_on
+            if isinstance(item, tuple):
+                left_on, right_on = item
             else:
-                right_on = item
-            left_columns = list(self._data.df.columns)
-            left_indices = _to_indices(len(left_columns), self._left_on)
-            right_columns = list(self._other.df.columns)
-            right_indices = _to_indices(len(right_columns), right_on)
-            lon = [left_columns[i] for i in left_indices]
-            ron = [right_columns[i] for i in right_indices]
-            self._data.df = self._data.df.merge(self._other.df, how=self._how,
-                                                left_on=lon, right_on=ron)
+                left_on = right_on = item
+            left_indices = self._data._to_indices(left_on)
+            right_indices = self._other._to_indices(right_on)
+            self._data._merge_data(self._other, self._how, left_indices,
+                                   right_indices)
             return self._data
 
 
@@ -252,12 +271,12 @@ class DataFilter:
     def __init__(self, data: "Data"):
         self._data = data
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: Union[Tuple[Callable], Callable]) -> "Data":
         if isinstance(item, tuple):
             for func in item:
-                self._data.df = self._data.df[func(self._data)]
+                self._data._filter(func)
         else:
-            self._data.df = self._data.df[item(self._data)]
+            self._data._filter(item)
         return self._data
 
 
@@ -266,17 +285,18 @@ class DataMap:
         self._data = data
         self._target = None
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: SomeIndices) -> Union["DataMap", "Data"]:
         if self._target is None:
-            self._target = item
-            return self
+            return self._init_target(item)
         else:
-            columns = list(self._data.df.columns)
-            target_indices = _to_indices(len(columns), self._target)
+            target_indices = self._data._to_indices(self._target)
             for i in target_indices:
-                column = columns[i]
-                self._data.df[column] = item(self._data.df[column])
+                self._data._map_col(i, item)
             return self._data
+
+    def _init_target(self, item):
+        self._target = item
+        return self
 
 
 class DataMapIf:
@@ -284,18 +304,17 @@ class DataMapIf:
         self._data = data
         self._target = None
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: Union[SomeIndices,
+                                      Tuple[Callable, Callable, Callable]]
+                    ) -> Union["DataMapIf", "Data"]:
         if self._target is None:
             self._target = item
             return self
         else:
             test, if_true, if_false = item
-            columns = list(self._data.df.columns)
-            target_indices = _to_indices(len(columns), self._target)
+            target_indices = self._data._to_indices(self._target)
             for i in target_indices:
-                column = columns[i]
-                c = self._data.df[column]
-                self._data.df[column] = pd.np.where(test(c), if_true(c), if_false(c))
+                self._data._map_if(i, test, if_true, if_false)
             return self._data
 
 
@@ -304,52 +323,72 @@ class DataSort:
         self._data = data
         self._reverse = reverse
 
-    def __getitem__(self, item):
-        columns = list(self._data.df.columns)
-        indices = _to_indices(len(columns), item)
-        self._data.df = self._data.df.sort_values([columns[i] for i in indices],
-                                                  ascending=not self._reverse
-                                                  ).reset_index(drop=True)
+    def __getitem__(self, item: SomeIndices) -> "Data":
+        indices = self._data._to_indices(item)
+        self._data._sort_values(indices, not self._reverse)
         return self._data
 
 
-class Data:
-    """
-    """
-
-    def __init__(self, df, table_name, path, encoding, csvdialect):
-        self.df = df
+class DataSource:
+    def __init__(self, table_name: str, path: str,
+                 encoding: str, csvdialect: csv.Dialect) -> "DataSource":
         self._table_name = table_name
         self._path = path
         self._encoding = encoding
         self._csvdialect = csvdialect
 
-    def __getitem__(self, item):
+
+class Data:
+    """
+    """
+    @staticmethod
+    def create(column_group: ColumnGroup, table_name: str, path: str,
+                 encoding: str, csvdialect: csv.Dialect) -> "Data":
+        data_source = DataSource(table_name, path, encoding, csvdialect)
+        return Data(column_group, data_source)
+
+    @staticmethod
+    def from_rows(types: Sequence[Type],
+                  rows: Iterable[Sequence[Any]]) -> "Data":
+        return Data(ColumnGroup.from_rows(types, rows), None)
+
+    def __init__(self, column_group: ColumnGroup, data_source: Optional[DataSource]) -> "Data":
+        self._column_group = column_group
+        self._data_source = data_source
+
+    def __getitem__(self, item: Union[int, str]) -> Column:
         """
-        >>> data = Data(pd.DataFrame(
-        ...     {"A":[1, 5, 3], "B":[3, 2, 4],
-        ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
-        >>> Data(data[0] + data[3])
+        >>> _data = Data(ColumnGroup([
+        ...         Column[int]("A", int, [1, 5, 3]),
+        ...         Column[int]("B", int, [3, 2, 4]),
+        ...         Column[int]("C", int, [2, 2, 7]),
+        ...         Column[str]("D", str, ["a", "b", "c"])))
+        >>> Data(_data[0] + _data[3], "t", None, None, None)
         0     5
         1    12
         2    11
-        dtype: int64
         """
-        return self.df.iloc[:, item]
+        return self._column_group[item]
+
+    def columns(self):
+        return self._column_group
+
+    def column_count(self):
+        return len(self._column_group)
 
     @property
-    def swap(self):
+    def swap(self) -> DataSwap:
         """
-        Swap two sets of columns.
+        Swap two sets of column_group.
 
-        Syntax: `data.swap[x][y]`
+        Syntax: `_data.swap[x][y]`
 
         `x` and `y` are indices, slices or tuples of slices/indices
 
-        >>> data = Data(pd.DataFrame(
+        >>> _data = Data(pd.DataFrame(
         ...     {"A":[1, 5, 3], "B":[3, 2, 4],
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
-        >>> data.swap[0][1]
+        >>> _data.swap[0][1]
            B  A  C  D
         0  3  1  2  4
         1  2  5  2  7
@@ -358,20 +397,20 @@ class Data:
         return DataSwap(self)
 
     @property
-    def add(self):
+    def add(self) -> DataAdd:
         """
-        Add a new column.
+        Add a new column_index.
 
-        Syntax: `data.add[func, name, index]`
+        Syntax: `_data.add[func, name, index]`
 
         * `func` is a function of `Data` (use numeric indices)
-        * `name` is the name of the new column
-        * `index` (opt) is the index of the new column
+        * `name` is the name of the new column_index
+        * `index` (opt) is the index of the new column_index
 
-        >>> data = Data(pd.DataFrame(
+        >>> _data = Data(pd.DataFrame(
         ...     {"A":["1", "5", "3"], "B":[3, 2, 4],
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
-        >>> data.add[lambda x: x[0]*x[1], "A*B", 2]
+        >>> _data.add[lambda x: x[0]*x[1], "A*B", 2]
            A  B   A*B  C  D
         0  1  3   111  2  4
         1  5  2    55  2  7
@@ -380,21 +419,21 @@ class Data:
         return DataAdd(self)
 
     @property
-    def merge(self):
+    def merge(self) -> DataMerge:
         """
-        Same as `add`, but removes the merged columns and place the new column
+        Same as `add`, but removes the merged column_group and place the new column_index
         at the first merged index.
 
-        Syntax: `data.merge[x][func, name]`
+        Syntax: `_data.merge[x][func, name]`
 
         * `x` is an index, a slice or a tuple of slices/indices
         * `func` is a function of `Data` (use numeric indices)
-        * `name` is the name of the new column
+        * `name` is the name of the new column_index
 
-        >>> data = Data(pd.DataFrame(
+        >>> _data = Data(pd.DataFrame(
         ...     {"A":["1", "5", "3"], "B":[3, 2, 4],
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
-        >>> data.merge[1,3][lambda x: x[1]*x[2], "B*D"]
+        >>> _data.merge[1,3][lambda x: x[1]*x[2], "B*D"]
            A  B*D  C
         0  1    6  2
         1  5    4  2
@@ -403,20 +442,20 @@ class Data:
         return DataMerge(self)
 
     @property
-    def groupby(self):
+    def groupby(self) -> DataGroupBy:
         """
-        Group data on some columns. using an aggregation function.
+        Group _data on some column_group. using an aggregation function.
 
-        Syntax: `data.groupby[w][x, func_x, y, func_y, ..., last_func]`
+        Syntax: `_data.groupby[w][x, func_x, y, func_y, ..., last_func]`
 
         * `w`, `x` and `y` are indices, slices or tuples of slices/indices
         * `func_x`, `func_y`, ... are functions of `Data` (use numeric indices)
         * `last_func` (opt) is a function for the remaining cols
 
-        >>> data = Data(pd.DataFrame(
+        >>> _data = Data(pd.DataFrame(
         ...     {"A":[1, 1, 3, 3, 3], "B":[3, 2, 4, 7, 9],
         ...      "C":[2, 2, 7, 8, 9], "D":[4, 7, 8, 3, 5]}))
-        >>> data.groupby[0][1, 'sum', 'max']
+        >>> _data.groupby[0][1, 'sum', 'max']
            A   B  C  D
         0  1   5  2  7
         1  3  20  9  8
@@ -424,7 +463,7 @@ class Data:
         return DataGroupBy(self)
 
     @property
-    def ljoin(self):
+    def ljoin(self) -> DataJoin:
         """
         A left join.
 
@@ -446,7 +485,7 @@ class Data:
         return DataJoin(self, 'left')
 
     @property
-    def rjoin(self):
+    def rjoin(self) -> DataJoin:
         """
         A right join. See `ljoin`.
 
@@ -464,7 +503,7 @@ class Data:
         return DataJoin(self, 'right')
 
     @property
-    def ojoin(self):
+    def ojoin(self) -> DataJoin:
         """
         An outer join. See `ljoin`.
 
@@ -483,7 +522,7 @@ class Data:
         return DataJoin(self, 'outer')
 
     @property
-    def ijoin(self):
+    def ijoin(self) -> DataJoin:
         """
         An inner join. See `ljoin`.
 
@@ -498,38 +537,38 @@ class Data:
         return DataJoin(self, 'inner')
 
     @property
-    def filter(self):
+    def filter(self) -> DataFilter:
         """
-        Filter data on a sequence of functions.
+        Filter _data on a sequence of functions.
 
-        Syntax: `data.filter[func1, ...]`.
+        Syntax: `_data.filter[func1, ...]`.
 
         `func1`, ... are functions of `Data` (use numeric indices)
 
-        >>> data = Data(pd.DataFrame(
+        >>> _data = Data(pd.DataFrame(
         ...     {"A":[1, 4, 3], "B":[3, 2, 4],
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
-        >>> data.filter[lambda x: x[0] % 2 == 1, lambda x: x[1] % 2 == 1]
+        >>> _data.filter[lambda x: x[0] % 2 == 1, lambda x: x[1] % 2 == 1]
            A  B  C  D
         0  1  3  2  4
         """
         return DataFilter(self)
 
     @property
-    def move_before(self):
+    def move_before(self) -> DataMoveBefore:
         """
-        Move some columns before a given index.
+        Move some column_group before a given index.
 
-        Syntax `data.move_before[idx][x]`
+        Syntax `_data.move_before[idx][x]`
 
         * `idx` is the destination index
-        * `x` is an index, slice or tuple of slices/indices of column that
+        * `x` is an index, slice or tuple of slices/indices of column_index that
         should move before `idx`.
 
-        >>> data = Data(pd.DataFrame(
+        >>> _data = Data(pd.DataFrame(
         ...     {"A":[1, 5, 3], "B":[3, 2, 4],
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
-        >>> data.move_before[2][1,3]
+        >>> _data.move_before[2][1,3]
            A  B  D  C
         0  1  3  4  2
         1  5  2  7  2
@@ -538,14 +577,14 @@ class Data:
         return DataMoveBefore(self)
 
     @property
-    def move_after(self):
+    def move_after(self) -> DataMoveAfter:
         """
-        Move some columns before a given index. See `move_before`.
+        Move some column_group before a given index. See `move_before`.
 
-        >>> data = Data(pd.DataFrame(
+        >>> _data = Data(pd.DataFrame(
         ...     {"A":[1, 5, 3], "B":[3, 2, 4],
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
-        >>> data.move_after[2][1,3]
+        >>> _data.move_after[2][1,3]
            A  C  B  D
         0  1  2  3  4
         1  5  2  2  7
@@ -554,18 +593,18 @@ class Data:
         return DataMoveAfter(self)
 
     @property
-    def select(self):
+    def select(self) -> DataSelect:
         """
         Select some of the columns.
 
-        Syntax: `data.select[x]`.
+        Syntax: `_data.select[x]`.
 
         `x` is an index, slice or tuple of slices/indices
 
-        >>> data = Data(pd.DataFrame(
+        >>> _data = Data(pd.DataFrame(
         ...     {"A":[1, 5, 3], "B":[3, 2, 4],
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
-        >>> data.select[0, 2:]
+        >>> _data.select[0, 2:]
            A  C  D
         0  1  2  4
         1  5  2  7
@@ -574,18 +613,18 @@ class Data:
         return DataSelect(self)
 
     @property
-    def drop(self):
+    def drop(self) -> DataDrop:
         """
-        Drop some of the columns.
+        Drop some of the column_group.
 
-        Syntax: `data.drop[x]`.
+        Syntax: `_data.drop[x]`.
 
         `x` is an index, slice or tuple of slices/indices
 
-        >>> data = Data(pd.DataFrame(
+        >>> _data = Data(pd.DataFrame(
         ...     {"A":[1, 5, 3], "B":[3, 2, 4],
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
-        >>> data.drop[0, 2:]
+        >>> _data.drop[0, 2:]
            B
         0  3
         1  2
@@ -594,19 +633,19 @@ class Data:
         return DataDrop(self)
 
     @property
-    def map(self):
+    def map(self) -> DataMap:
         """
-        Map some columns using a function.
+        Map some column_group using a function.
 
-        Syntax: `data.map[x][func]`
+        Syntax: `_data.map[x][func]`
 
         * `x` is an index, slice or tuple of slices/indices
         * `func` is a function of `Data` (use numeric indices)
 
-        >>> data = Data(pd.DataFrame(
+        >>> _data = Data(pd.DataFrame(
         ...     {"A":[1, 5, 3], "B":[3, 2, 4],
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
-        >>> data.map[0,3][lambda c: c+2]
+        >>> _data.map[0,3][lambda c: c+2]
            A  B  C   D
         0  3  3  2   6
         1  7  2  2   9
@@ -615,21 +654,21 @@ class Data:
         return DataMap(self)
 
     @property
-    def mapif(self):
+    def mapif(self) -> DataMapIf:
         """
-        Map some columns using a function.
+        Map some column_group using a function.
 
-        Syntax: `data.mapif[x][test, if_true, if_false]
+        Syntax: `_data.mapif[x][test, if_true, if_false]
 
         * `x` is an index, slice or tuple of slices/indices
         * `test` is a test
         * `if_true`
         * `if_false`
 
-        >>> data = Data(pd.DataFrame(
+        >>> _data = Data(pd.DataFrame(
         ...     {"A":[1, 5, 3], "B":[3, 2, 4],
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
-        >>> data.mapif[0][data[1]>2, data[0], data[1]]
+        >>> _data.mapif[0][_data[1]>2, _data[0], _data[1]]
            A  B  C   D
         0  3  3  2   6
         1  7  2  2   9
@@ -638,18 +677,18 @@ class Data:
         return DataMapIf(self)
 
     @property
-    def sort(self):
+    def sort(self) -> DataSort:
         """
         Sort the rows
 
-        Syntax: `data.sort[x]`
+        Syntax: `_data.sort[x]`
 
         `x` is the index, slice or tuple of slices/indices of the key
 
-        >>> data = Data(pd.DataFrame(
+        >>> _data = Data(pd.DataFrame(
         ...     {"A":[1, 5, 3], "B":[3, 2, 4],
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
-        >>> data.sort[1]
+        >>> _data.sort[1]
            A  B  C  D
         0  5  2  2  7
         1  1  3  2  4
@@ -658,18 +697,18 @@ class Data:
         return DataSort(self, False)
 
     @property
-    def rsort(self):
+    def rsort(self) -> DataSort:
         """
         Sort the rows in reverse order.
 
-        Syntax: `data.sort[x]`
+        Syntax: `_data.rsort[x]`
 
         `x` is the index, slice or tuple of slices/indices of the key
 
-        >>> data = Data(pd.DataFrame(
+        >>> _data = Data(pd.DataFrame(
         ...     {"A":[1, 5, 3], "B":[3, 2, 4],
         ...      "C":[2, 2, 7], "D":[4, 7, 8]}))
-        >>> data.rsort[1]
+        >>> _data.rsort[1]
            A  B  C  D
         0  3  4  7  8
         1  1  3  2  4
@@ -677,16 +716,20 @@ class Data:
         """
         return DataSort(self, True)
 
+    def __str__(self):
+        return str(self._column_group)
+
     def show(self, limit: int = 100):
         """
         Show the first rows of Data.
+        Expected format: CSV with comma
         """
+        writer = csv.writer(sys.stdout, delimiter=',')
         begin_csv()
-        if isinstance(self.df.dtypes, numpy.dtype):
-            print(self.df.dtypes)
-        else:
-            print(",".join(map(str, self.df.dtypes)))
-        self.df.iloc[:limit].to_csv(sys.stdout, encoding="utf-8", index=False)
+        writer.writerow([col.col_type for col in self.columns()])
+        writer.writerow([col.name for col in self.columns()])
+        writer.writerows(self._rows())
+        sys.stdout.flush()
         end_csv()
 
     def save(self, destination: Union[str, Path, IO]):
@@ -703,71 +746,106 @@ class Data:
 
     def show_sql(self, table_name=None, provider_name: str = 'pg'):
         if table_name is None:
-            table_name = self._table_name
+            table_name = self._data_source._table_name
         else:
             table_name = to_standard(table_name)
-        force_null = [col for col in self.df.columns if
-                      self.df[col].dtype != object]
+        force_null = [col.name for col in self.columns()]
 
-        provider = get_provider(provider_name)(self._encoding, self._csvdialect,
-                                               self._path, table_name,
+        provider = get_provider(provider_name)(self._data_source._encoding, self._data_source._csvdialect,
+                                               self._data_source._path, table_name,
                                                force_null)
 
         begin_info()
-        print(f'DROP TABLE IF EXISTS "{table_name}";')
-        print(pd.io.sql.get_schema(self.df, table_name))
-        print(";")
+        print(provider.drop_table())
+        print(provider.create_schema())
         print(provider.prepare_copy())
         print(provider.copy_stream())
         print(provider.finalize_copy())
         end_info()
 
-    def __repr__(self):
-        return repr(self.df)
+    def __repr__(self) -> str:
+        return repr(self._column_group)
 
+    def _to_indices(self, item: SomeIndices) -> List[int]:
+        return to_indices(len(self._column_group), item)
 
-def _dtype_to_sql(self, dtype: numpy.dtype) -> str:
-    if dtype.name.startswith('date'):
-        return "TIMESTAMP"
-    elif dtype.name.startswith('int') or dtype.name.startswith('uint'):
-        return "INT"
-    elif dtype.name.startswith('float'):
-        return "DECIMAL"
-    elif dtype.name.startswith('bool'):
-        return "BOOL"
-    else:
-        return "TEXT"
+    def _swap_cols(self, i, j):
+        self._column_group.swap(i, j)
 
+    def _move_before(self, pivot_index: int, indices: Collection[int]):
+        self._column_group.move_before(pivot_index, indices)
 
-def _get_col_dtype(col):
-    """
-    Infer datatype of a pandas column, process only if the column dtype is object.
-    input:   col: a pandas Series representing a df column.
-    """
+    def _move_after(self, pivot_index: int, indices: Collection[int]):
+        self._column_group.move_after(pivot_index, indices)
 
-    if col.dtype == "object":
-        # try numeric
-        unique_col = col.dropna().unique()
-        try:
-            col_new = pd.to_datetime(unique_col)
-            return col_new.dtype
-        except:
+    def _select_indices(self, js: Iterable[int]):
+        self._column_group.select_indices(js)
+
+    def _drop_indices(self, js: Iterable[int]):
+        self._column_group.drop_indices(js)
+
+    def _insert_col(self, name: str, col_type: Type[T], values: List[T], index: int):
+        self._column_group.insert_col(name, col_type, values, index)
+
+    def _append_col(self, name: str, col_type: Type[T], values: List[T]):
+        self._column_group.insert_col(name, col_type, values, self.column_count())
+
+    def _apply(self, func: Callable[[Sequence[Any]], T]) -> List[T]:
+        return self._column_group.apply(func)
+
+    def _group_by(self, grouped_indices, func_by_colindex):
+        def create_col(i: int, col_values: Collection[Any]):
+            col = self._column_group[i]
             try:
-                col_new = pd.to_numeric(unique_col)
-                return col_new.dtype
-            except:
-                try:
-                    col_new = pd.to_timedelta(unique_col)
-                    return col_new.dtype
-                except:
-                    return "object"
+                col_type = func_by_colindex[i].__annotations__['return']
+            except (KeyError, AttributeError):
+                col_type = Any
 
-    return col.dtype
+            return Column(col.name, col_type, col_values)
+
+        rows_by_key = {}
+        for row in self._rows():
+            key = tuple(row[i] for i in grouped_indices)
+            rows_by_key.setdefault(key, []).append(row)
+
+        new_rows = []
+        for _, rows in rows_by_key.items():
+            cols = zip(*rows)
+            new_row = [col[0] if j in grouped_indices
+                       else func_by_colindex[j](col)
+                       for j, col in enumerate(cols)]
+            new_rows.append(new_row)
+
+        cols = zip(*new_rows)
+
+
+        self._column_group = ColumnGroup(
+            [create_col(i, col) for i, col in enumerate(cols)])
+
+    def _rows(self):
+        return self._column_group.rows()
+
+    def _merge_data(self, other: "Data", how: str, lon: List[int],
+                    ron: List[int]):
+        self._column_group.merge(other._column_group, how, lon, ron)
+
+    def _map_col(self, column_index: int, func: Callable):
+        col = self._column_group[column_index]
+        col.col_values = [func(v) for v in col.col_values]
+        col.col_type = func.__annotations__.get('return', Any)
+
+    def _filter(self, func: Callable[[Sequence], bool]):
+        self._column_group.filter(func)
+
+    def _map_if(self, index: int, test, if_true, if_false):
+        self._column_group.map_if(index, test, if_true, if_false)
+
+    def _sort_values(self, indices, ascending):
+        self._column_group.sort_values(indices, ascending)
+
 
 
 if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
-
-

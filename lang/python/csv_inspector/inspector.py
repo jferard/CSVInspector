@@ -18,27 +18,28 @@
 #
 
 import csv
+import sys
+from itertools import islice
 from pathlib import Path
 from typing import (Union)
 
 import chardet
 import pandas as pd
 
-from csv_inspector.data import Data
-from csv_inspector.util import begin_info, end_info, to_standard
+from csv_inspector.data import Data, DataSource
+from csv_inspector.util import begin_info, end_info, to_standard, ColumnFactory, \
+    ColumnGroup
 
 sniffer = csv.Sniffer()
 
 
 class Inspection:
-    def __init__(self, path: Path, data: bytes, **kwargs):
+    def __init__(self, path: Path, encoding: str,
+                 csvdialect: csv.Dialect) -> "Inspection":
         self._path = path
-        self._data = data
-        self._kwargs = kwargs
-        self._encoding = self._kwargs.get("encoding", "utf-8")
-        self._csvdialect = self._kwargs.get("dialect", csv.unix_dialect)
-        self._kwargs.setdefault("engine", "python")
-        self._kwargs.setdefault("nrows", 100)
+        self._encoding = encoding
+        self._csvdialect = csvdialect
+        self._col_factory = ColumnFactory()
 
     @property
     def encoding(self):
@@ -47,11 +48,6 @@ class Inspection:
     @encoding.setter
     def encoding(self, encoding):
         self._encoding = encoding
-        self._guess_dialect()
-
-    def _guess_dialect(self):
-        self._csvdialect = sniffer.sniff(
-                self._data.decode(self._encoding, errors="ignore"))
 
     @property
     def delimiter(self):
@@ -101,15 +97,22 @@ class Inspection:
     def quoting(self, quoting):
         self._csvdialect.quoting = quoting
 
-    def open(self, **kwargs) -> Data:
-        self._df = pd.read_csv(self._path, encoding=self._encoding,
-                               index_col=False,
-                               delimiter=self._csvdialect.delimiter,
-                               dialect=self._csvdialect,
-                               keep_default_na=False, **kwargs)
-        self._df.columns = [to_standard(c) for c in self._df.columns]
-        return Data(self._df, to_standard(self._path.stem),
-                    self._path, self._encoding, self._csvdialect)
+    def __repr__(self):
+        return f"Inspection({repr(self._path)}, {repr(self._encoding)}, {repr(self._csvdialect)})"
+
+    def write(self, output_path: Path):
+        pass
+
+    def open(self, nrows=100) -> Data:
+        with self._path.open('r', encoding=self._encoding) as s:
+            reader = islice(csv.reader(s, self._csvdialect), nrows)
+            header = [to_standard(n) for n in next(reader)]
+            column_groups = ColumnGroup([self._col_factory.create(name, values)
+                                   for name, *values in zip(header, *reader)])
+
+        return Data(column_groups, DataSource(to_standard(self._path.stem),
+                                        self._path, self._encoding,
+                                        self._csvdialect))
 
     def show(self):
         begin_info()
@@ -124,14 +127,59 @@ class Inspection:
 
 
 def inspect(file: Union[str, Path], chunk_size=1024 * 1024,
-            **kwargs) -> Inspection:
-    if isinstance(file, str):
-        path = Path(file)
-    else:
-        path = file
+            encoding: str = None, lineterminator: str = None,
+            delimiter: bytes = None, quotechar: bytes = None,
+            doublequote: bytes = None, skipinitialspace: bool = None,
+            quoting: bool = None) -> Inspection:
+    def _wrap_path(f: Union[str, Path]):
+        if isinstance(f, str):
+            return Path(f)
+        else:
+            return f
+
+    def _sniff_terminator(data: bytes):
+        terminator_count = {b'\r\n': 0, b'\n': 0, b'\r': 0, b'\n\r': 0}
+        last = None
+        for b in data:
+            if b == b'\n':
+                if last == b'\r':
+                    terminator_count[b'\r\n'] += 1
+                    last = None
+                else:
+                    terminator_count[b'\n'] += 1
+            elif b == b'\r':
+                if last == b'\n':
+                    terminator_count[b'\n\r'] += 1
+                    last = None
+                else:
+                    terminator_count[b'\r'] += 1
+            else:
+                last = None
+
+        return max(terminator_count.keys(), key=terminator_count.get).decode("ascii")
+
+    path = _wrap_path(file)
     with path.open("rb") as source:
         data = source.read(chunk_size)
-        inspection = Inspection(path, data, **kwargs)
-        inspection.encoding = chardet.detect(data)["encoding"]
+        if encoding is None:
+            encoding = chardet.detect(data)["encoding"]
+        if lineterminator is None:
+            lineterminator = _sniff_terminator(data)
+        csvdialect = sniffer.sniff(
+            data.decode(encoding, errors="ignore"))
+        if delimiter is not None:
+            csvdialect.delimiter = delimiter
+        if quotechar is not None:
+            csvdialect.quotechar = quotechar
+        if doublequote is not None:
+            csvdialect.doublequote = doublequote
+        if skipinitialspace is not None:
+            csvdialect.skipinitialspace = skipinitialspace
+        if quoting is not None:
+            csvdialect.quoting = quoting
+        if csvdialect.lineterminator != lineterminator:
+            csvdialect.lineterminator = lineterminator
+
+        inspection = Inspection(path, encoding, csvdialect)
 
     return inspection

@@ -52,6 +52,7 @@ class CSVInspectorGUI(
 
     @Subscribe
     private fun display(e: CSVEvent) {
+        println("*** EDATA: ${e.data}")
         val tabPane = ScrollPane()
         tabPane.hbarPolicy = ScrollPane.ScrollBarPolicy.ALWAYS
         tabPane.vbarPolicy = ScrollPane.ScrollBarPolicy.ALWAYS
