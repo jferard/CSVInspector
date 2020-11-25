@@ -31,10 +31,10 @@ class CSVInspectorApplication : Application() {
         val token = generateToken()
         val eventBus = EventBus()
         val pythonExe = parameters.raw[0] ?: "python3.6"
-        val executionContext = PythonExecutor(pythonExe, token, eventBus).start()
+        val executionEnvironment = PythonExecutor(pythonExe, token, eventBus).start()
 
         val menuBarProvider = MenuBarProvider(eventBus)
-        val gui = CSVInspectorGUIInitialProvider(eventBus, executionContext, menuBarProvider,
+        val gui = CSVInspectorGUIInitialProvider(eventBus, executionEnvironment, menuBarProvider,
                 primaryStage).get()
         eventBus.register(gui)
         eventBus.post(CSVEvent("TEXT\nPress F5\nTo execute\nthe code"))

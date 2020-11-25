@@ -129,6 +129,10 @@ class CSVInspectorGUI(
         executeOneScript(code)
     }
 
+    private fun restartInterpreter() {
+        executionEnvironment.restart()
+    }
+
     private fun executeOneScript(code: String) {
         val task: Task<Unit> = executionEnvironment.createTask(code)
         Thread(task).start()
@@ -159,6 +163,7 @@ class CSVInspectorGUI(
             "SAVE_AS" -> saveAsScript()
 
             "EXECUTE" -> executeScript()
+            "RESTART" -> restartInterpreter()
 
             "QUIT" -> quitApplication()
 

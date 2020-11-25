@@ -49,11 +49,12 @@ class MenuBarProvider(private val eventBus: EventBus) {
                 createItem("Save as", "SAVE_AS", KeyCode.S, KeyCombination.CONTROL_DOWN,
                         KeyCombination.SHIFT_DOWN)
         val executeMenuItem = createItem("Execute", "EXECUTE", KeyCode.F5)
+        val restartMenuItem = createItem("Restart interpreter", "RESTART", KeyCode.F10)
         val quitMenuItem = createItem("Quit", "QUIT", KeyCode.Q, KeyCombination.CONTROL_DOWN)
         val menuFile = Menu("File")
         menuFile.items
                 .addAll(openMenuItem, saveMenuItem, saveAsMenuItem, SeparatorMenuItem(),
-                        executeMenuItem, SeparatorMenuItem(), quitMenuItem)
+                        executeMenuItem, restartMenuItem, SeparatorMenuItem(), quitMenuItem)
         return menuFile
     }
 

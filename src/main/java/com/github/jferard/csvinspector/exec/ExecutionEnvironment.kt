@@ -20,19 +20,30 @@
 
 package com.github.jferard.csvinspector.exec
 
-import com.github.jferard.csvinspector.gui.ScriptEvent
 import com.google.common.eventbus.EventBus
-import javafx.collections.ObservableList
 import javafx.concurrent.Task
 import java.io.BufferedReader
 import java.io.Writer
 
-class ExecutionEnvironment(private val token: String,
+/** An execution environment for Python scripts */
+class ExecutionEnvironment(private val executor: PythonExecutor,
+                           private var process: Process,
+                           private val token: String,
                            private val eventBus: EventBus,
-                           private val stdinWriter: Writer,
-                           private val stdoutReader: BufferedReader,
-                           private val stderrReader: BufferedReader) {
+                           private var stdinWriter: Writer,
+                           private var stdoutReader: BufferedReader,
+                           private var stderrReader: BufferedReader) {
     fun createTask(code: String): Task<Unit> {
         return ExecutionContext(token, eventBus, code, stdinWriter, stdoutReader, stderrReader)
+    }
+
+    fun restart() {
+        val newEnvironment = executor.start()
+        val oldProcess = process
+        process = newEnvironment.process
+        stdinWriter = newEnvironment.stdinWriter
+        stdoutReader = newEnvironment.stdoutReader
+        stderrReader = newEnvironment.stderrReader
+        oldProcess.destroy()
     }
 }

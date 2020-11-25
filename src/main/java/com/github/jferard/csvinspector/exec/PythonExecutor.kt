@@ -41,7 +41,7 @@ class PythonExecutor(private val pythonExe: String, private val token: String,
                     BufferedReader(InputStreamReader(process.inputStream, Charsets.UTF_8))
             val stderrReader =
                     BufferedReader(InputStreamReader(process.errorStream, Charsets.UTF_8))
-            return ExecutionEnvironment(token, eventBus, stdinWriter, stdoutReader, stderrReader)
+            return ExecutionEnvironment(this, process, token, eventBus, stdinWriter, stdoutReader, stderrReader)
         } catch (e: Exception) {
             System.err.println("python server crashed")
             exitProcess(-1)
