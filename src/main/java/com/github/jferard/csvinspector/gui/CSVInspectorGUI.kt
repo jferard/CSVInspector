@@ -122,6 +122,41 @@ class CSVInspectorGUI(
         csvPane.selectionModel.select(tab)
     }
 
+    @Subscribe
+    fun menuEventHandler(menuEvent: MenuEvent) {
+        when (menuEvent.name) {
+            /* File */
+            "OPEN" -> openScript()
+            "OPEN_CSV" -> openCSV()
+            "SAVE" -> saveScript()
+            "SAVE_AS" -> saveAsScript()
+
+            "EXECUTE" -> executeScript()
+            "RESTART" -> restartInterpreter()
+
+            "QUIT" -> quitApplication()
+
+            /* Edit */
+            "NEW_TAB" -> dynamicProvider.createEmptyCodePane(codePane)
+
+            "COPY" -> copy()
+            "CUT" -> cut()
+            "PASTE" -> paste()
+
+            "FIND" -> find()
+
+            /* Help */
+            "HELP" -> help()
+            "SNIPPET_1" -> snippet(SHOW_SQL_EXAMPLE)
+            "SNIPPET_2" -> snippet(SELECT_EXAMPLE)
+            "SNIPPET_3" -> snippet(GROUPBY_EXAMPLE)
+            "SNIPPET_4" -> snippet(JOIN_EXAMPLE)
+            "SNIPPET_5" -> snippet(CODE_EXAMPLE)
+            "ABOUT" -> about()
+            else -> throw IllegalArgumentException("menu: ${menuEvent.name}")
+        }
+    }
+
     private fun executeScript() {
         csvPane.tabs.clear()
         val codeArea = getCodeArea()
@@ -154,38 +189,11 @@ class CSVInspectorGUI(
         return tab.userData as File?
     }
 
-    @Subscribe
-    fun menuEventHandler(menuEvent: MenuEvent) {
-        when (menuEvent.name) {
-            /* File */
-            "OPEN" -> openScript()
-            "SAVE" -> saveScript()
-            "SAVE_AS" -> saveAsScript()
-
-            "EXECUTE" -> executeScript()
-            "RESTART" -> restartInterpreter()
-
-            "QUIT" -> quitApplication()
-
-            /* Edit */
-            "NEW_TAB" -> dynamicProvider.createEmptyCodePane(codePane)
-
-            "COPY" -> copy()
-            "CUT" -> cut()
-            "PASTE" -> paste()
-
-            "FIND" -> find()
-
-            /* Help */
-            "HELP" -> help()
-            "SNIPPET_1" -> snippet(SHOW_SQL_EXAMPLE)
-            "SNIPPET_2" -> snippet(SELECT_EXAMPLE)
-            "SNIPPET_3" -> snippet(GROUPBY_EXAMPLE)
-            "SNIPPET_4" -> snippet(JOIN_EXAMPLE)
-            "SNIPPET_5" -> snippet(CODE_EXAMPLE)
-            "ABOUT" -> about()
-            else -> throw IllegalArgumentException("menu: ${menuEvent.name}")
-        }
+    private fun openCSV() {
+        val fileChooser = FileChooser()
+        fileChooser.title = "Open Script File"
+        val selectedFile = fileChooser.showOpenDialog(primaryStage) ?: return
+        addCSVPane(selectedFile)
     }
 
     private fun snippet(code: String) {
@@ -289,8 +297,29 @@ end_info()""")
     private fun openScript() {
         val fileChooser = FileChooser()
         fileChooser.title = "Open Script File"
-        val selectedFile = fileChooser.showOpenDialog(primaryStage)
+        val selectedFile = fileChooser.showOpenDialog(primaryStage) ?: return
         addCodePane(selectedFile)
+    }
+
+    private fun addCSVPane(selectedFile: File) {
+        val metaCSVFile = if (selectedFile.extension == ".mcsv") {
+            selectedFile
+        } else {
+            File(selectedFile.parent, selectedFile.nameWithoutExtension + ".mcsv")
+        }
+        val cur = codePane.tabs.find { it.userData == metaCSVFile }
+        if (cur != null) {
+            codePane.selectionModel.select(cur)
+            return
+        }
+        val codeTab = dynamicProvider.createMetaCSVTab(metaCSVFile)
+        codePane.tabs.add(codePane.tabs.size - 1, codeTab)
+        codePane.selectionModel.select(codeTab)
+        /**
+        val code = selectedFile.readText(Charsets.UTF_8)
+        val codeArea = getCodeArea()
+        codeArea.replaceText(code)
+         */
     }
 
     private fun addCodePane(selectedFile: File) {
@@ -299,8 +328,8 @@ end_info()""")
             codePane.selectionModel.select(cur)
             return
         }
-        val code = selectedFile.readText(Charsets.UTF_8)
         val codeTab = dynamicProvider.createCodeTab(selectedFile)
+        val code = selectedFile.readText(Charsets.UTF_8)
         codePane.tabs.add(codePane.tabs.size - 1, codeTab)
         codePane.selectionModel.select(codeTab)
         val codeArea = getCodeArea()

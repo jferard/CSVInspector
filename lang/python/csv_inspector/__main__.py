@@ -29,10 +29,14 @@ SCRIPT = 1
 state = IGNORE
 script_lines = []
 
+# REPL version, but need one dict per window.
+vars = {}
+
 # This is the main server!
 while True:
     line = sys.stdin.readline().strip()
     if state == IGNORE:
+        # here: read the window id and the mode (REPL or not)
         if line == BEGIN_SCRIPT:
             state = SCRIPT
             script_lines = []
@@ -43,7 +47,7 @@ while True:
             script = "\n".join(script_lines)
             print("server/execute script: {} chars".format(len(script)))
             try:
-                execute_script(script)
+                execute_script(script, vars)
             except Exception as e:
                 traceback.print_exc()
 

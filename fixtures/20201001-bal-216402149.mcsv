@@ -1,0 +1,12 @@
+domain,key,value
+file,encoding,UTF-8
+file,bom,true
+csv,delimiter,;
+csv,double_quote,false
+csv,escape_char,\
+data,col/3/type,integer
+data,col/7/type,float//.
+data,col/8/type,float//.
+data,col/9/type,float//.
+data,col/10/type,float//.
+data,col/12/type,date/yyyy-MM-dd

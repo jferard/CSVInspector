@@ -20,8 +20,9 @@ import itertools
 import sys
 import string
 import types
-from typing import Union, Tuple, List, NewType, Callable, Any, Type, Collection, \
-    Generic, TypeVar, Sequence, Sized, Iterable, Iterator, Container
+from typing import (Union, Tuple, List, NewType, Callable, Any, Type,
+                    Collection, Generic, TypeVar, Sequence, Sized, Iterable,
+                    Iterator, Container)
 
 import numpy as np
 import pandas as pd
@@ -59,8 +60,9 @@ def executed():
     print(f"{TOKEN}executed", file=sys.stderr, flush=True)
 
 
-def execute_script(script):
-    exec(script, {"TOKEN": TOKEN})
+def execute_script(script, vars):
+    vars["TOKEN"] = TOKEN
+    exec(script, vars)
 
 
 def sanitize(text: str) -> str:
@@ -205,7 +207,8 @@ S = TypeVar('S')
 class Column(Generic[S]):
     def __init__(self, name: str, col_type: Type[S], col_values: Collection[S]):
         if col_type != Any:
-           assert all(isinstance(v, col_type) for v in col_values), f"Expected {col_type}, got {set(type(v) for v in col_values)}"
+            assert all(isinstance(v, col_type) for v in
+                       col_values), f"Expected {col_type}, got {set(type(v) for v in col_values)}"
         self.name = name
         self.col_type = col_type
         self.col_values = col_values
@@ -386,7 +389,8 @@ class ColumnGroup(Sized):
                               key=lambda row: tuple(row[i] for i in indices))
         else:
             new_rows = sorted(self.rows(),
-                              key=lambda row: tuple(row[i] for i in indices), reverse=True)
+                              key=lambda row: tuple(row[i] for i in indices),
+                              reverse=True)
         self._replace_values(new_rows)
 
 

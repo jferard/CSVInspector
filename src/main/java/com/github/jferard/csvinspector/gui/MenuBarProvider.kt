@@ -43,7 +43,10 @@ class MenuBarProvider(private val eventBus: EventBus) {
     }
 
     private fun createFileMenu(): Menu {
-        val openMenuItem = createItem("Open", "OPEN", KeyCode.O, KeyCombination.CONTROL_DOWN)
+        val openCSVMenuItem =
+                createItem("Open CSV", "OPEN_CSV", KeyCode.O, KeyCombination.CONTROL_DOWN)
+        val openMenuItem = createItem("Open", "OPEN", KeyCode.O, KeyCombination.CONTROL_DOWN,
+                KeyCodeCombination.SHIFT_DOWN)
         val saveMenuItem = createItem("Save", "SAVE", KeyCode.S, KeyCombination.CONTROL_DOWN)
         val saveAsMenuItem =
                 createItem("Save as", "SAVE_AS", KeyCode.S, KeyCombination.CONTROL_DOWN,
@@ -53,7 +56,8 @@ class MenuBarProvider(private val eventBus: EventBus) {
         val quitMenuItem = createItem("Quit", "QUIT", KeyCode.Q, KeyCombination.CONTROL_DOWN)
         val menuFile = Menu("File")
         menuFile.items
-                .addAll(openMenuItem, saveMenuItem, saveAsMenuItem, SeparatorMenuItem(),
+                .addAll(openCSVMenuItem, openMenuItem, saveMenuItem, saveAsMenuItem,
+                        SeparatorMenuItem(),
                         executeMenuItem, restartMenuItem, SeparatorMenuItem(), quitMenuItem)
         return menuFile
     }

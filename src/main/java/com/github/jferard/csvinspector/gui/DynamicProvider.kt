@@ -133,4 +133,16 @@ class DynamicProvider {
         }
         return dialog
     }
+
+    fun createMetaCSVTab(metaCSVFile: File): Tab {
+        val tableView = MetaCSVAreaProvider().get(metaCSVFile)
+        val oneScriptPane = ScrollPane()
+        oneScriptPane.content = tableView
+
+        oneScriptPane.vbarPolicy = ScrollPane.ScrollBarPolicy.ALWAYS
+        oneScriptPane.prefHeight = 500.0
+        oneScriptPane.isFitToWidth = true
+        oneScriptPane.isFitToHeight = true
+        return Tab(metaCSVFile.name, oneScriptPane)
+    }
 }

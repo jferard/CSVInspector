@@ -26,6 +26,7 @@ import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import org.fxmisc.richtext.CodeArea
 import org.fxmisc.richtext.LineNumberFactory
+import org.fxmisc.richtext.NavigationActions
 import org.fxmisc.richtext.model.StyleSpans
 import org.fxmisc.richtext.model.StyleSpansBuilder
 import java.time.Duration
@@ -33,7 +34,14 @@ import java.util.regex.Pattern
 
 class CodeAreaProvider {
     fun get(): CodeArea {
-        val codeArea = CodeArea()
+        val codeArea = object: CodeArea() {
+            override fun paragraphStart(selectionPolicy: NavigationActions.SelectionPolicy?) {
+                println("move up")
+            }
+            override fun nextChar(selectionPolicy: NavigationActions.SelectionPolicy) {
+                println("move")
+            }
+        }
         codeArea.paragraphGraphicFactory = LineNumberFactory.get(codeArea)
         val pattern = getPattern()
         codeArea.multiPlainChanges()
