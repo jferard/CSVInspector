@@ -22,8 +22,11 @@ package com.github.jferard.csvinspector.gui
 
 import com.github.jferard.csvinspector.exec.ExecutionEnvironment
 import com.github.jferard.csvinspector.util.*
+import com.github.jferard.javamcsv.MetaCSVParser
+import com.github.jferard.javamcsv.MetaCSVReader
 import com.google.common.eventbus.Subscribe
 import javafx.concurrent.Task
+import javafx.scene.Node
 import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.paint.Color.RED
@@ -34,6 +37,7 @@ import javafx.stage.Stage
 import org.apache.commons.csv.CSVFormat
 import org.fxmisc.richtext.CodeArea
 import java.io.File
+import java.io.FileInputStream
 import java.io.StringReader
 
 
@@ -48,6 +52,23 @@ class CSVInspectorGUI(
 
     init {
         this.executeOneScript("print('Python server ready...')")
+    }
+
+    @Subscribe
+    private fun display(e: CSVRowsEvent) {
+        println("*** EDATA: ${e.rows}")
+        val tabPane = ScrollPane()
+        tabPane.hbarPolicy = ScrollPane.ScrollBarPolicy.ALWAYS
+        tabPane.vbarPolicy = ScrollPane.ScrollBarPolicy.ALWAYS
+        tabPane.prefHeight = 500.0
+        tabPane.isFitToHeight = true
+        tabPane.isFitToWidth = true
+        tabPane.content =
+                dynamicProvider.createTableView2(e.rows)
+        val tab = Tab("show ${csvPane.tabs.size}", tabPane)
+        tab.isClosable = true
+        csvPane.tabs.add(tab)
+        csvPane.selectionModel.select(tab)
     }
 
     @Subscribe
@@ -159,9 +180,24 @@ class CSVInspectorGUI(
 
     private fun executeScript() {
         csvPane.tabs.clear()
-        val codeArea = getCodeArea()
-        val code = codeArea.text
-        executeOneScript(code)
+        val node = getCurScrollPaneContent()
+        when (node) {
+            is CodeArea -> {
+                val code = node.text
+                executeOneScript(code)
+            }
+            is TableView<*> -> {
+                val metaRows = sequence {
+                    yield(listOf("domain", "key", "value"))
+                    yieldAll(node.items as List<Iterable<String>>)
+                }
+                val csvFile = node.userData as File
+                showCSV(csvFile, metaRows)
+            }
+            else -> {
+                println("Can't execute " + node)
+            }
+        }
     }
 
     private fun restartInterpreter() {
@@ -173,10 +209,23 @@ class CSVInspectorGUI(
         Thread(task).start()
     }
 
+    private fun showCSV(csvFile: File, rows: Sequence<Iterable<String>>) {
+        val data = MetaCSVParser(rows.toList().filter { it.all { it.isNotEmpty() } }).parse()
+        val reader = MetaCSVReader.create(FileInputStream(csvFile), data)
+        val rows = reader.toList()
+        val task: Task<Unit> = executionEnvironment.createCSV(rows)
+        Thread(task).start()
+    }
+
     private fun getCodeArea(): CodeArea {
+        val node = getCurScrollPaneContent()
+        return node as CodeArea
+    }
+
+    private fun getCurScrollPaneContent(): Node {
         val tab = codePane.selectionModel.selectedItem
         val pane = tab.content as ScrollPane
-        return pane.content as CodeArea
+        return pane.content
     }
 
     private fun getCodeTabName(): String {
@@ -191,7 +240,7 @@ class CSVInspectorGUI(
 
     private fun openCSV() {
         val fileChooser = FileChooser()
-        fileChooser.title = "Open Script File"
+        fileChooser.title = "Open CSV File"
         val selectedFile = fileChooser.showOpenDialog(primaryStage) ?: return
         addCSVPane(selectedFile)
     }
@@ -302,17 +351,17 @@ end_info()""")
     }
 
     private fun addCSVPane(selectedFile: File) {
-        val metaCSVFile = if (selectedFile.extension == ".mcsv") {
-            selectedFile
-        } else {
-            File(selectedFile.parent, selectedFile.nameWithoutExtension + ".mcsv")
+        if (selectedFile.extension == ".mcsv") {
+            // TODO: display error message
+            return
         }
-        val cur = codePane.tabs.find { it.userData == metaCSVFile }
+        val metaCSVFile = File(selectedFile.parent, selectedFile.nameWithoutExtension + ".mcsv")
+        val cur = codePane.tabs.find { it.userData == selectedFile }
         if (cur != null) {
             codePane.selectionModel.select(cur)
             return
         }
-        val codeTab = dynamicProvider.createMetaCSVTab(metaCSVFile)
+        val codeTab = dynamicProvider.createMetaCSVTab(selectedFile, metaCSVFile)
         codePane.tabs.add(codePane.tabs.size - 1, codeTab)
         codePane.selectionModel.select(codeTab)
         /**

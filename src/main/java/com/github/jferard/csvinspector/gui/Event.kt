@@ -20,10 +20,13 @@
 
 package com.github.jferard.csvinspector.gui
 
+import com.github.jferard.javamcsv.MetaCSVRecord
+
 interface ScriptEvent {
     val data: String
 }
 class CSVEvent(override val data: String) : ScriptEvent
+class CSVRowsEvent(val rows: List<MetaCSVRecord>)
 class ErrEvent(override val data: String): ScriptEvent
 class InfoEvent(override val data: String): ScriptEvent
 class OutEvent(override val data: String): ScriptEvent

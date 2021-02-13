@@ -6,11 +6,23 @@ import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
 import javafx.scene.control.cell.TextFieldTableCell
 import javafx.util.Callback
+import org.apache.commons.csv.CSVFormat
 import java.io.File
+import java.io.FileInputStream
+import java.io.InputStreamReader
 
 class MetaCSVAreaProvider {
-    fun get(metaCSVFile: File): TableView<List<String>> {
-        val tableView = TableView<List<String>>()
+    private val tableView = TableView<List<String>>()
+
+    fun get(csvFile: File, metaCSVFile: File): TableView<List<String>> {
+        addColumns()
+        addRows(metaCSVFile)
+        tableView.isEditable = true
+        tableView.userData = csvFile
+        return tableView
+    }
+
+    private fun addColumns() {
         tableView.columns.addAll(arrayOf("domain", "key", "value").withIndex().map { indexedCol ->
             val tableColumn = TableColumn<List<String>, String>(indexedCol.value)
             tableColumn.isEditable = true
@@ -35,14 +47,40 @@ class MetaCSVAreaProvider {
             }
             tableColumn
         })
-        tableView.isEditable = true
+    }
+
+    private fun addRows(metaCSVFile: File) {
         val array = if (metaCSVFile.exists()) {
-            arrayOf(listOf("file", "key", "value"), listOf("", "", ""))
+            readDirectives(metaCSVFile)
         } else {
-            // TODO: guess the type
-            (1..10).map { listOf("", "", "") }.toTypedArray()
+            guessDirectives()
         }
         tableView.items.addAll(*array)
-        return tableView
+    }
+
+    private fun guessDirectives(): Array<List<String>> {
+        // TODO: guess the type
+        // <dependency>
+        //    <groupId>jchardet</groupId>
+        //    <artifactId>jchardet</artifactId>
+        //    <version>1.1.0</version>
+        //</dependency>
+        // copy python csv detector.
+        return (1..10).map { listOf("", "", "") }.toTypedArray()
+    }
+
+    private fun readDirectives(
+            metaCSVFile: File): Array<List<String>> {
+        val reader = InputStreamReader(FileInputStream(metaCSVFile), Charsets.UTF_8)
+        val records = CSVFormat.DEFAULT.parse(reader).records
+        return reader.use {
+            val header = records.take(1)
+            if (header.isEmpty() || header[0].toList() != listOf("domain", "key", "value")) {
+                arrayOf(listOf("invalid", "mcsv", "file"))
+            }
+            records.drop(1).map {
+                it.toList()
+            }.toTypedArray()
+        }
     }
 }

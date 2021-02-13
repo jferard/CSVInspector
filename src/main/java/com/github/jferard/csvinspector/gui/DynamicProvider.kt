@@ -20,6 +20,7 @@
 
 package com.github.jferard.csvinspector.gui
 
+import com.github.jferard.javamcsv.MetaCSVRecord
 import javafx.application.Platform
 import javafx.beans.property.ReadOnlyStringWrapper
 import javafx.geometry.Insets
@@ -67,6 +68,19 @@ class DynamicProvider {
         return tableView
     }
 
+    fun createTableView2(rows: List<MetaCSVRecord>): TableView<List<String>> {
+        val tableView = TableView<List<String>>()
+        val records = rows
+        val headerRecord = records[0]
+        val types = (0 until headerRecord.size()).map { "TD" }
+        val header = (0 until headerRecord.size()).map { headerRecord.getText(it).toString() }
+
+        tableView.columns.add(createFirstColumn())
+        tableView.columns.addAll(createOtherColumns(header, types))
+        tableView.items.addAll(createRows2(records))
+        return tableView
+    }
+
     private fun createFirstColumn(): TableColumn<List<String>, String> {
         val firstColumn = TableColumn<List<String>, String>("#")
         firstColumn.cellValueFactory = Callback { row ->
@@ -75,8 +89,8 @@ class DynamicProvider {
         return firstColumn
     }
 
-    private fun createOtherColumns(header: CSVRecord,
-                                   types: CSVRecord): List<TableColumn<List<String>, String>> {
+    private fun createOtherColumns(header: Iterable<String>,
+                                   types: Iterable<String>): List<TableColumn<List<String>, String>> {
         return header.zip(types).withIndex().map {
             val column = TableColumn<List<String>, String>(
                     "[${it.index}: ${it.value.second}]\n${it.value.first}")
@@ -88,9 +102,17 @@ class DynamicProvider {
         }
     }
 
-    private fun createRows(records: MutableList<CSVRecord>) =
+    private fun createRows(records: List<CSVRecord>) =
             records.subList(2, records.size).withIndex()
                     .map { listOf(it.index.toString()) + it.value.toList() }
+
+    private fun createRows2(records: List<MetaCSVRecord>) =
+            records.subList(1, records.size).withIndex()
+                    .map {
+                        listOf(it.index.toString()) + it.value.map { value ->
+                            value?.toString() ?: "<NULL>"
+                        }
+                    }
 
     fun createFindDialog(): Dialog<Pair<String, String>> {
         val dialog: Dialog<Pair<String, String>> = Dialog()
@@ -134,15 +156,17 @@ class DynamicProvider {
         return dialog
     }
 
-    fun createMetaCSVTab(metaCSVFile: File): Tab {
-        val tableView = MetaCSVAreaProvider().get(metaCSVFile)
-        val oneScriptPane = ScrollPane()
-        oneScriptPane.content = tableView
+    fun createMetaCSVTab(csvFile: File, metaCSVFile: File): Tab {
+        val tableView = MetaCSVAreaProvider().get(csvFile, metaCSVFile)
+        val onePane = ScrollPane()
+        onePane.content = tableView
 
-        oneScriptPane.vbarPolicy = ScrollPane.ScrollBarPolicy.ALWAYS
-        oneScriptPane.prefHeight = 500.0
-        oneScriptPane.isFitToWidth = true
-        oneScriptPane.isFitToHeight = true
-        return Tab(metaCSVFile.name, oneScriptPane)
+        onePane.vbarPolicy = ScrollPane.ScrollBarPolicy.ALWAYS
+        onePane.prefHeight = 500.0
+        onePane.isFitToWidth = true
+        onePane.isFitToHeight = true
+        val tab = Tab(metaCSVFile.name, onePane)
+        tab.userData = csvFile
+        return tab
     }
 }
