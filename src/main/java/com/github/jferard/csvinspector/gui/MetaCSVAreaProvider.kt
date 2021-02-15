@@ -1,5 +1,8 @@
 package com.github.jferard.csvinspector.gui
 
+import com.github.jferard.csvsniffer.CSVSniffer
+import com.github.jferard.javamcsv.MetaCSVPrinter
+import com.github.jferard.javamcsv.MetaCSVRenderer
 import javafx.beans.property.SimpleStringProperty
 import javafx.event.EventHandler
 import javafx.scene.control.TableColumn
@@ -7,16 +10,21 @@ import javafx.scene.control.TableView
 import javafx.scene.control.cell.TextFieldTableCell
 import javafx.util.Callback
 import org.apache.commons.csv.CSVFormat
-import java.io.File
-import java.io.FileInputStream
-import java.io.InputStreamReader
+import org.apache.commons.csv.CSVPrinter
+import org.mozilla.intl.chardet.HtmlCharsetDetector
+import org.mozilla.intl.chardet.HtmlCharsetDetector.found
+import org.mozilla.intl.chardet.nsDetector
+import org.mozilla.intl.chardet.nsICharsetDetectionObserver
+import java.io.*
+import java.nio.charset.Charset
+
 
 class MetaCSVAreaProvider {
     private val tableView = TableView<List<String>>()
 
     fun get(csvFile: File, metaCSVFile: File): TableView<List<String>> {
         addColumns()
-        addRows(metaCSVFile)
+        addRows(csvFile, metaCSVFile)
         tableView.isEditable = true
         tableView.userData = csvFile
         return tableView
@@ -49,24 +57,33 @@ class MetaCSVAreaProvider {
         })
     }
 
-    private fun addRows(metaCSVFile: File) {
+    private fun addRows(csvFile: File, metaCSVFile: File) {
         val array = if (metaCSVFile.exists()) {
             readDirectives(metaCSVFile)
         } else {
-            guessDirectives()
+            guessDirectives(csvFile)
         }
         tableView.items.addAll(*array)
     }
 
-    private fun guessDirectives(): Array<List<String>> {
-        // TODO: guess the type
-        // <dependency>
-        //    <groupId>jchardet</groupId>
-        //    <artifactId>jchardet</artifactId>
-        //    <version>1.1.0</version>
-        //</dependency>
-        // copy python csv detector.
-        return (1..10).map { listOf("", "", "") }.toTypedArray()
+    private fun guessDirectives(csvFile: File): Array<List<String>> {
+        val inputStream = FileInputStream(csvFile)
+        inputStream.use {
+            val data = CSVSniffer.create().sniff(inputStream)
+            val directives: MutableList<List<String>>  = mutableListOf()
+            val printer = object : MetaCSVPrinter {
+                override fun printRecord(domain: String, key: String, value: Any) {
+                    val directive = listOf(domain, key, value.toString())
+                    directives.add(directive)
+                }
+
+                override fun flush() {
+                    // do nothing
+                }
+            }
+            MetaCSVRenderer(printer, false).render(data)
+            return directives.drop(1).toTypedArray()
+        }
     }
 
     private fun readDirectives(
