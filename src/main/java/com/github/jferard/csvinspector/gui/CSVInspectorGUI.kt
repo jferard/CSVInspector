@@ -187,17 +187,21 @@ class CSVInspectorGUI(
                 executeOneScript(code)
             }
             is TableView<*> -> {
-                val metaRows = sequence {
-                    yield(listOf("domain", "key", "value"))
-                    yieldAll(node.items as List<Iterable<String>>)
-                }
-                val csvFile = node.userData as File
-                showCSV(csvFile, metaRows)
+                showCSV(node)
             }
             else -> {
                 println("Can't execute " + node)
             }
         }
+    }
+
+    private fun showCSV(node: TableView<*>) {
+        val metaRows = sequence {
+            yield(listOf("domain", "key", "value"))
+            yieldAll(node.items as List<Iterable<String>>)
+        }
+        val csvFile = node.userData as File
+        showCSV(csvFile, metaRows)
     }
 
     private fun restartInterpreter() {
@@ -364,6 +368,7 @@ end_info()""")
         val codeTab = dynamicProvider.createMetaCSVTab(selectedFile, metaCSVFile)
         codePane.tabs.add(codePane.tabs.size - 1, codeTab)
         codePane.selectionModel.select(codeTab)
+        showCSV((codeTab.content as ScrollPane).content as TableView<*>)
         /**
         val code = selectedFile.readText(Charsets.UTF_8)
         val codeArea = getCodeArea()

@@ -1,22 +1,15 @@
 package com.github.jferard.csvinspector.gui
 
 import com.github.jferard.csvsniffer.CSVSniffer
-import com.github.jferard.javamcsv.MetaCSVPrinter
-import com.github.jferard.javamcsv.MetaCSVRenderer
+import com.github.jferard.javamcsv.*
 import javafx.beans.property.SimpleStringProperty
 import javafx.event.EventHandler
 import javafx.scene.control.TableColumn
 import javafx.scene.control.TableView
 import javafx.scene.control.cell.TextFieldTableCell
 import javafx.util.Callback
-import org.apache.commons.csv.CSVFormat
-import org.apache.commons.csv.CSVPrinter
-import org.mozilla.intl.chardet.HtmlCharsetDetector
-import org.mozilla.intl.chardet.HtmlCharsetDetector.found
-import org.mozilla.intl.chardet.nsDetector
-import org.mozilla.intl.chardet.nsICharsetDetectionObserver
-import java.io.*
-import java.nio.charset.Charset
+import java.io.File
+import java.io.FileInputStream
 
 
 class MetaCSVAreaProvider {
@@ -49,9 +42,19 @@ class MetaCSVAreaProvider {
                                 indexedValue.value
                             }
                         }
-                if (it.tablePosition.row == tableView.items.size - 1) {
-                    tableView.items.add(listOf("", "", ""))
+                val row: Int
+                val col: Int
+                if (it.tablePosition.column == tableView.columns.size - 1) {
+                    if (it.tablePosition.row == tableView.items.size - 1) {
+                        tableView.items.add(listOf("", "", ""))
+                    }
+                    row = it.tablePosition.row + 1
+                    col = 0
+                } else {
+                    row = it.tablePosition.row
+                    col = it.tablePosition.column + 1
                 }
+                tableView.selectionModel.clearAndSelect(row, tableView.columns[col])
             }
             tableColumn
         })
@@ -59,7 +62,7 @@ class MetaCSVAreaProvider {
 
     private fun addRows(csvFile: File, metaCSVFile: File) {
         val array = if (metaCSVFile.exists()) {
-            readDirectives(metaCSVFile)
+            readDirectives(metaCSVFile, csvFile)
         } else {
             guessDirectives(csvFile)
         }
@@ -70,34 +73,43 @@ class MetaCSVAreaProvider {
         val inputStream = FileInputStream(csvFile)
         inputStream.use {
             val data = CSVSniffer.create().sniff(inputStream)
-            val directives: MutableList<List<String>>  = mutableListOf()
-            val printer = object : MetaCSVPrinter {
-                override fun printRecord(domain: String, key: String, value: Any) {
-                    val directive = listOf(domain, key, value.toString())
-                    directives.add(directive)
-                }
-
-                override fun flush() {
-                    // do nothing
-                }
-            }
-            MetaCSVRenderer(printer, false).render(data)
-            return directives.drop(1).toTypedArray()
+            return directivesFromData(data, csvFile)
         }
     }
 
-    private fun readDirectives(
-            metaCSVFile: File): Array<List<String>> {
-        val reader = InputStreamReader(FileInputStream(metaCSVFile), Charsets.UTF_8)
-        val records = CSVFormat.DEFAULT.parse(reader).records
-        return reader.use {
-            val header = records.take(1)
-            if (header.isEmpty() || header[0].toList() != listOf("domain", "key", "value")) {
-                arrayOf(listOf("invalid", "mcsv", "file"))
+    private fun directivesFromData(
+            data: MetaCSVData,
+            csvFile: File): Array<List<String>> {
+        val directives: MutableList<List<String>> = mutableListOf()
+        val printer = object : MetaCSVPrinter {
+            override fun printRecord(domain: String, key: String, value: Any) {
+                val directive = listOf(domain, key, value.toString())
+                directives.add(directive)
             }
-            records.drop(1).map {
-                it.toList()
-            }.toTypedArray()
+
+            override fun flush() {
+                // do nothing
+            }
+        }
+        MetaCSVRenderer(printer, false).render(data)
+        val inputStream = FileInputStream(csvFile)
+        val reader = MetaCSVReader.create(inputStream, data)
+        reader.use {
+            reader.first { rec ->
+                directives.addAll(
+                        (0 until rec.size()).map { listOf("data", "col/$it/type", "text") })
+            }
+        }
+        return directives.drop(1).toTypedArray()
+    }
+
+    private fun readDirectives(
+            metaCSVFile: File, csvFile: File): Array<List<String>> {
+        val inputStream = FileInputStream(metaCSVFile)
+        inputStream.use {
+            val parser = MetaCSVParser.create(inputStream)
+            val data = parser.parse()
+            return directivesFromData(data, csvFile)
         }
     }
 }
