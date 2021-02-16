@@ -21,6 +21,7 @@
 package com.github.jferard.csvinspector.exec
 
 import com.github.jferard.csvinspector.gui.CSVRowsEvent
+import com.github.jferard.javamcsv.MetaCSVData
 import com.github.jferard.javamcsv.MetaCSVRecord
 import com.google.common.eventbus.EventBus
 import javafx.application.Platform
@@ -50,11 +51,11 @@ class ExecutionEnvironment(private val executor: PythonExecutor,
         oldProcess.destroy()
     }
 
-    fun createCSV(rows: List<MetaCSVRecord>): Task<Unit> {
+    fun createCSV(rows: List<MetaCSVRecord>, data: MetaCSVData): Task<Unit> {
         return object: Task<Unit>() {
             override fun call() {
                 Platform.runLater {
-                    eventBus.post(CSVRowsEvent(rows))
+                    eventBus.post(CSVRowsEvent(rows, data))
                 }
             }
         }

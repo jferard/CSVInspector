@@ -20,6 +20,7 @@
 
 package com.github.jferard.csvinspector.gui
 
+import com.github.jferard.javamcsv.MetaCSVData
 import com.github.jferard.javamcsv.MetaCSVRecord
 import javafx.application.Platform
 import javafx.beans.property.ReadOnlyStringWrapper
@@ -68,11 +69,11 @@ class DynamicProvider {
         return tableView
     }
 
-    fun createTableView2(rows: List<MetaCSVRecord>): TableView<List<String>> {
+    fun createTableView2(rows: List<MetaCSVRecord>, data: MetaCSVData): TableView<List<String>> {
         val tableView = TableView<List<String>>()
         val records = rows
         val headerRecord = records[0]
-        val types = (0 until headerRecord.size()).map { "TD" }
+        val types = (0 until headerRecord.size()).map { data.getDescription(it).dataType.toString() }
         val header = (0 until headerRecord.size()).map { headerRecord.getText(it).toString() }
 
         tableView.columns.add(createFirstColumn())

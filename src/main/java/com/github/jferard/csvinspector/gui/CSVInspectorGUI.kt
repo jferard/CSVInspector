@@ -64,7 +64,7 @@ class CSVInspectorGUI(
         tabPane.isFitToHeight = true
         tabPane.isFitToWidth = true
         tabPane.content =
-                dynamicProvider.createTableView2(e.rows)
+                dynamicProvider.createTableView2(e.rows, e.data)
         val tab = Tab("show ${csvPane.tabs.size}", tabPane)
         tab.isClosable = true
         csvPane.tabs.add(tab)
@@ -216,8 +216,8 @@ class CSVInspectorGUI(
     private fun showCSV(csvFile: File, rows: Sequence<Iterable<String>>) {
         val data = MetaCSVParser(rows.toList().filter { it.all { it.isNotEmpty() } }).parse()
         val reader = MetaCSVReader.create(FileInputStream(csvFile), data)
-        val rows = reader.toList()
-        val task: Task<Unit> = executionEnvironment.createCSV(rows)
+        val rows = reader.toMutableList()
+        val task: Task<Unit> = executionEnvironment.createCSV(rows, data)
         Thread(task).start()
     }
 
