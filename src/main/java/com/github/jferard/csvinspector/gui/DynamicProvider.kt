@@ -34,18 +34,18 @@ import java.io.File
 
 class DynamicProvider {
     fun createEmptyCodePane(codePane: TabPane) {
-        val codeTab = createCodeTab("Untitled")
+        val codeTab = createNamedCodeTab("Untitled")
         codePane.tabs.add(codePane.tabs.size - 1, codeTab)
         codePane.selectionModel.select(codeTab)
     }
 
     fun createCodeTab(file: File): Tab {
-        val tab = createCodeTab(file.name)
-        tab.userData = file
+        val tab = createNamedCodeTab(file.name)
+        tab.userData = CodeUserData(file)
         return tab
     }
 
-    private fun createCodeTab(name: String): Tab {
+    private fun createNamedCodeTab(name: String): Tab {
         val codeArea = CodeAreaProvider().get()
         val oneScriptPane = ScrollPane()
         oneScriptPane.content = codeArea
@@ -73,7 +73,10 @@ class DynamicProvider {
         val tableView = TableView<List<String>>()
         val records = rows
         val headerRecord = records[0]
-        val types = (0 until headerRecord.size()).map { data.getDescription(it).dataType.toString() }
+        val types = (0 until headerRecord.size()).map { when (val description = data.getDescription(it)) {
+                null -> "text"
+                else -> description.dataType.toString()
+        } }
         val header = (0 until headerRecord.size()).map { headerRecord.getText(it).toString() }
 
         tableView.columns.add(createFirstColumn())
@@ -158,16 +161,17 @@ class DynamicProvider {
     }
 
     fun createMetaCSVTab(csvFile: File, metaCSVFile: File): Tab {
-        val tableView = MetaCSVAreaProvider().get(csvFile, metaCSVFile)
+        val codeArea = MetaCSVAreaProvider2().get(csvFile, metaCSVFile)
+        println(codeArea.userData != null)
         val onePane = ScrollPane()
-        onePane.content = tableView
+        onePane.content = codeArea
 
         onePane.vbarPolicy = ScrollPane.ScrollBarPolicy.ALWAYS
         onePane.prefHeight = 500.0
         onePane.isFitToWidth = true
         onePane.isFitToHeight = true
         val tab = Tab(metaCSVFile.name, onePane)
-        tab.userData = csvFile
+        tab.userData = MetaCSVUserData(csvFile)
         return tab
     }
 }

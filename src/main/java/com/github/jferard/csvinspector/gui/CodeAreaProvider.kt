@@ -64,6 +64,9 @@ class CodeAreaProvider {
             }
         }
         codeArea.isWrapText = true
+        val resource = CSVInspectorGUI::class.java.getResource("/python.css")
+        codeArea.stylesheets
+                .add(resource.toExternalForm())
         return codeArea
     }
 

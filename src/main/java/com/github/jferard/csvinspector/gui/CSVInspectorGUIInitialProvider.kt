@@ -21,7 +21,6 @@
 package com.github.jferard.csvinspector.gui
 
 import com.github.jferard.csvinspector.exec.ExecutionEnvironment
-import com.github.jferard.csvinspector.util.CODE_EXAMPLE
 import com.google.common.eventbus.EventBus
 import javafx.event.EventHandler
 import javafx.scene.Scene
@@ -64,11 +63,7 @@ class CSVInspectorGUIInitialProvider(
     private fun createScene(menuBar: MenuBar,
                             workbench: GridPane): Scene {
         val root = createRoot(menuBar, workbench)
-        val scene = Scene(root, 1000.0, 1000.0)
-        val resource = CSVInspectorGUI::class.java.getResource("/python.css")
-        scene.stylesheets
-                .add(resource.toExternalForm())
-        return scene
+        return Scene(root, 1000.0, 1000.0)
     }
 
     private fun createRoot(menuBar: MenuBar,

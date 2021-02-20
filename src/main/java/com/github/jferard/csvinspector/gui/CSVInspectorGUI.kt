@@ -35,6 +35,7 @@ import javafx.scene.text.TextFlow
 import javafx.stage.FileChooser
 import javafx.stage.Stage
 import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVParser
 import org.fxmisc.richtext.CodeArea
 import java.io.File
 import java.io.FileInputStream
@@ -184,10 +185,13 @@ class CSVInspectorGUI(
         when (node) {
             is CodeArea -> {
                 val code = node.text
-                executeOneScript(code)
-            }
-            is TableView<*> -> {
-                showCSV(node)
+                when (val userData = getCurTab().userData) {
+                    is MetaCSVUserData -> showCSV(node, userData.file)
+                    is CodeUserData -> executeOneScript(code)
+                    else -> {
+                        println("Can't execute " + node)
+                    }
+                }
             }
             else -> {
                 println("Can't execute " + node)
@@ -195,13 +199,9 @@ class CSVInspectorGUI(
         }
     }
 
-    private fun showCSV(node: TableView<*>) {
-        val metaRows = sequence {
-            yield(listOf("domain", "key", "value"))
-            yieldAll(node.items as List<Iterable<String>>)
-        }
-        val csvFile = node.userData as File
-        showCSV(csvFile, metaRows)
+    private fun showCSV(node: CodeArea, csvFile: File) {
+        val reader = CSVParser(StringReader(node.text), CSVFormat.DEFAULT.withDelimiter('\t'))
+        showCSV(csvFile, reader)
     }
 
     private fun restartInterpreter() {
@@ -213,7 +213,7 @@ class CSVInspectorGUI(
         Thread(task).start()
     }
 
-    private fun showCSV(csvFile: File, rows: Sequence<Iterable<String>>) {
+    private fun showCSV(csvFile: File, rows: Iterable<Iterable<String>>) {
         val data = MetaCSVParser(rows.toList().filter { it.all { it.isNotEmpty() } }).parse()
         val reader = MetaCSVReader.create(FileInputStream(csvFile), data)
         val rows = reader.toMutableList()
@@ -227,19 +227,21 @@ class CSVInspectorGUI(
     }
 
     private fun getCurScrollPaneContent(): Node {
-        val tab = codePane.selectionModel.selectedItem
+        val tab = getCurTab()
         val pane = tab.content as ScrollPane
         return pane.content
     }
 
+    private fun getCurTab() = codePane.selectionModel.selectedItem
+
     private fun getCodeTabName(): String {
-        val tab = codePane.selectionModel.selectedItem
+        val tab = getCurTab()
         return tab.text
     }
 
-    private fun getCodeTabFile(): File? {
-        val tab = codePane.selectionModel.selectedItem
-        return tab.userData as File?
+    private fun getCodeTabFile(): File {
+        val tab = getCurTab()
+        return (tab.userData as UserData).file
     }
 
     private fun openCSV() {
@@ -360,7 +362,7 @@ end_info()""")
             return
         }
         val metaCSVFile = File(selectedFile.parent, selectedFile.nameWithoutExtension + ".mcsv")
-        val cur = codePane.tabs.find { it.userData == selectedFile }
+        val cur = codePane.tabs.find { (it.userData as? UserData)?.file == selectedFile }
         if (cur != null) {
             codePane.selectionModel.select(cur)
             return
@@ -368,7 +370,7 @@ end_info()""")
         val codeTab = dynamicProvider.createMetaCSVTab(selectedFile, metaCSVFile)
         codePane.tabs.add(codePane.tabs.size - 1, codeTab)
         codePane.selectionModel.select(codeTab)
-        showCSV((codeTab.content as ScrollPane).content as TableView<*>)
+        showCSV(getCodeArea(), getCodeTabFile())
         /**
         val code = selectedFile.readText(Charsets.UTF_8)
         val codeArea = getCodeArea()
@@ -409,7 +411,7 @@ end_info()""")
 
     private fun setCodeTabFile(selectedFile: File) {
         val tab = codePane.selectionModel.selectedItem
-        tab.userData = selectedFile
+        tab.userData = CodeUserData(selectedFile)
         tab.text = selectedFile.name
     }
 
