@@ -28,7 +28,6 @@ import javafx.geometry.Insets
 import javafx.scene.control.*
 import javafx.scene.layout.GridPane
 import javafx.util.Callback
-import org.apache.commons.csv.CSVParser
 import org.apache.commons.csv.CSVRecord
 import java.io.File
 
@@ -57,31 +56,31 @@ class DynamicProvider {
         return Tab(name, oneScriptPane)
     }
 
-    fun createTableView(parse: CSVParser): TableView<List<String>> {
+    fun createTableViewFromCSVRecords(records: Iterable<CSVRecord>): TableView<List<String>> {
         val tableView = TableView<List<String>>()
-        val records = parse.records
-        val types = records[0]
-        val header = records[1]
+        val headerAndTypes = records.take(2)
+        val types = headerAndTypes.first()
+        val header = headerAndTypes.last()
 
         tableView.columns.add(createFirstColumn())
         tableView.columns.addAll(createOtherColumns(header, types))
-        tableView.items.addAll(createRows(records))
+        tableView.items.addAll(createRowsFromCSVRecords(records))
         return tableView
     }
 
-    fun createTableView2(rows: List<MetaCSVRecord>, data: MetaCSVData): TableView<List<String>> {
+    fun createMetaTableViewFromMetaCSVRecords(rows: List<MetaCSVRecord>, data: MetaCSVData): TableView<List<String>> {
         val tableView = TableView<List<String>>()
-        val records = rows
-        val headerRecord = records[0]
-        val types = (0 until headerRecord.size()).map { when (val description = data.getDescription(it)) {
-                null -> "text"
+        val headerRecord = rows[0]
+        val types = (0 until headerRecord.size()).map { when (val description = data.getDescription(
+                it)) {
+            null -> "text"
                 else -> description.dataType.toString()
         } }
         val header = (0 until headerRecord.size()).map { headerRecord.getText(it).toString() }
 
         tableView.columns.add(createFirstColumn())
         tableView.columns.addAll(createOtherColumns(header, types))
-        tableView.items.addAll(createRows2(records))
+        tableView.items.addAll(createRowsFromMetaCSVRecords(rows))
         return tableView
     }
 
@@ -106,11 +105,11 @@ class DynamicProvider {
         }
     }
 
-    private fun createRows(records: List<CSVRecord>) =
-            records.subList(2, records.size).withIndex()
+    private fun createRowsFromCSVRecords(records: Iterable<CSVRecord>) =
+            records.withIndex()
                     .map { listOf(it.index.toString()) + it.value.toList() }
 
-    private fun createRows2(records: List<MetaCSVRecord>) =
+    private fun createRowsFromMetaCSVRecords(records: List<MetaCSVRecord>) =
             records.subList(1, records.size).withIndex()
                     .map {
                         listOf(it.index.toString()) + it.value.map { value ->
@@ -161,8 +160,7 @@ class DynamicProvider {
     }
 
     fun createMetaCSVTab(csvFile: File, metaCSVFile: File): Tab {
-        val codeArea = MetaCSVAreaProvider2().get(csvFile, metaCSVFile)
-        println(codeArea.userData != null)
+        val codeArea = MetaCSVCodeAreaProvider().get()
         val onePane = ScrollPane()
         onePane.content = codeArea
 
@@ -170,8 +168,11 @@ class DynamicProvider {
         onePane.prefHeight = 500.0
         onePane.isFitToWidth = true
         onePane.isFitToHeight = true
-        val tab = Tab(metaCSVFile.name, onePane)
-        tab.userData = MetaCSVFileHandler(csvFile, metaCSVFile)
-        return tab
+        val metaTab = Tab(metaCSVFile.name, onePane)
+        val tab = TabWrapper(metaTab)
+        val handler = MetaCSVFileHandler(csvFile, metaCSVFile)
+        tab.text = handler.load()
+        tab.handler = handler
+        return metaTab
     }
 }

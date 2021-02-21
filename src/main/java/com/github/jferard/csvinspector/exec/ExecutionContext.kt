@@ -97,7 +97,7 @@ class ExecutionContext(private val token: String,
 
     fun show(data: String) {
         Platform.runLater {
-            eventBus.post(CSVEvent(data))
+            eventBus.post(RawCSVEvent(data))
         }
     }
 

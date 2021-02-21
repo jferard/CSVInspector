@@ -55,8 +55,7 @@ class CSVInspectorGUI(
     }
 
     @Subscribe
-    private fun display(e: CSVRowsEvent) {
-        println("*** EDATA: ${e.rows}")
+    private fun display(e: MetaCSVEvent) {
         val tabPane = ScrollPane()
         tabPane.hbarPolicy = ScrollPane.ScrollBarPolicy.ALWAYS
         tabPane.vbarPolicy = ScrollPane.ScrollBarPolicy.ALWAYS
@@ -64,7 +63,7 @@ class CSVInspectorGUI(
         tabPane.isFitToHeight = true
         tabPane.isFitToWidth = true
         tabPane.content =
-                dynamicProvider.createTableView2(e.rows, e.data)
+                dynamicProvider.createMetaTableViewFromMetaCSVRecords(e.rows, e.data)
         val tab = Tab("show ${csvPane.tabs.size}", tabPane)
         tab.isClosable = true
         csvPane.tabs.add(tab)
@@ -72,8 +71,7 @@ class CSVInspectorGUI(
     }
 
     @Subscribe
-    private fun display(e: CSVEvent) {
-        println("*** EDATA: ${e.data}")
+    private fun display(e: RawCSVEvent) {
         val tabPane = ScrollPane()
         tabPane.hbarPolicy = ScrollPane.ScrollBarPolicy.ALWAYS
         tabPane.vbarPolicy = ScrollPane.ScrollBarPolicy.ALWAYS
@@ -81,7 +79,7 @@ class CSVInspectorGUI(
         tabPane.isFitToHeight = true
         tabPane.isFitToWidth = true
         tabPane.content =
-                dynamicProvider.createTableView(CSVFormat.DEFAULT.parse(StringReader(e.data)))
+                dynamicProvider.createTableViewFromCSVRecords(CSVFormat.DEFAULT.parse(StringReader(e.data)))
         val tab = Tab("show ${csvPane.tabs.size}", tabPane)
         tab.isClosable = true
         csvPane.tabs.add(tab)
@@ -359,9 +357,8 @@ end_info()""")
         val codeTab = dynamicProvider.createMetaCSVTab(selectedFile, metaCSVFile)
         codePane.tabs.add(codePane.tabs.size - 1, codeTab)
         codePane.selectionModel.select(codeTab)
-        val tab = TabWrapper(codeTab)
-        // TODO: userData.load
-        showCSV(tab)
+        val tabWrapper = TabWrapper(codeTab)
+        showCSV(tabWrapper)
         /**
         val code = selectedFile.readText(Charsets.UTF_8)
         val codeArea = getCodeArea()

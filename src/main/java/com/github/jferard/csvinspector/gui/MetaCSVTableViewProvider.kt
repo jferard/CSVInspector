@@ -12,7 +12,7 @@ import java.io.File
 import java.io.FileInputStream
 
 
-class MetaCSVAreaProvider {
+class MetaCSVTableViewProvider {
     private val tableView = TableView<List<String>>()
 
     fun get(csvFile: File, metaCSVFile: File): TableView<List<String>> {

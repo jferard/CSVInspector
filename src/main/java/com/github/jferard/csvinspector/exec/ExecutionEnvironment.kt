@@ -20,7 +20,7 @@
 
 package com.github.jferard.csvinspector.exec
 
-import com.github.jferard.csvinspector.gui.CSVRowsEvent
+import com.github.jferard.csvinspector.gui.MetaCSVEvent
 import com.github.jferard.javamcsv.MetaCSVData
 import com.github.jferard.javamcsv.MetaCSVRecord
 import com.google.common.eventbus.EventBus
@@ -55,7 +55,7 @@ class ExecutionEnvironment(private val executor: PythonExecutor,
         return object: Task<Unit>() {
             override fun call() {
                 Platform.runLater {
-                    eventBus.post(CSVRowsEvent(rows, data))
+                    eventBus.post(MetaCSVEvent(rows, data))
                 }
             }
         }

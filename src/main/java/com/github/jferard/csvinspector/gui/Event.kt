@@ -26,8 +26,8 @@ import com.github.jferard.javamcsv.MetaCSVRecord
 interface ScriptEvent {
     val data: String
 }
-class CSVEvent(override val data: String) : ScriptEvent
-class CSVRowsEvent(val rows: List<MetaCSVRecord>, val data: MetaCSVData)
+class RawCSVEvent(override val data: String) : ScriptEvent
+class MetaCSVEvent(val rows: List<MetaCSVRecord>, val data: MetaCSVData)
 class ErrEvent(override val data: String): ScriptEvent
 class InfoEvent(override val data: String): ScriptEvent
 class OutEvent(override val data: String): ScriptEvent

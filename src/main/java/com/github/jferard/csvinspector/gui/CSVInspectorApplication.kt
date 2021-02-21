@@ -37,7 +37,7 @@ class CSVInspectorApplication : Application() {
         val gui = CSVInspectorGUIInitialProvider(eventBus, executionEnvironment, menuBarProvider,
                 primaryStage).get()
         eventBus.register(gui)
-        eventBus.post(CSVEvent("TEXT\nPress F5\nTo execute\nthe code"))
+        eventBus.post(RawCSVEvent("CSV\nInspector\nPress F5\nTo execute\nthe code"))
         with(primaryStage) {
             this.isMaximized = true
             this.title = "CSVInspector (C) 2020 - J. Férard"
