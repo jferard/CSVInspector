@@ -41,7 +41,7 @@ class DynamicProvider {
 
     fun createCodeTab(file: File): Tab {
         val tab = createNamedCodeTab(file.name)
-        tab.userData = CodeUserData(file)
+        tab.userData = CodeFileHandler(file)
         return tab
     }
 
@@ -171,7 +171,7 @@ class DynamicProvider {
         onePane.isFitToWidth = true
         onePane.isFitToHeight = true
         val tab = Tab(metaCSVFile.name, onePane)
-        tab.userData = MetaCSVUserData(csvFile)
+        tab.userData = MetaCSVFileHandler(csvFile, metaCSVFile)
         return tab
     }
 }

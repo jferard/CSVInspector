@@ -19,7 +19,7 @@ class MetaCSVAreaProvider {
         addColumns()
         addRows(csvFile, metaCSVFile)
         tableView.isEditable = true
-        tableView.userData = MetaCSVUserData(csvFile)
+        tableView.userData = MetaCSVFileHandler(csvFile, metaCSVFile)
         return tableView
     }
 

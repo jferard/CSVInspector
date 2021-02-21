@@ -26,7 +26,6 @@ import com.github.jferard.javamcsv.MetaCSVParser
 import com.github.jferard.javamcsv.MetaCSVReader
 import com.google.common.eventbus.Subscribe
 import javafx.concurrent.Task
-import javafx.scene.Node
 import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.paint.Color.RED
@@ -181,27 +180,25 @@ class CSVInspectorGUI(
 
     private fun executeScript() {
         csvPane.tabs.clear()
-        val node = getCurScrollPaneContent()
-        when (node) {
-            is CodeArea -> {
-                val code = node.text
-                when (val userData = getCurTab().userData) {
-                    is MetaCSVUserData -> showCSV(node, userData.file)
-                    is CodeUserData -> executeOneScript(code)
-                    else -> {
-                        println("Can't execute " + node)
-                    }
-                }
+        val tab = getCurTab()
+        when (tab.handler) {
+            is MetaCSVFileHandler -> showCSV(tab)
+            is CodeFileHandler -> {
+                executeOneScript(tab.text)
             }
             else -> {
-                println("Can't execute " + node)
+                println("Can't execute $tab")
             }
         }
     }
 
-    private fun showCSV(node: CodeArea, csvFile: File) {
-        val reader = CSVParser(StringReader(node.text), CSVFormat.DEFAULT.withDelimiter('\t'))
-        showCSV(csvFile, reader)
+    private fun showCSV(tab: TabWrapper) {
+        val metaReader = CSVParser(StringReader(tab.text), CSVFormat.DEFAULT.withDelimiter('\t'))
+        val data = MetaCSVParser(metaReader.toList<Iterable<String>>().filter { it.all { it.isNotEmpty() } }).parse()
+        val reader = MetaCSVReader.create(FileInputStream((tab.handler as MetaCSVFileHandler).csvFile), data)
+        val rows = reader.toMutableList()
+        val task: Task<Unit> = executionEnvironment.createCSV(rows, data)
+        Thread(task).start()
     }
 
     private fun restartInterpreter() {
@@ -213,36 +210,28 @@ class CSVInspectorGUI(
         Thread(task).start()
     }
 
-    private fun showCSV(csvFile: File, rows: Iterable<Iterable<String>>) {
-        val data = MetaCSVParser(rows.toList().filter { it.all { it.isNotEmpty() } }).parse()
-        val reader = MetaCSVReader.create(FileInputStream(csvFile), data)
-        val rows = reader.toMutableList()
-        val task: Task<Unit> = executionEnvironment.createCSV(rows, data)
-        Thread(task).start()
-    }
+    //    private fun getCodeArea(): CodeArea {
+//        val node = getCurScrollPaneContent()
+//        return node as CodeArea
+//    }
+//
+//    private fun getCurScrollPaneContent(): Node {
+//        val tab = getCurTab()
+//        val pane = tab.content as ScrollPane
+//        return pane.content
+//    }
 
-    private fun getCodeArea(): CodeArea {
-        val node = getCurScrollPaneContent()
-        return node as CodeArea
-    }
+    private fun getCurTab() = TabWrapper(codePane.selectionModel.selectedItem)
 
-    private fun getCurScrollPaneContent(): Node {
-        val tab = getCurTab()
-        val pane = tab.content as ScrollPane
-        return pane.content
-    }
-
-    private fun getCurTab() = codePane.selectionModel.selectedItem
-
-    private fun getCodeTabName(): String {
-        val tab = getCurTab()
-        return tab.text
-    }
-
-    private fun getCodeTabFile(): File {
-        val tab = getCurTab()
-        return (tab.userData as UserData).file
-    }
+//    private fun getCodeTabName(): String {
+//        val tab = getCurTab()
+//        return tab.text
+//    }
+//
+//    private fun getCodeTabFileHandler(): FileHandler? {
+//        val tab = getCurTab()
+//        return tab.userData as? FileHandler
+//    }
 
     private fun openCSV() {
         val fileChooser = FileChooser()
@@ -253,7 +242,7 @@ class CSVInspectorGUI(
 
     private fun snippet(code: String) {
         dynamicProvider.createEmptyCodePane(codePane)
-        getCodeArea().replaceText(code)
+        getCurTab().text = code
     }
 
     private fun find() {
@@ -271,13 +260,13 @@ class CSVInspectorGUI(
     }
 
     private fun highlightToFind(toFind: String) {
-        val codeArea = getCodeArea()
+        val codeArea = getCurTab().codeArea
         val ranges = Regex(toFind).findAll(codeArea.text).map { it.range }
-        highlightRanges(ranges, codeArea)
+        highlightRanges(codeArea, ranges)
     }
 
     private fun highlightReplaced(toFind: String, replacement: String) {
-        val codeArea = getCodeArea()
+        val codeArea = getCurTab().codeArea
         val ranges = mutableListOf<IntRange>()
         var match = Regex(toFind).find(codeArea.text)
         while (match != null) {
@@ -286,11 +275,11 @@ class CSVInspectorGUI(
             ranges.add(IntRange(from, from + replacement.length))
             match = Regex(toFind).find(codeArea.text, from + replacement.length)
         }
-        highlightRanges(ranges.asSequence(), codeArea)
+        highlightRanges(codeArea, ranges.asSequence())
     }
 
-    private fun highlightRanges(ranges: Sequence<IntRange>,
-                                codeArea: CodeArea) {
+    private fun highlightRanges(codeArea: CodeArea,
+                                ranges: Sequence<IntRange>) {
         ranges.take(1).forEach {
             codeArea.setStyleClass(it.first, it.last + 1, "highlight")
         }
@@ -322,7 +311,7 @@ end_info()""")
     }
 
     private fun copy() {
-        val codeArea = getCodeArea()
+        val codeArea = getCurTab().codeArea
         when (scene.focusOwner) {
             codeArea -> codeArea.copy()
             else -> throw NotImplementedError()
@@ -330,7 +319,7 @@ end_info()""")
     }
 
     private fun cut() {
-        val codeArea = getCodeArea()
+        val codeArea = getCurTab().codeArea
         when (scene.focusOwner) {
             codeArea -> codeArea.cut()
             else -> throw NotImplementedError()
@@ -338,7 +327,7 @@ end_info()""")
     }
 
     private fun paste() {
-        val codeArea = getCodeArea()
+        val codeArea = getCurTab().codeArea
         when (scene.focusOwner) {
             codeArea -> codeArea.paste()
             else -> throw NotImplementedError()
@@ -362,7 +351,7 @@ end_info()""")
             return
         }
         val metaCSVFile = File(selectedFile.parent, selectedFile.nameWithoutExtension + ".mcsv")
-        val cur = codePane.tabs.find { (it.userData as? UserData)?.file == selectedFile }
+        val cur = codePane.tabs.find { (it.userData as? MetaCSVFileHandler)?.csvFile == selectedFile }
         if (cur != null) {
             codePane.selectionModel.select(cur)
             return
@@ -370,7 +359,9 @@ end_info()""")
         val codeTab = dynamicProvider.createMetaCSVTab(selectedFile, metaCSVFile)
         codePane.tabs.add(codePane.tabs.size - 1, codeTab)
         codePane.selectionModel.select(codeTab)
-        showCSV(getCodeArea(), getCodeTabFile())
+        val tab = TabWrapper(codeTab)
+        // TODO: userData.load
+        showCSV(tab)
         /**
         val code = selectedFile.readText(Charsets.UTF_8)
         val codeArea = getCodeArea()
@@ -385,34 +376,31 @@ end_info()""")
             return
         }
         val codeTab = dynamicProvider.createCodeTab(selectedFile)
+        // TODO: load
         val code = selectedFile.readText(Charsets.UTF_8)
         codePane.tabs.add(codePane.tabs.size - 1, codeTab)
         codePane.selectionModel.select(codeTab)
-        val codeArea = getCodeArea()
-        codeArea.replaceText(code)
+        getCurTab().text = code
     }
 
     private fun saveScript() {
-        var selectedFile = getCodeTabFile()
-        if (selectedFile == null) {
-            selectedFile = saveTo() ?: return
+        val tab = getCurTab()
+        val handler = tab.handler ?: run {
+            val file = saveTo() ?: return
+            val h = CodeFileHandler(file)
+            tab.handler = h
+            h
         }
-        val codeArea = getCodeArea()
-        selectedFile.writeText(codeArea.text, Charsets.UTF_8)
-        setCodeTabFile(selectedFile)
+        handler.save(tab.text)
     }
 
     private fun saveAsScript() {
+        val tab = getCurTab()
         val selectedFile = saveTo() ?: return
-        val codeArea = getCodeArea()
-        selectedFile.writeText(codeArea.text, Charsets.UTF_8)
-        setCodeTabFile(selectedFile)
-    }
-
-    private fun setCodeTabFile(selectedFile: File) {
-        val tab = codePane.selectionModel.selectedItem
-        tab.userData = CodeUserData(selectedFile)
-        tab.text = selectedFile.name
+        val handler = CodeFileHandler(selectedFile)
+        handler.save(tab.text)
+        tab.handler = handler
+        tab.name = selectedFile.name
     }
 
     private fun saveTo(): File? {
