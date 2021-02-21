@@ -376,11 +376,10 @@ end_info()""")
             return
         }
         val codeTab = dynamicProvider.createCodeTab(selectedFile)
-        // TODO: load
-        val code = selectedFile.readText(Charsets.UTF_8)
+        val tabWrapper = TabWrapper(codeTab)
+        tabWrapper.text = tabWrapper.handler!!.load()
         codePane.tabs.add(codePane.tabs.size - 1, codeTab)
         codePane.selectionModel.select(codeTab)
-        getCurTab().text = code
     }
 
     private fun saveScript() {

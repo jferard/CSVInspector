@@ -18,7 +18,7 @@ class CodeFileHandler(val file: File) : FileHandler {
     }
 
     override fun load(): String {
-        throw NotImplementedError() //To change body of created functions use File | Settings | File Templates.
+        return file.readText(Charsets.UTF_8)
     }
 }
 
