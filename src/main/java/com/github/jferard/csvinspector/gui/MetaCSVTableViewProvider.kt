@@ -1,6 +1,6 @@
 package com.github.jferard.csvinspector.gui
 
-import com.github.jferard.csvsniffer.CSVSniffer
+import com.github.jferard.csvsniffer.MetaCSVSniffer
 import com.github.jferard.javamcsv.*
 import javafx.beans.property.SimpleStringProperty
 import javafx.event.EventHandler
@@ -12,6 +12,7 @@ import java.io.File
 import java.io.FileInputStream
 
 
+/** Not used */
 class MetaCSVTableViewProvider {
     private val tableView = TableView<List<String>>()
 
@@ -66,13 +67,13 @@ class MetaCSVTableViewProvider {
         } else {
             guessDirectives(csvFile)
         }
-        tableView.items.addAll(*array)
+        tableView.items.addAll(*array) // TODO: load
     }
 
     private fun guessDirectives(csvFile: File): Array<List<String>> {
         val inputStream = FileInputStream(csvFile)
         inputStream.use {
-            val data = CSVSniffer.create().sniff(inputStream)
+            val data = MetaCSVSniffer.create().sniff(inputStream)
             return directivesFromData(data, csvFile)
         }
     }
@@ -97,7 +98,12 @@ class MetaCSVTableViewProvider {
         reader.use {
             reader.first { rec ->
                 directives.addAll(
-                        (0 until rec.size()).map { listOf("data", "col/$it/type", "text") })
+                        (0 until rec.size()).map {
+                            listOf("data", "col/$it/type", when(val description = data.getDescription(it)) {
+                                null -> "text"
+                                else -> description.toString() // TODO: see FileHandler
+                            })
+                        })
             }
         }
         return directives.drop(1).toTypedArray()

@@ -192,7 +192,7 @@ class CSVInspectorGUI(
 
     private fun showCSV(tab: TabWrapper) {
         val metaReader = CSVParser(StringReader(tab.text), CSVFormat.DEFAULT.withDelimiter('\t'))
-        val data = MetaCSVParser(metaReader.toList<Iterable<String>>().filter { it.all { it.isNotEmpty() } }).parse()
+        val data = MetaCSVParser(metaReader.toList<Iterable<String>>().filter { it.all(String::isNotEmpty) }).parse()
         val reader = MetaCSVReader.create(FileInputStream((tab.handler as MetaCSVFileHandler).csvFile), data)
         val rows = reader.toMutableList()
         val task: Task<Unit> = executionEnvironment.createCSV(rows, data)

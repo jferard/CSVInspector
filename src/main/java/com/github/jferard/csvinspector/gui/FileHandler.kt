@@ -1,14 +1,12 @@
 package com.github.jferard.csvinspector.gui
 
-import com.github.jferard.csvsniffer.CSVSniffer
-import com.github.jferard.javamcsv.MetaCSVData
-import com.github.jferard.javamcsv.MetaCSVParser
-import com.github.jferard.javamcsv.MetaCSVReader
-import com.github.jferard.javamcsv.MetaCSVRenderer
+import com.github.jferard.csvsniffer.MetaCSVSniffer
+import com.github.jferard.javamcsv.*
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
 import org.apache.commons.csv.CSVPrinter
 import java.io.File
+import java.io.FileInputStream
 import java.io.StringReader
 
 interface FileHandler {
@@ -54,23 +52,49 @@ class MetaCSVFileHandler(val csvFile: File, val metaCSVFile: File) : FileHandler
 
     private fun guessDirectives(): String {
         csvFile.inputStream().use {
-            val data = CSVSniffer.create().sniff(it)
+            val data = MetaCSVSniffer.create().sniff(it)
             return directivesFromData(data)
         }
     }
 
     private fun directivesFromData(data: MetaCSVData): String {
-        val sb = StringBuilder()
-        val printer = CSVPrinter(sb, CSVFormat.DEFAULT.withDelimiter('\t'))
-        MetaCSVRenderer.create(printer, false).render(data)
-        csvFile.inputStream().use { stream ->
-            MetaCSVReader.create(stream, data).use { reader ->
-                reader.firstOrNull()?.let { rec ->
-                    for (i in (0 until rec.size())) {
-                        sb.append("data\tcol/$i/type\ttext\r\n")
-                    }
+        val directives: MutableList<Array<String>> = mutableListOf()
+        val regex = Regex("col/\\d+/type")
+        val customPrinter = object : MetaCSVPrinter {
+            override fun printRecord(domain: String, key: String, value: Any) {
+                val directive = arrayOf(domain, key, value.toString())
+                if (!key.matches(regex)) {
+                    directives.add(directive)
                 }
             }
+            override fun flush() {
+                // do nothing
+            }
+        }
+        MetaCSVRenderer(customPrinter, false).render(data)
+        val inputStream = FileInputStream(csvFile)
+        val parser = CSVParser(inputStream.bufferedReader(data.encoding),
+                CSVFormatHelper.getCSVFormat(data))
+        parser.use {
+            parser.first { rec ->
+                directives.addAll(
+                        (0 until rec.size()).map {
+                            arrayOf("data", "col/$it/type",
+                                    when (val description = data.getDescription(it)) {
+                                        null -> "text"
+                                        else -> {
+                                            val out = StringBuilder();
+                                            description.render(out);
+                                            out.toString()
+                                        }
+                                    })
+                        })
+            }
+        }
+        val sb = StringBuilder()
+        val printer = CSVPrinter(sb, CSVFormat.DEFAULT.withDelimiter('\t'))
+        for (directive in directives) {
+            printer.printRecord(*directive)
         }
         return sb.toString()
     }
