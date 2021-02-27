@@ -67,25 +67,28 @@ class DynamicProvider {
 
         tableView.columns.add(createFirstColumn())
         tableView.columns.addAll(createOtherColumns(header, types))
-        tableView.items.addAll(createRowsFromCSVRecords(records))
+        tableView.items.addAll(createRowsFromCSVRecords(records, header.size()))
         return tableView
     }
 
-    fun createMetaTableViewFromMetaCSVRecords(rows: List<MetaCSVRecord>, data: MetaCSVData): TableView<List<String>> {
+    fun createMetaTableViewFromMetaCSVRecords(rows: List<MetaCSVRecord>,
+                                              data: MetaCSVData): TableView<List<String>> {
         val tableView = TableView<List<String>>()
         val cssResource = CSVInspectorGUI::class.java.getResource("/table.css")
         tableView.stylesheets.add(cssResource.toExternalForm())
         val headerRecord = rows[0]
-        val types = (0 until headerRecord.size()).map { when (val description = data.getDescription(
-                it)) {
-            null -> "text"
+        val types = (0 until headerRecord.size()).map {
+            when (val description = data.getDescription(
+                    it)) {
+                null -> "text"
                 else -> description.dataType.toString()
-        } }
+            }
+        }
         val header = (0 until headerRecord.size()).map { headerRecord.getText(it).toString() }
 
         tableView.columns.add(createFirstColumn())
         tableView.columns.addAll(createOtherColumns(header, types))
-        tableView.items.addAll(createRowsFromMetaCSVRecords(rows))
+        tableView.items.addAll(createRowsFromMetaCSVRecords(rows, header.size))
         return tableView
     }
 
@@ -100,13 +103,13 @@ class DynamicProvider {
 
     private fun createOtherColumns(header: Iterable<String>,
                                    types: Iterable<String>): List<TableColumn<List<String>, String>> {
-        return header.zip(types).withIndex().map { (i, name_and_type) ->
+        return header.zip(types).withIndex().map { (c, name_and_type) ->
             val (name, type) = name_and_type
             val column = TableColumn<List<String>, String>(
-                    "[${i}: ${type}]\n${name}")
+                    "[${c}: ${type}]\n${name}")
             column.cellValueFactory =
                     Callback { row ->
-                        ReadOnlyStringWrapper(row.value[i + 1])
+                        ReadOnlyStringWrapper(row.value[c + 1]) // c0 is for row number
                     }
             if (type != "TEXT" && type != "OBJECT") {
                 column.styleClass.add("right-align")
@@ -115,15 +118,21 @@ class DynamicProvider {
         }
     }
 
-    private fun createRowsFromCSVRecords(records: Iterable<CSVRecord>) =
+    private fun createRowsFromCSVRecords(records: Iterable<CSVRecord>, size: Int) =
             records.withIndex()
-                    .map { listOf(it.index.toString()) + it.value.toList() }
+                    .map { (r, record) ->
+                        listOf(r.toString()) + record.toList() + (record.size() until size).map {
+                            ""
+                        }
+                    }
 
-    private fun createRowsFromMetaCSVRecords(records: List<MetaCSVRecord>) =
+    private fun createRowsFromMetaCSVRecords(records: List<MetaCSVRecord>, size: Int) =
             records.subList(1, records.size).withIndex()
-                    .map {
-                        listOf(it.index.toString()) + it.value.map { value ->
+                    .map { (r, record) ->
+                        listOf(r.toString()) + record.map { value ->
                             value?.toString() ?: "<NULL>"
+                        } + (record.size() until size).map {
+                            "<NULL>"
                         }
                     }
 

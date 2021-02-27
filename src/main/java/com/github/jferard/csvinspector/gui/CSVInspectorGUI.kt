@@ -26,6 +26,7 @@ import com.github.jferard.javamcsv.MetaCSVParser
 import com.github.jferard.javamcsv.MetaCSVReader
 import com.google.common.eventbus.Subscribe
 import javafx.concurrent.Task
+import javafx.geometry.Insets
 import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.paint.Color.RED
@@ -57,13 +58,15 @@ class CSVInspectorGUI(
     @Subscribe
     private fun display(e: MetaCSVEvent) {
         val tabPane = ScrollPane()
-        tabPane.hbarPolicy = ScrollPane.ScrollBarPolicy.ALWAYS
-        tabPane.vbarPolicy = ScrollPane.ScrollBarPolicy.ALWAYS
+        tabPane.hbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
+        tabPane.vbarPolicy = ScrollPane.ScrollBarPolicy.NEVER
         tabPane.prefHeight = 500.0
         tabPane.isFitToHeight = true
         tabPane.isFitToWidth = true
-        tabPane.content =
+        val tableView =
                 dynamicProvider.createMetaTableViewFromMetaCSVRecords(e.rows, e.data)
+        tableView.columns.last().style = "-fx-padding: 0 15 0 0;"
+        tabPane.content = tableView
         val tab = Tab("show ${csvPane.tabs.size}", tabPane)
         tab.isClosable = true
         csvPane.tabs.add(tab)
@@ -79,7 +82,8 @@ class CSVInspectorGUI(
         tabPane.isFitToHeight = true
         tabPane.isFitToWidth = true
         tabPane.content =
-                dynamicProvider.createTableViewFromCSVRecords(CSVFormat.DEFAULT.parse(StringReader(e.data)))
+                dynamicProvider.createTableViewFromCSVRecords(
+                        CSVFormat.DEFAULT.parse(StringReader(e.data)))
         val tab = Tab("show ${csvPane.tabs.size}", tabPane)
         tab.isClosable = true
         csvPane.tabs.add(tab)
@@ -192,8 +196,11 @@ class CSVInspectorGUI(
 
     private fun showCSV(tab: TabWrapper) {
         val metaReader = CSVParser(StringReader(tab.text), CSVFormat.DEFAULT.withDelimiter('\t'))
-        val data = MetaCSVParser(metaReader.toList<Iterable<String>>().filter { it.all(String::isNotEmpty) }).parse()
-        val reader = MetaCSVReader.create(FileInputStream((tab.handler as MetaCSVFileHandler).csvFile), data)
+        val data = MetaCSVParser(
+                metaReader.toList<Iterable<String>>().filter { it.all(String::isNotEmpty) }).parse()
+        val reader =
+                MetaCSVReader.create(FileInputStream((tab.handler as MetaCSVFileHandler).csvFile),
+                        data)
         val rows = reader.toMutableList()
         val task: Task<Unit> = executionEnvironment.createCSV(rows, data)
         Thread(task).start()
@@ -349,7 +356,8 @@ end_info()""")
             return
         }
         val metaCSVFile = File(selectedFile.parent, selectedFile.nameWithoutExtension + ".mcsv")
-        val cur = codePane.tabs.find { (it.userData as? MetaCSVFileHandler)?.csvFile == selectedFile }
+        val cur =
+                codePane.tabs.find { (it.userData as? MetaCSVFileHandler)?.csvFile == selectedFile }
         if (cur != null) {
             codePane.selectionModel.select(cur)
             return
