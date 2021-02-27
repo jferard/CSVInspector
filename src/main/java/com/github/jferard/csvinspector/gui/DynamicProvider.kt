@@ -20,6 +20,7 @@
 
 package com.github.jferard.csvinspector.gui
 
+import com.github.jferard.csvinspector.data.MetaCSVUtil
 import com.github.jferard.javamcsv.MetaCSVData
 import com.github.jferard.javamcsv.MetaCSVRecord
 import javafx.application.Platform
@@ -32,6 +33,8 @@ import org.apache.commons.csv.CSVRecord
 import java.io.File
 
 class DynamicProvider {
+    private val metaCSVUtil = MetaCSVUtil()
+
     fun createEmptyCodePane(codePane: TabPane) {
         val codeTab = createNamedCodeTab("Untitled")
         codePane.tabs.add(codePane.tabs.size - 1, codeTab)
@@ -170,7 +173,7 @@ class DynamicProvider {
         onePane.isFitToHeight = true
         val metaTab = Tab(metaCSVFile.name, onePane)
         val tab = TabWrapper(metaTab)
-        val handler = MetaCSVFileHandler(csvFile, metaCSVFile)
+        val handler = MetaCSVFileHandler(metaCSVUtil, csvFile, metaCSVFile)
         tab.text = handler.load()
         tab.handler = handler
         return metaTab
