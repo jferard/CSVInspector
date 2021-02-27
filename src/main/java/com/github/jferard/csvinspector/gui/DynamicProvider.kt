@@ -73,6 +73,8 @@ class DynamicProvider {
 
     fun createMetaTableViewFromMetaCSVRecords(rows: List<MetaCSVRecord>, data: MetaCSVData): TableView<List<String>> {
         val tableView = TableView<List<String>>()
+        val cssResource = CSVInspectorGUI::class.java.getResource("/table.css")
+        tableView.stylesheets.add(cssResource.toExternalForm())
         val headerRecord = rows[0]
         val types = (0 until headerRecord.size()).map { when (val description = data.getDescription(
                 it)) {
@@ -92,18 +94,23 @@ class DynamicProvider {
         firstColumn.cellValueFactory = Callback { row ->
             ReadOnlyStringWrapper(row.value[0])
         }
+        firstColumn.styleClass.add("right-align")
         return firstColumn
     }
 
     private fun createOtherColumns(header: Iterable<String>,
                                    types: Iterable<String>): List<TableColumn<List<String>, String>> {
-        return header.zip(types).withIndex().map {
+        return header.zip(types).withIndex().map { (i, name_and_type) ->
+            val (name, type) = name_and_type
             val column = TableColumn<List<String>, String>(
-                    "[${it.index}: ${it.value.second}]\n${it.value.first}")
+                    "[${i}: ${type}]\n${name}")
             column.cellValueFactory =
                     Callback { row ->
-                        ReadOnlyStringWrapper(row.value[it.index + 1])
+                        ReadOnlyStringWrapper(row.value[i + 1])
                     }
+            if (type != "TEXT" && type != "OBJECT") {
+                column.styleClass.add("right-align")
+            }
             column
         }
     }
