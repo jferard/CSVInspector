@@ -109,6 +109,7 @@ class CSVInspectorGUIInitialProvider(
 
     private fun codePane(): TabPane {
         val tab = codeTab()
+        tab.userData = UntitledCodeFileHandler()
         val tabPlus = plusTab()
         val codePane = TabPane()
         codePane.tabs.addAll(tab, tabPlus)

@@ -37,6 +37,7 @@ class DynamicProvider {
 
     fun createEmptyCodePane(codePane: TabPane) {
         val codeTab = createNamedCodeTab("Untitled")
+        codeTab.userData = UntitledCodeFileHandler()
         codePane.tabs.add(codePane.tabs.size - 1, codeTab)
         codePane.selectionModel.select(codeTab)
     }

@@ -23,6 +23,7 @@ package com.github.jferard.csvinspector.gui
 import com.github.jferard.csvinspector.exec.ExecutionEnvironment
 import com.github.jferard.csvinspector.util.*
 import com.github.jferard.javamcsv.MetaCSVParser
+import com.github.jferard.javamcsv.MetaCSVParserBuilder
 import com.github.jferard.javamcsv.MetaCSVReader
 import com.google.common.eventbus.Subscribe
 import javafx.concurrent.Task
@@ -185,7 +186,7 @@ class CSVInspectorGUI(
         val tab = getCurTab()
         when (tab.handler) {
             is MetaCSVFileHandler -> showCSV(tab)
-            is CodeFileHandler -> {
+            is CodeFileHandler, is UntitledCodeFileHandler -> {
                 executeOneScript(tab.text)
             }
             else -> {
@@ -196,8 +197,7 @@ class CSVInspectorGUI(
 
     private fun showCSV(tab: TabWrapper) {
         val metaReader = CSVParser(StringReader(tab.text), CSVFormat.DEFAULT.withDelimiter('\t'))
-        val data = MetaCSVParser(
-                metaReader.toList<Iterable<String>>().filter { it.all(String::isNotEmpty) }).parse()
+        val data = MetaCSVParser(metaReader, true, MetaCSVParserBuilder.DEFAULT_OBJECT_PARSER).parse()
         val reader =
                 MetaCSVReader.create(FileInputStream((tab.handler as MetaCSVFileHandler).csvFile),
                         data)

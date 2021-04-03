@@ -13,6 +13,16 @@ interface FileHandler {
     fun load(): String
 }
 
+class UntitledCodeFileHandler : FileHandler {
+    override fun save(text: String) {
+        throw IllegalStateException();
+    }
+
+    override fun load(): String {
+        throw IllegalStateException();
+    }
+}
+
 class CodeFileHandler(val file: File) : FileHandler {
     override fun save(text: String) {
         file.writeText(text, Charsets.UTF_8)
@@ -28,7 +38,7 @@ class MetaCSVFileHandler(val metaCSVUtil: MetaCSVUtil, val csvFile: File, val me
         val metaReader = CSVParser(StringReader(text), CSVFormat.DEFAULT.withDelimiter('\t'))
         val data = MetaCSVParser(
                 metaReader.toList<Iterable<String>>()
-                        .filter { it.all(String::isNotEmpty) }).parse()
+                        .filter { it.all(String::isNotEmpty) }, true, MetaCSVParserBuilder.DEFAULT_OBJECT_PARSER).parse()
         val metaRenderer = MetaCSVRenderer.create(metaCSVFile.outputStream())
         metaRenderer.render(data)
     }
