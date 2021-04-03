@@ -30,7 +30,7 @@ class CSVInspectorApplication : Application() {
     override fun start(primaryStage: Stage) {
         val token = generateToken()
         val eventBus = EventBus()
-        val pythonExe = parameters.raw[0] ?: "python3.6"
+        val pythonExe = parameters.raw[0] ?: "python3.8"
         val executionEnvironment = PythonExecutor(pythonExe, token, eventBus).start()
 
         val menuBarProvider = MenuBarProvider(eventBus)

@@ -26,7 +26,7 @@ import kotlin.streams.asSequence
 const val TOKEN_LENGTH = 100L
 const val charPool: String = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
-const val SHOW_SQL_EXAMPLE = """#!/usr/bin/env python3.6
+const val SHOW_SQL_EXAMPLE = """#!/usr/bin/env python3.8
 
 from csv_inspector import *
 
@@ -35,7 +35,7 @@ info.show()
 info.open().show_sql()
 """
 
-const val SELECT_EXAMPLE = """#!/usr/bin/env python3.6
+const val SELECT_EXAMPLE = """#!/usr/bin/env python3.8
 
 from csv_inspector import *
 
@@ -52,7 +52,7 @@ data.select[0:4, 10]
 data.show()
 """
 
-const val GROUPBY_EXAMPLE = """#!/usr/bin/env python3.6
+const val GROUPBY_EXAMPLE = """#!/usr/bin/env python3.8
 
 from csv_inspector import *
 
@@ -63,7 +63,7 @@ data.groupby[0][len]
 data.show()
 """
 
-const val JOIN_EXAMPLE = """#!/usr/bin/env python3.6
+const val JOIN_EXAMPLE = """#!/usr/bin/env python3.8
 
 from csv_inspector import *
 
@@ -73,7 +73,7 @@ data.ijoin[data][0][0]
 data.show()
 """
 
-const val CODE_EXAMPLE = """#!/usr/bin/env python3.6
+const val CODE_EXAMPLE = """#!/usr/bin/env python3.8
 
 from csv_inspector import *
 from datetime import datetime as dt

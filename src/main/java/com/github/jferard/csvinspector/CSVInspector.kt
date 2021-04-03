@@ -38,7 +38,7 @@ fun main(args: Array<String>) {
         }
     }
     if (properties.isEmpty) {
-        properties.setProperty("python_exe", "python3.6")
+        properties.setProperty("python_exe", "python3.8")
     }
     Application.launch(CSVInspectorApplication::class.java, properties.getProperty("python_exe"))
 }
