@@ -60,6 +60,10 @@ def executed():
     print(f"{TOKEN}executed", file=sys.stderr, flush=True)
 
 
+def missing_mcsv(csv_path):
+    print(f"{TOKEN}missing csv:{csv_path}")
+
+
 def execute_script(script, vars):
     vars["TOKEN"] = TOKEN
     exec(script, vars)
@@ -405,3 +409,4 @@ if __name__ == "__main__":
     import doctest
 
     doctest.testmod(optionflags=doctest.ELLIPSIS)
+

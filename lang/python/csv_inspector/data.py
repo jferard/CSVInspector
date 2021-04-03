@@ -844,7 +844,6 @@ class Data:
         self._column_group.sort_values(indices, ascending)
 
 
-
 if __name__ == "__main__":
     import doctest
 

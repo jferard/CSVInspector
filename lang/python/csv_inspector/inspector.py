@@ -18,17 +18,16 @@
 #
 
 import csv
-import sys
 from itertools import islice
 from pathlib import Path
-from typing import (Union)
+from typing import (Union, Optional)
 
 import chardet
-import pandas as pd
+import mcsv
 
 from csv_inspector.data import Data, DataSource
 from csv_inspector.util import begin_info, end_info, to_standard, ColumnFactory, \
-    ColumnGroup
+    ColumnGroup, missing_mcsv
 
 sniffer = csv.Sniffer()
 
@@ -183,3 +182,18 @@ def inspect(file: Union[str, Path], chunk_size=1024 * 1024,
         inspection = Inspection(path, encoding, csvdialect)
 
     return inspection
+
+
+def open_csv(csv_path: Union[str, Path],
+             mcsv_path: Optional[Union[str, Path]]=None) -> Optional[Data]:
+    if isinstance(csv_path, str):
+        csv_path = Path(csv_path)
+    if mcsv_path is None:
+        mcsv_path = csv_path.with_suffix(".mcsv")
+
+    if not mcsv_path.is_file():
+        missing_mcsv(csv_path)  # util command to open a window
+        return None
+
+    mcsv_reader = mcsv.reader.open_csv(csv_path, mcsv_path)
+    print(mcsv_reader.get_types())
