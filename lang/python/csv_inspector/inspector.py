@@ -27,7 +27,7 @@ import mcsv
 
 from csv_inspector.data import Data, DataSource
 from csv_inspector.util import begin_info, end_info, to_standard, ColumnFactory, \
-    ColumnGroup, missing_mcsv
+    ColumnGroup, missing_mcsv, Column
 
 sniffer = csv.Sniffer()
 
@@ -107,11 +107,12 @@ class Inspection:
             reader = islice(csv.reader(s, self._csvdialect), nrows)
             header = [to_standard(n) for n in next(reader)]
             column_groups = ColumnGroup([self._col_factory.create(name, values)
-                                   for name, *values in zip(header, *reader)])
+                                         for name, *values in
+                                         zip(header, *reader)])
 
         return Data(column_groups, DataSource(to_standard(self._path.stem),
-                                        self._path, self._encoding,
-                                        self._csvdialect))
+                                              self._path, self._encoding,
+                                              self._csvdialect))
 
     def show(self):
         begin_info()
@@ -155,7 +156,8 @@ def inspect(file: Union[str, Path], chunk_size=1024 * 1024,
             else:
                 last = None
 
-        return max(terminator_count.keys(), key=terminator_count.get).decode("ascii")
+        return max(terminator_count.keys(), key=terminator_count.get).decode(
+            "ascii")
 
     path = _wrap_path(file)
     with path.open("rb") as source:
@@ -185,7 +187,8 @@ def inspect(file: Union[str, Path], chunk_size=1024 * 1024,
 
 
 def open_csv(csv_path: Union[str, Path],
-             mcsv_path: Optional[Union[str, Path]]=None) -> Optional[Data]:
+             mcsv_path: Optional[Union[str, Path]] = None,
+             nrows=100) -> Optional[Data]:
     if isinstance(csv_path, str):
         csv_path = Path(csv_path)
     if mcsv_path is None:
@@ -195,5 +198,13 @@ def open_csv(csv_path: Union[str, Path],
         missing_mcsv(csv_path)  # util command to open a window
         return None
 
-    mcsv_reader = mcsv.reader.open_csv(csv_path, mcsv_path)
-    print(mcsv_reader.get_types())
+    mcsv_reader = mcsv.open_csv(csv_path, mcsv_path)
+    reader = islice(mcsv_reader, nrows)
+    header = [to_standard(n) for n in next(reader)]
+    column_groups = ColumnGroup([Column(name, col_type, values)
+                                 for name, col_type, *values in
+                                 zip(header, mcsv_reader.get_python_types(), *reader)])
+
+    return Data(column_groups, DataSource(to_standard(csv_path.stem),
+                                          csv_path, mcsv_reader.data.encoding,
+                                          mcsv_reader.data.dialect))

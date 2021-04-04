@@ -26,6 +26,7 @@ from typing import (Union, Tuple, List, NewType, Callable, Any, Type,
 
 import numpy as np
 import pandas as pd
+from mcsv.field_processors import ReadError
 
 try:
     TOKEN
@@ -212,7 +213,8 @@ class Column(Generic[S]):
     def __init__(self, name: str, col_type: Type[S], col_values: Collection[S]):
         if col_type != Any:
             assert all(isinstance(v, col_type) for v in
-                       col_values), f"Expected {col_type}, got {set(type(v) for v in col_values)}"
+                       col_values if not (v is None or isinstance(v, ReadError))
+                       ), f"Expected {col_type}, got {set(type(v) for v in col_values)}"
         self.name = name
         self.col_type = col_type
         self.col_values = col_values
