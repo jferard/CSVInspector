@@ -33,3 +33,4 @@ class InfoEvent(override val data: String): ScriptEvent
 class OutEvent(override val data: String): ScriptEvent
 class SQLEvent(override val data: String): ScriptEvent
 class MenuEvent(val name: String)
+class DetCSVEvent(val path: String)

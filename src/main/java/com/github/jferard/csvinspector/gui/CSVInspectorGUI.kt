@@ -181,6 +181,11 @@ class CSVInspectorGUI(
         }
     }
 
+    @Subscribe
+    fun detCSV(event: DetCSVEvent) {
+        addCSVPane(File(event.path))
+    }
+
     private fun executeScript() {
         csvPane.tabs.clear()
         val tab = getCurTab()

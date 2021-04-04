@@ -106,6 +106,12 @@ class ExecutionContext(private val token: String,
             eventBus.post(SQLEvent(sql))
         }
     }
+
+    fun detCSV(path: String) {
+        Platform.runLater {
+            eventBus.post(DetCSVEvent(path))
+        }
+    }
 }
 
 interface State {
@@ -120,7 +126,13 @@ class NormalState(private val token: String) : State {
                 "begin csv" -> context.setState(CSVState(token))
                 "begin info" -> context.setState(InfoState(token))
                 "begin sql" -> context.setState(SQLState(token))
-                else -> System.err.println("Unknown directive: $directive")
+                else -> {
+                    if (directive.startsWith("missing csv:")) {
+                        context.detCSV(directive.substring("missing csv:".length).trim())
+                    } else {
+                        System.err.println("Unknown directive: $directive")
+                    }
+                }
             }
         } else {
             context.out(line)
