@@ -34,16 +34,17 @@ vars = {}
 
 # This is the main server!
 while True:
-    line = sys.stdin.readline().strip()
+    line = sys.stdin.readline().rstrip()
+    stripped_line = line.lstrip()
     if state == IGNORE:
         # here: read the window id and the mode (REPL or not)
-        if line == BEGIN_SCRIPT:
+        if stripped_line == BEGIN_SCRIPT:
             state = SCRIPT
             script_lines = []
         else:
-            print(f"Garbage {line}", file=sys.stderr)
+            print(f"Garbage {stripped_line}", file=sys.stderr)
     elif state == SCRIPT:
-        if line == END_SCRIPT:
+        if stripped_line == END_SCRIPT:
             script = "\n".join(script_lines)
             print("server/execute script: {} chars".format(len(script)))
             try:

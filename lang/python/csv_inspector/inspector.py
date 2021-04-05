@@ -26,6 +26,7 @@ import chardet
 import mcsv
 
 from csv_inspector.data import Data, DataSource
+from csv_inspector.data2 import Data2
 from csv_inspector.util import begin_info, end_info, to_standard, ColumnFactory, \
     ColumnGroup, missing_mcsv, Column
 
@@ -188,7 +189,7 @@ def inspect(file: Union[str, Path], chunk_size=1024 * 1024,
 
 def open_csv(csv_path: Union[str, Path],
              mcsv_path: Optional[Union[str, Path]] = None,
-             nrows=100) -> Optional[Data]:
+             nrows=100) -> Optional[Data2]:
     if isinstance(csv_path, str):
         csv_path = Path(csv_path)
     if mcsv_path is None:
@@ -201,10 +202,10 @@ def open_csv(csv_path: Union[str, Path],
     mcsv_reader = mcsv.open_csv(csv_path, mcsv_path)
     reader = islice(mcsv_reader, nrows)
     header = [to_standard(n) for n in next(reader)]
-    column_groups = ColumnGroup([Column(name, col_type, values)
+    column_group = ColumnGroup([Column(name, col_type, values)
                                  for name, col_type, *values in
                                  zip(header, mcsv_reader.get_python_types(), *reader)])
 
-    return Data(column_groups, DataSource(to_standard(csv_path.stem),
+    return Data2(column_group, DataSource(to_standard(csv_path.stem),
                                           csv_path, mcsv_reader.data.encoding,
                                           mcsv_reader.data.dialect))
