@@ -161,6 +161,15 @@ class DataHandle:
 
         self._data._column_group = ColumnGroup(columns)
 
+    def filter(self, func):
+        new_rows = []
+        for row in self._data._column_group.rows():
+            handle_row = [row[i] for i in self._indices]
+            if func(*handle_row):
+                new_rows.append(row)
+
+        self._data._column_group._replace_values(new_rows)
+
 
 class Data2:
     def __init__(self, column_group: ColumnGroup, data_source: DataSource):
