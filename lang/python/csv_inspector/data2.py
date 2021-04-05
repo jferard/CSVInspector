@@ -140,6 +140,27 @@ class DataHandle:
 
         self._data._column_group = ColumnGroup(columns)
 
+    def move_after(self, index):
+        self._move_before(index+1)
+
+    def move_before(self, index):
+        self._move_before(index)
+
+    def _move_before(self, index):
+        columns = list(self._data._column_group)
+        new_index = index
+        rev = []
+        for i in reversed(self._indices):
+            rev.append(columns[i])
+            del columns[i]
+            if i < index:
+                new_index -= 1
+
+        for col in rev:
+            columns.insert(new_index, col)
+
+        self._data._column_group = ColumnGroup(columns)
+
 
 class Data2:
     def __init__(self, column_group: ColumnGroup, data_source: DataSource):
