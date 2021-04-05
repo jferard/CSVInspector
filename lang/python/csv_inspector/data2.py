@@ -26,6 +26,68 @@ from csv_inspector.util import begin_csv, end_csv, ColumnGroup, to_indices, \
     Column
 
 
+class DataGrouperHandle:
+    def __init__(self, data_grouper: "DataGrouper", indices: List[int],
+                 column_group: ColumnGroup):
+        self._data_grouper = data_grouper
+        self._indices = indices
+        self._column_group = column_group
+
+    def agg(self, func):
+        self._data_grouper._new_agg(self._indices, self._column_group, func)
+
+
+class DataGrouper:
+    def __init__(self, data: "Data", indices: List[int],
+                 column_group: ColumnGroup):
+        self._data = data
+        self._column_group = column_group
+        self._indices = indices
+        self._aggs = []
+
+    def __getitem__(self, item):
+        indices = to_indices(len(self._data._column_group), item)
+        column_group = ColumnGroup(
+            [self._data._column_group[i] for i in indices])
+        return DataGrouperHandle(self, indices, column_group)
+
+    def _new_agg(self, indices: List[int], column_group: ColumnGroup, func):
+        self._aggs.append((indices, column_group, func))
+
+    def group(self):
+        funcs = {}
+        for agg in self._aggs:
+            for c in agg[0]:
+                funcs[c] = agg[2]
+        agg_cols = sorted(funcs)
+        for c in self._indices:
+            if c in agg_cols:
+                agg_cols.remove(c)
+
+        d = {}
+        for row in self._data._column_group.rows():
+            key = tuple([row[i] for i in self._indices])
+            if key not in d:
+                d[key] = [[] for _ in agg_cols]
+            for c, col in enumerate(agg_cols):
+                d[key][c].append(row[col])
+
+        new_rows = []
+        for key, values in d.items():
+            xs = []
+            for i, vs in enumerate(values):
+                func = funcs[agg_cols[i]]
+                v = func(vs)
+                xs.append(v)
+            new_rows.append(key + tuple(xs))
+
+        columns = [col for i, col in enumerate(self._data._column_group) if i in self._indices or i in agg_cols]
+        for col, col_values in zip(columns, zip(*new_rows)):
+            col.col_values = col_values
+
+        self._data._column_group = ColumnGroup(columns)
+
+
 class DataHandle:
     def __init__(self, data: "Data", indices: List[int],
                  column_group: ColumnGroup):
@@ -285,6 +347,9 @@ class DataHandle:
         column_group = ColumnGroup(columns)
         column_group._replace_values(new_rows)
         self._data._column_group = column_group
+
+    def grouper(self):
+        return DataGrouper(self._data, self._indices, self._column_group)
 
 
 class Data2:
