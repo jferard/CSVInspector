@@ -16,6 +16,7 @@
 #  this program. If not, see <http://www.gnu.org/licenses/>.
 #
 import csv
+import itertools
 import sys
 from itertools import islice
 from typing import List, Any
@@ -141,7 +142,7 @@ class DataHandle:
         self._data._column_group = ColumnGroup(columns)
 
     def move_after(self, index):
-        self._move_before(index+1)
+        self._move_before(index + 1)
 
     def move_before(self, index):
         self._move_before(index)
@@ -182,7 +183,28 @@ class DataHandle:
         new_rows = sorted(self._data._column_group.rows(), key=key_func)
         self._data._column_group._replace_values(new_rows)
 
+    def ijoin(self, other_handle: "DataHandle", func=None):
+        if func is None:
+            def func(vs1, vs2):
+                return vs1 == vs2
 
+        new_rows = []
+        for row in self._data._column_group.rows():
+            handle_row = tuple([row[i] for i in self._indices])
+            for other_row in other_handle._data._column_group.rows():
+                other_handle_row = tuple(
+                    [other_row[i] for i in other_handle._indices])
+                if func(handle_row, other_handle_row):
+                    new_rows.append(row+other_row)
+
+        columns = [Column(col.name, col.col_type, []) for col in
+                   itertools.chain(self._data._column_group,
+                                   other_handle._data._column_group)]
+        column_group = ColumnGroup(columns)
+        column_group._replace_values(new_rows)
+        self._data._column_group = column_group
+
+ 
 class Data2:
     def __init__(self, column_group: ColumnGroup, data_source: DataSource):
         self._column_group = column_group
@@ -200,4 +222,3 @@ class Data2:
     def as_handle(self) -> DataHandle:
         return DataHandle(self, list(range(len(self._column_group))),
                           self._column_group)
-
