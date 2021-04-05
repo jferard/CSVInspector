@@ -170,6 +170,18 @@ class DataHandle:
 
         self._data._column_group._replace_values(new_rows)
 
+    def sort(self, func=None):
+        if func is None:
+            def key_func(row):
+                return tuple([row[i] for i in self._indices])
+        else:
+            def key_func(row):
+                handle_row = [row[i] for i in self._indices]
+                return func(*handle_row)
+
+        new_rows = sorted(self._data._column_group.rows(), key=key_func)
+        self._data._column_group._replace_values(new_rows)
+
 
 class Data2:
     def __init__(self, column_group: ColumnGroup, data_source: DataSource):
