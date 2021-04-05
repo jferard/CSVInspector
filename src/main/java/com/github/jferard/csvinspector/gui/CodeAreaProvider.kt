@@ -34,14 +34,7 @@ import java.util.regex.Pattern
 
 class CodeAreaProvider {
     fun get(): CodeArea {
-        val codeArea = object: CodeArea() {
-            override fun paragraphStart(selectionPolicy: NavigationActions.SelectionPolicy?) {
-                println("move up")
-            }
-            override fun nextChar(selectionPolicy: NavigationActions.SelectionPolicy) {
-                println("move")
-            }
-        }
+        val codeArea = object: CodeArea() {}
         codeArea.paragraphGraphicFactory = LineNumberFactory.get(codeArea)
         val pattern = getPattern()
         codeArea.multiPlainChanges()
