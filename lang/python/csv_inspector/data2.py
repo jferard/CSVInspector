@@ -123,6 +123,23 @@ class DataHandle:
             columns.insert(index, column)
         self._data._column_group = ColumnGroup(columns)
 
+    def merge(self, func, col_name, col_type=None):
+        if col_type is None:
+            try:
+                col_type = func.__annotations__['return']
+            except (KeyError, AttributeError):
+                col_type = Any
+
+        columns = list(self._data._column_group)
+        column = Column(col_name, col_type,
+                        [func(*vs) for vs in self._column_group.rows()])
+
+        columns[self._indices[0]] = column
+        for i in self._indices[1:]:
+            del columns[i]
+
+        self._data._column_group = ColumnGroup(columns)
+
 
 class Data2:
     def __init__(self, column_group: ColumnGroup, data_source: DataSource):
