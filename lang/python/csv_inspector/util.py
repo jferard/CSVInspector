@@ -235,6 +235,9 @@ class Column(Generic[S]):
     def width(self):
         return max(len(self.name), *(len(str(v)) for v in self.col_values))
 
+    def copy(self):
+        return Column(self.name, self.col_type, list(self.col_values))
+
 
 class ColumnGroup(Sized):
     @staticmethod
@@ -398,6 +401,9 @@ class ColumnGroup(Sized):
                               key=lambda row: tuple(row[i] for i in indices),
                               reverse=True)
         self._replace_values(new_rows)
+
+    def copy(self):
+        return ColumnGroup([col.copy() for col in self.columns])
 
 
 class ColumnFactory:
