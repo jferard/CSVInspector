@@ -220,7 +220,7 @@ class DataHandle:
                     found = True
                     new_rows.append(row + other_row)
             if not found:
-                new_rows.append(row + tuple([None] * len(other_handle._indices)))
+                new_rows.append(row + tuple([None] * len(other_handle._data._column_group)))
 
         columns = [Column(col.name, col.col_type, []) for col in
                    itertools.chain(self._data._column_group,
@@ -229,6 +229,30 @@ class DataHandle:
         column_group._replace_values(new_rows)
         self._data._column_group = column_group
 
+    def rjoin(self, other_handle: "DataHandle", func=None):
+        if func is None:
+            def func(vs1, vs2):
+                return vs1 == vs2
+
+        new_rows = []
+        for other_row in other_handle._data._column_group.rows():
+            other_handle_row = tuple(
+                [other_row[i] for i in other_handle._indices])
+            found = False
+            for row in self._data._column_group.rows():
+                handle_row = tuple([row[i] for i in self._indices])
+                if func(handle_row, other_handle_row):
+                    found = True
+                    new_rows.append(row + other_row)
+            if not found:
+                new_rows.append(tuple([None] * len(self._data._column_group)) + other_row)
+
+        columns = [Column(col.name, col.col_type, []) for col in
+                   itertools.chain(self._data._column_group,
+                                   other_handle._data._column_group)]
+        column_group = ColumnGroup(columns)
+        column_group._replace_values(new_rows)
+        self._data._column_group = column_group
 
 class Data2:
     def __init__(self, column_group: ColumnGroup, data_source: DataSource):
