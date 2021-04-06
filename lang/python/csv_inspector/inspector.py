@@ -200,11 +200,15 @@ def open_csv(csv_path: Union[str, Path],
         return None
 
     mcsv_reader = mcsv.open_csv(csv_path, mcsv_path)
-    reader = islice(mcsv_reader, nrows)
+    if nrows >= 0:
+        reader = islice(mcsv_reader, nrows)
+    else:
+        reader = mcsv_reader
     header = [to_standard(n) for n in next(reader)]
     column_group = ColumnGroup([Column(name, col_type, values)
-                                 for name, col_type, *values in
-                                 zip(header, mcsv_reader.get_python_types(), *reader)])
+                                for name, col_type, *values in
+                                zip(header, mcsv_reader.get_python_types(),
+                                    *reader)])
 
     return Data2(column_group, DataSource(to_standard(csv_path.stem),
                                           csv_path, mcsv_reader.data.encoding,

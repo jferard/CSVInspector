@@ -377,13 +377,13 @@ class ColumnGroup(Sized):
             raise ValueError(f"Unknown join type: {how}")
 
         self.columns += other.columns
-        self._replace_values(new_rows)
+        self.replace_rows(new_rows)
 
     def filter(self, func: Callable[[Sequence], bool]):
         new_rows = [row for row in self.rows() if func(row)]
-        self._replace_values(new_rows)
+        self.replace_rows(new_rows)
 
-    def _replace_values(self, new_rows):
+    def replace_rows(self, new_rows):
         for col, col_values in zip(self.columns, zip(*new_rows)):
             col.col_values = col_values
 
@@ -400,10 +400,13 @@ class ColumnGroup(Sized):
             new_rows = sorted(self.rows(),
                               key=lambda row: tuple(row[i] for i in indices),
                               reverse=True)
-        self._replace_values(new_rows)
+        self.replace_rows(new_rows)
 
     def copy(self):
         return ColumnGroup([col.copy() for col in self.columns])
+
+    def replace_columns(self, columns):
+        self.columns = columns
 
 
 class ColumnFactory:
