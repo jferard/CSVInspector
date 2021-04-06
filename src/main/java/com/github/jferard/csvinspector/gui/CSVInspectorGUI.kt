@@ -27,7 +27,6 @@ import com.github.jferard.javamcsv.MetaCSVParserBuilder
 import com.github.jferard.javamcsv.MetaCSVReader
 import com.google.common.eventbus.Subscribe
 import javafx.concurrent.Task
-import javafx.geometry.Insets
 import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.paint.Color.RED
@@ -171,11 +170,11 @@ class CSVInspectorGUI(
 
             /* Help */
             "HELP" -> help()
-            "SNIPPET_1" -> snippet(SHOW_SQL_EXAMPLE)
+            "SNIPPET_1" -> snippet(SHOW_EXAMPLE)
             "SNIPPET_2" -> snippet(SELECT_EXAMPLE)
             "SNIPPET_3" -> snippet(GROUPBY_EXAMPLE)
             "SNIPPET_4" -> snippet(JOIN_EXAMPLE)
-            "SNIPPET_5" -> snippet(CODE_EXAMPLE)
+            "SNIPPET_5" -> snippet(SORT_FILTER_EXAMPLE)
             "ABOUT" -> about()
             else -> throw IllegalArgumentException("menu: ${menuEvent.name}")
         }

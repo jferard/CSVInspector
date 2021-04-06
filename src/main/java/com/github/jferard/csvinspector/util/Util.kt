@@ -26,29 +26,34 @@ import kotlin.streams.asSequence
 const val TOKEN_LENGTH = 100L
 const val charPool: String = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
-const val SHOW_SQL_EXAMPLE = """#!/usr/bin/env python3.8
+const val SHOW_EXAMPLE = """#!/usr/bin/env python3.8
 
 from csv_inspector import *
 
-info = inspect("fixtures/datasets-2020-02-22-12-33.csv")
-info.show()
-info.open().show_sql()
+data = open_csv("fixtures/datasets-2020-02-22-12-33.csv")
+data.show()
 """
 
 const val SELECT_EXAMPLE = """#!/usr/bin/env python3.8
 
 from csv_inspector import *
 
-data = inspect("fixtures/datasets-2020-02-22-12-33.csv").open()
+data = open_csv("fixtures/datasets-2020-02-22-12-33.csv")
 data.show()
-# swap two columns
-data.swap[0][1]
-data.show()
+
 # shorten id
-data.map[1][lambda c: c[:4]]
+data[0].update(lambda t: t[:4])
+
+# take the five first columns
+data[:5].select()
 data.show()
-# select
-data.select[0:4, 10]
+
+# remove one column
+data[3].drop()
+data.show()
+
+# swap two columns
+data[1].swap(data[2])
 data.show()
 """
 
@@ -56,10 +61,16 @@ const val GROUPBY_EXAMPLE = """#!/usr/bin/env python3.8
 
 from csv_inspector import *
 
-data = inspect("fixtures/datasets-2020-02-22-12-33.csv").open()
+data = open_csv("fixtures/datasets-2020-02-22-12-33.csv")
+
 # shorten id
-data.map[0][lambda c: c[:3]]
-data.groupby[0][len]
+data[0].update(lambda c: c[:3])
+
+# group 0 on len(1)
+g = data[0].grouper()
+g[1].agg(len, int)
+g.group()
+
 data.show()
 """
 
@@ -67,41 +78,29 @@ const val JOIN_EXAMPLE = """#!/usr/bin/env python3.8
 
 from csv_inspector import *
 
-data = inspect("fixtures/datasets-2020-02-22-12-33.csv").open()
-# join on self
-data.ijoin[data][0][0]
-data.show()
+data1 = open_csv("fixtures/datasets-2020-02-22-12-33.csv")
+data1[0].select()
+data2 = data1.copy()
+
+# join on self: data1.second char = data2.third char
+data1[0].ijoin(data2[0], lambda xs1, xs2: xs1[0][1] == xs2[0][2])
+data1.show()
 """
 
-const val CODE_EXAMPLE = """#!/usr/bin/env python3.8
+const val SORT_FILTER_EXAMPLE = """#!/usr/bin/env python3.8
 
 from csv_inspector import *
-from datetime import datetime as dt
 
-info = inspect("fixtures/datasets-2020-02-22-12-33.csv")
-info.show()
+data = open_csv("fixtures/datasets-2020-02-22-12-33.csv")
 
-data = info.open()
-data.show_sql()
-data.show()
-# swap two columns
-data.swap[0][1]
-data.show()
-# shorten id
-data.map[1][lambda c: c[:4]]
-data.show()
-# select
-data.select[0:4, 10]
-data.show()
-# join on self
-data.ijoin[data][1][1]
-data.show()
-# groupby
-data.groupby[1][0:4, len, max]
-data.show()
-# merge
-data.merge[0,4][lambda x: f"{x[0]} {'('+dt.strptime(x[1], '%Y-%m-%d').year+')' if x[1] else ''}", "new"]
-data.show()"""
+# filter
+data[0].filter(lambda v: v[1] == '8')
+data.show()    
+
+# sort
+data[0].sort()
+data.show()    
+"""
 
 
 /**
