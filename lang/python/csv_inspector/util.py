@@ -305,8 +305,11 @@ class ColumnGroup(Sized):
                 self.columns[:index] + [column] + self.columns[index:])
         self.columns_by_name[name] = column
 
-    def rows(self):
-        return zip(*self.columns)
+    def rows(self, indices: List[int] = None):
+        if indices is None:
+            return zip(*self.columns)
+        else:
+            return zip(*[col for i, col in enumerate(self.columns)])
 
     def __eq__(self, other):
         return self.columns == other.columns
@@ -407,6 +410,9 @@ class ColumnGroup(Sized):
 
     def replace_columns(self, columns):
         self.columns = columns
+
+    def rename(self, i, name):
+        self.columns[i].name = name
 
 
 class ColumnFactory:

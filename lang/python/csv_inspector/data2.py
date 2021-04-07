@@ -34,14 +34,13 @@ class DataGrouperHandle:
         self._column_group = column_group
 
     def agg(self, func, col_type=None):
-        self._data_grouper._new_agg(self._indices, self._column_group, func, col_type)
+        self._data_grouper._new_agg(self._indices, self._column_group, func,
+                                    col_type)
 
 
 class DataGrouper:
-    def __init__(self, data_column_group: ColumnGroup, indices: List[int],
-                 column_group: ColumnGroup):
+    def __init__(self, data_column_group: ColumnGroup, indices: List[int]):
         self._data_column_group = data_column_group
-        self._column_group = column_group
         self._indices = indices
         self._aggs = []
 
@@ -51,7 +50,8 @@ class DataGrouper:
             [self._data_column_group[i] for i in indices])
         return DataGrouperHandle(self, indices, column_group)
 
-    def _new_agg(self, indices: List[int], column_group: ColumnGroup, func, col_type):
+    def _new_agg(self, indices: List[int], column_group: ColumnGroup, func,
+                 col_type):
         self._aggs.append((indices, column_group, func, col_type))
 
     def group(self):
@@ -101,7 +101,7 @@ class DataHandle:
                  column_group: ColumnGroup):
         self._indices = indices
         self._data_column_group = data_column_group
-        self._column_group = column_group
+        # self._column_group = column_group
 
     def show(self, limit: int = 100):
         """
@@ -119,17 +119,53 @@ class DataHandle:
     # TODO: __getitem__ -> row
 
     def _rows(self, limit: int = 100):
-        return islice(self._column_group.rows(), limit)
+        return islice(self._data_column_group.rows(self._indices), limit)
 
     def select(self):
         """
         Select the indices of the handle and drop the other indices.
+
+        Syntax: `data[x].drop()`.
+
+        `x` is an index, slice or tuple of slices/indices
+
+        >>> test_data = original_test_data.copy()
+        >>> print(test_data)
+         A B C D
+         1 3 2 4
+         5 2 2 7
+         3 4 7 8
+        >>> test_data[0, 2].select()
+        >>> print(test_data)
+         A C
+         1 2
+         5 2
+         3 7
         """
-        self._data_column_group.replace_columns(self._column_group.columns)
+        self._data_column_group.replace_columns(
+            [col for i, col in enumerate(self._data_column_group) if
+             i in self._indices])
 
     def drop(self):
         """
         Drop the indices of the handle and select the other indices.
+
+        Syntax: `data[x].drop()`.
+
+        `x` is an index, slice or tuple of slices/indices
+
+        >>> test_data = original_test_data.copy()
+        >>> print(test_data)
+         A B C D
+         1 3 2 4
+         5 2 2 7
+         3 4 7 8
+        >>> test_data[0, 2:].drop()
+        >>> print(test_data)
+         B
+         3
+         2
+         4
         """
         columns = [c for i, c in enumerate(self._data_column_group)
                    if i not in self._indices]
@@ -138,54 +174,105 @@ class DataHandle:
     def swap(self, other_handle: "DataHandle"):
         """
         Swap two handles. Those handles may be backed by the same data or not.
+
+        Syntax: `data1[x].swap(data2[y])
+
+        `x` and `y` are indices, slices or tuples of slices/indices
+
+        >>> test_data = original_test_data.copy()
+        >>> print(test_data)
+         A B C D
+         1 3 2 4
+         5 2 2 7
+         3 4 7 8
+        >>> test_data[0, 2].swap(test_data[1, 3])
+        >>> print(test_data)
+         B A D C
+         3 1 4 2
+         2 5 7 2
+         4 3 8 7
         """
         if other_handle._data_column_group == self._data_column_group:
-            columns = list(self._data_column_group)
+            columns = self._data_column_group.columns
             for j, k in zip(self._indices, other_handle._indices):
                 temp = columns[j]
                 columns[j] = columns[k]
                 columns[k] = temp
-
-            self._data_column_group.replace_columns(columns)
         else:
-            columns = list(self._data_column_group)
-            other_columns = list(other_handle._data_column_group)
+            columns = self._data_column_group.columns
+            other_columns = other_handle._data_column_group.columns
             for j, k in zip(self._indices, other_handle._indices):
                 temp = columns[j]
                 columns[j] = other_columns[k]
                 other_columns[k] = temp
 
-            self._data_column_group.replace_columns(columns)
-            other_handle._data_column_group.replace_columns(other_columns)
-
     def update(self, func, col_name=None, col_type=None):
+        """
+        Update some column using a function.
+
+        Syntax: `data[x].update(func)`
+
+        * `x` is an index
+        * `func` is a function of `data[x]` (use numeric indices)
+        >>> test_data = original_test_data.copy()
+        >>> print(test_data)
+         A B C D
+         1 3 2 4
+         5 2 2 7
+         3 4 7 8
+        >>> test_data[1].update(lambda x: x*3)
+        >>> print(test_data)
+         A  B C D
+         1  9 2 4
+         5  6 2 7
+         3 12 7 8
+        """
         assert len(self._indices) == 1
-        column = self._column_group[0]
         index = self._indices[0]
+        column = self._data_column_group[index]
         if col_type is None:
             col_type = self._get_new_col_type(func, column.col_type)
 
         if col_name is None:
             col_name = column.name
 
-        columns = list(self._data_column_group)
+        columns = self._data_column_group.columns
         columns[index] = Column(col_name, col_type,
                                 [func(v) for v in column.col_values])
 
-        self._data_column_group.replace_columns(columns)
-
     def create(self, func, col_name, col_type=None, index=None):
+        """
+        Create a new col
+
+        Syntax: data[x].create(func, col_name, [col_type, [index]])
+
+        >>> test_data = original_test_data.copy()
+        >>> print(test_data)
+         A B C D
+         1 3 2 4
+         5 2 2 7
+         3 4 7 8
+        >>> test_data[:3].create(lambda x, y, z: x+y+z, "E", int, 1)
+        >>> print(test_data)
+         A  E B C D
+         1  6 3 2 4
+         5  9 2 2 7
+         3 14 4 7 8
+        """
         if col_type is None:
             col_type = self._get_new_col_type(func, Any)
 
-        columns = list(self._data_column_group)
+        columns = self._data_column_group.columns
         column = Column(col_name, col_type,
-                        [func(*vs) for vs in self._column_group.rows()])
+                        [func(*[v for i, v in enumerate(vs) if
+                                i in self._indices]) for vs in
+                         self._data_column_group.rows()])
 
         if index is None:
             columns.append(column)
         else:
             columns.insert(index, column)
+
         self._data_column_group.replace_columns(columns)
 
     def _get_new_col_type(self, func, default_col_type):
@@ -196,23 +283,88 @@ class DataHandle:
         return col_type
 
     def merge(self, func, col_name, col_type=None):
+        """
+        Create a new col by merging some columns. Those columns are
+        consumed during the process.
+
+        Syntax: data[x].merge(func, col_name, [col_type])
+
+        >>> test_data = original_test_data.copy()
+        >>> print(test_data)
+         A B C D
+         1 3 2 4
+         5 2 2 7
+         3 4 7 8
+        >>> test_data[:3].merge(lambda x, y, z: x+y+z, "E", int)
+        >>> print(test_data)
+          E D
+          6 4
+          9 7
+         14 8
+        """
         if col_type is None:
             col_type = self._get_new_col_type(func, Any)
 
-        columns = list(self._data_column_group)
+        # TODO: check if indices are always sorted
+        columns = [col for i, col in enumerate(self._data_column_group.columns)
+                   if i not in self._indices[1:]]
         column = Column(col_name, col_type,
-                        [func(*vs) for vs in self._column_group.rows()])
+                        [func(*[v for i, v in enumerate(vs) if
+                                i in self._indices]) for vs in
+                         self._data_column_group.rows()])
 
         columns[self._indices[0]] = column
-        for i in self._indices[1:]:
-            del columns[i]
 
         self._data_column_group.replace_columns(columns)
 
     def move_after(self, index):
+        """
+        Move some column_group before a given index.
+
+        Syntax `data[x].move_before(x)`
+
+        * `x` is an index, slice or tuple of slices/indices of column_index that
+        should move before `idx`.
+        * `idx` is the destination index
+
+        >>> test_data = original_test_data.copy()
+        >>> print(test_data)
+         A B C D
+         1 3 2 4
+         5 2 2 7
+         3 4 7 8
+        >>> test_data[-2:].move_after(0)
+        >>> print(test_data)
+         A C D B
+         1 2 4 3
+         5 2 7 2
+         3 7 8 4
+         """
         self._move_before(index + 1)
 
     def move_before(self, index):
+        """
+        Move some column_group before a given index.
+
+        Syntax `data[x].move_before(x)`
+
+        * `x` is an index, slice or tuple of slices/indices of column_index that
+        should move before `idx`.
+        * `idx` is the destination index
+
+        >>> test_data = original_test_data.copy()
+        >>> print(test_data)
+         A B C D
+         1 3 2 4
+         5 2 2 7
+         3 4 7 8
+        >>> test_data[-2:].move_before(0)
+        >>> print(test_data)
+         C D A B
+         2 4 1 3
+         2 7 5 2
+         7 8 3 4
+        """
         self._move_before(index)
 
     def _move_before(self, index):
@@ -231,6 +383,25 @@ class DataHandle:
         self._data_column_group.replace_columns(columns)
 
     def filter(self, func):
+        """
+        Filter data on a function.
+
+        Syntax: `data[x].filter(func)`.
+
+        * `x` is an index, slice or tuple of slices/indices.
+        * `func` is a function
+
+        >>> test_data = original_test_data.copy()
+        >>> print(test_data)
+         A B C D
+         1 3 2 4
+         5 2 2 7
+         3 4 7 8
+        >>> test_data[1:3].filter(lambda x, y: x == y)
+        >>> print(test_data)
+         A B C D
+         5 2 2 7
+        """
         new_rows = []
         for row in self._data_column_group.rows():
             handle_row = [row[i] for i in self._indices]
@@ -239,7 +410,27 @@ class DataHandle:
 
         self._data_column_group.replace_rows(new_rows)
 
-    def sort(self, func=None):
+    def sort(self, func=None, reverse=False):
+        """
+        Sort the rows in reverse order.
+
+        Syntax: `data[x].rsort(func)`
+
+        `x` is the index, slice or tuple of slices/indices of the key
+
+        >>> test_data = original_test_data.copy()
+        >>> print(test_data)
+         A B C D
+         1 3 2 4
+         5 2 2 7
+         3 4 7 8
+        >>> test_data[1].sort()
+        >>> print(test_data)
+         A B C D
+         5 2 2 7
+         1 3 2 4
+         3 4 7 8
+        """
         if func is None:
             def key_func(row):
                 return tuple([row[i] for i in self._indices])
@@ -248,10 +439,80 @@ class DataHandle:
                 handle_row = [row[i] for i in self._indices]
                 return func(*handle_row)
 
-        new_rows = sorted(self._data_column_group.rows(), key=key_func)
+        new_rows = sorted(self._data_column_group.rows(), key=key_func,
+                          reverse=reverse)
         self._data_column_group.replace_rows(new_rows)
 
+    def rsort(self, func=None):
+        """
+        Sort the rows in reverse order.
+
+        Syntax: `data[x].rsort(func)`
+
+        `x` is the index, slice or tuple of slices/indices of the key
+
+        >>> test_data = original_test_data.copy()
+        >>> print(test_data)
+         A B C D
+         1 3 2 4
+         5 2 2 7
+         3 4 7 8
+        >>> test_data[1].rsort()
+        >>> print(test_data)
+         A B C D
+         3 4 7 8
+         1 3 2 4
+         5 2 2 7
+        """
+        self.sort(func, reverse=True)
+
+    def rename(self, names):
+        """
+        Rename one or more columns
+
+        Syntax: `data[x].rename(names)`
+
+        `x` is the index, slice or tuple of slices/indices of the key
+
+        >>> test_data = original_test_data.copy()
+        >>> print(test_data)
+         A B C D
+         1 3 2 4
+         5 2 2 7
+         3 4 7 8
+        >>> test_data[:].rename(["a", "b", "c", "d"])
+        >>> print(test_data)
+         a b c d
+         1 3 2 4
+         5 2 2 7
+         3 4 7 8
+        """
+        assert len(self._indices) == len(names)
+        for i, name in zip(self._indices, names):
+            self._data_column_group.rename(i, name)
+
     def ijoin(self, other_handle: "DataHandle", func=None):
+        """
+        Make an inner join between two data sets.
+
+        Syntax: `data1[x].ijoin(data2[y], func)`
+
+        `x` is the index, slice or tuple of slices/indices of the key
+
+        >>> test_data1 = original_test_data.copy()
+        >>> test_data2 = original_test_data.copy()
+        >>> test_data2[:].rename(["A'", "B'", "C'", "D'"])
+        >>> print(test_data1)
+         A B C D
+         1 3 2 4
+         5 2 2 7
+         3 4 7 8
+        >>> test_data1[1].ijoin(test_data2[2], lambda x, y: x[0] == y[0])
+        >>> print(test_data1)
+         A B C D A' B' C' D'
+         5 2 2 7  1  3  2  4
+         5 2 2 7  5  2  2  7
+        """
         if func is None:
             def func(vs1, vs2):
                 return vs1 == vs2
@@ -273,6 +534,29 @@ class DataHandle:
         self._data_column_group.replace_columns(column_group.columns)
 
     def ljoin(self, other_handle: "DataHandle", func=None):
+        """
+        Make an left join between two data sets.
+
+        Syntax: `data1[x].ljoin(data2[y], func)`
+
+        `x` is the index, slice or tuple of slices/indices of the key
+
+        >>> test_data1 = original_test_data.copy()
+        >>> test_data2 = original_test_data.copy()
+        >>> test_data2[:].rename(["A'", "B'", "C'", "D'"])
+        >>> print(test_data1)
+         A B C D
+         1 3 2 4
+         5 2 2 7
+         3 4 7 8
+        >>> test_data1[1].ljoin(test_data2[2], lambda x, y: x[0] == y[0])
+        >>> print(test_data1)
+         A B C D   A'   B'   C'   D'
+         1 3 2 4 None None None None
+         5 2 2 7    1    3    2    4
+         5 2 2 7    5    2    2    7
+         3 4 7 8 None None None None
+        """
         if func is None:
             def func(vs1, vs2):
                 return vs1 == vs2
@@ -299,6 +583,28 @@ class DataHandle:
         self._data_column_group.replace_columns(column_group.columns)
 
     def rjoin(self, other_handle: "DataHandle", func=None):
+        """
+        Make an right join between two data sets.
+
+        Syntax: `data1[x].rjoin(data2[y], func)`
+
+        `x` is the index, slice or tuple of slices/indices of the key
+
+        >>> test_data1 = original_test_data.copy()
+        >>> test_data2 = original_test_data.copy()
+        >>> test_data2[:].rename(["A'", "B'", "C'", "D'"])
+        >>> print(test_data1)
+         A B C D
+         1 3 2 4
+         5 2 2 7
+         3 4 7 8
+        >>> test_data1[1].rjoin(test_data2[2], lambda x, y: x[0] == y[0])
+        >>> print(test_data1)
+            A    B    C    D A' B' C' D'
+            5    2    2    7  1  3  2  4
+            5    2    2    7  5  2  2  7
+         None None None None  3  4  7  8
+         """
         if func is None:
             def func(vs1, vs2):
                 return vs1 == vs2
@@ -322,9 +628,33 @@ class DataHandle:
                                    other_handle._data_column_group)]
         column_group = ColumnGroup(columns)
         column_group.replace_rows(new_rows)
-        self._data_column_group = column_group
+        self._data_column_group.replace_columns(column_group.columns)
 
     def ojoin(self, other_handle: "DataHandle", func=None):
+        """
+        Make an outer join between two data sets.
+
+        Syntax: `data1[x].ojoin(data2[y], func)`
+
+        `x` is the index, slice or tuple of slices/indices of the key
+
+        >>> test_data1 = original_test_data.copy()
+        >>> test_data2 = original_test_data.copy()
+        >>> test_data2[:].rename(["A'", "B'", "C'", "D'"])
+        >>> print(test_data1)
+         A B C D
+         1 3 2 4
+         5 2 2 7
+         3 4 7 8
+        >>> test_data1[1].ojoin(test_data2[2], lambda x, y: x[0] == y[0])
+        >>> print(test_data1)
+            A    B    C    D   A'   B'   C'   D'
+            1    3    2    4 None None None None
+            5    2    2    7    1    3    2    4
+            5    2    2    7    5    2    2    7
+            3    4    7    8 None None None None
+         None None None None    3    4    7    8
+         """
         if func is None:
             def func(vs1, vs2):
                 return vs1 == vs2
@@ -355,11 +685,33 @@ class DataHandle:
                                    other_handle._data_column_group)]
         column_group = ColumnGroup(columns)
         column_group.replace_rows(new_rows)
-        self._data_column_group = column_group
+        self._data_column_group.replace_columns(column_group.columns)
 
     def grouper(self):
-        return DataGrouper(self._data_column_group, self._indices,
-                           self._column_group)
+        """
+        Group some rows.
+
+        Syntax: `g = data[x].grouper()`
+
+        `x` is the index, slice or tuple of slices/indices of the key
+
+        >>> test_data = original_test_data.copy()
+        >>> test_data[0].update(lambda x: x%2)
+        >>> print(test_data)
+         A B C D
+         1 3 2 4
+         1 2 2 7
+         1 4 7 8
+        >>> g = test_data[0].grouper()
+        >>> g[1].agg(max)
+        >>> g[2].agg(min)
+        >>> g[3].agg(sum)
+        >>> g.group()
+        >>> print(test_data)
+         A B C  D
+         1 4 2 19
+        """
+        return DataGrouper(self._data_column_group, self._indices)
 
 
 class Data2:
@@ -383,3 +735,18 @@ class Data2:
 
     def copy(self) -> "Data2":
         return Data2(self._column_group.copy(), self._data_source)
+
+    def __str__(self) -> str:
+        return str(self._column_group)
+
+    def __repr__(self) -> str:
+        return f"Data2{self._column_group}"
+
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod(extraglobs={'original_test_data': Data2(ColumnGroup([
+        Column("A", int, [1, 5, 3]), Column("B", int, [3, 2, 4]),
+        Column("C", int, [2, 2, 7]), Column("D", int, [4, 7, 8])
+    ]), None)})
