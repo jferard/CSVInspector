@@ -15,14 +15,10 @@
 #  You should have received a copy of the GNU General Public License along with
 #  this program. If not, see <http://www.gnu.org/licenses/>.
 #
-import csv
 import os
 import unittest
-from pathlib import Path
 from typing import (Any, Sequence)
 
-from csv_inspector import inspect
-from csv_inspector.data import Data
 from csv_inspector.util import ColumnGroup, Column
 
 

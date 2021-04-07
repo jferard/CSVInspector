@@ -309,7 +309,8 @@ class ColumnGroup(Sized):
         if indices is None:
             return zip(*self.columns)
         else:
-            return zip(*[col for i, col in enumerate(self.columns)])
+            return zip(*[col for i, col in enumerate(self.columns)
+                         if i in indices])
 
     def __eq__(self, other):
         return self.columns == other.columns

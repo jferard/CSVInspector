@@ -17,5 +17,5 @@
 #  this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from csv_inspector.inspector import inspect, open_csv
+from csv_inspector.inspector import read_csv
 from csv_inspector.util import begin_info, end_info

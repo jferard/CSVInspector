@@ -30,7 +30,7 @@ const val SHOW_EXAMPLE = """#!/usr/bin/env python3.8
 
 from csv_inspector import *
 
-data = open_csv("fixtures/datasets-2020-02-22-12-33.csv")
+data = read_csv("fixtures/datasets-2020-02-22-12-33.csv")
 data.show()
 """
 
@@ -38,7 +38,7 @@ const val SELECT_EXAMPLE = """#!/usr/bin/env python3.8
 
 from csv_inspector import *
 
-data = open_csv("fixtures/datasets-2020-02-22-12-33.csv")
+data = read_csv("fixtures/datasets-2020-02-22-12-33.csv")
 data.show()
 
 # shorten id
@@ -61,7 +61,7 @@ const val GROUPBY_EXAMPLE = """#!/usr/bin/env python3.8
 
 from csv_inspector import *
 
-data = open_csv("fixtures/datasets-2020-02-22-12-33.csv")
+data = read_csv("fixtures/datasets-2020-02-22-12-33.csv")
 
 # shorten id
 data[0].update(lambda c: c[:3])
@@ -78,7 +78,7 @@ const val JOIN_EXAMPLE = """#!/usr/bin/env python3.8
 
 from csv_inspector import *
 
-data1 = open_csv("fixtures/datasets-2020-02-22-12-33.csv")
+data1 = read_csv("fixtures/datasets-2020-02-22-12-33.csv")
 data1[0].select()
 data2 = data1.copy()
 
@@ -91,7 +91,7 @@ const val SORT_FILTER_EXAMPLE = """#!/usr/bin/env python3.8
 
 from csv_inspector import *
 
-data = open_csv("fixtures/datasets-2020-02-22-12-33.csv")
+data = read_csv("fixtures/datasets-2020-02-22-12-33.csv")
 
 # filter
 data[0].filter(lambda v: v[1] == '8')
