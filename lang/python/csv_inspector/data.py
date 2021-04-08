@@ -34,6 +34,15 @@ class DataSource:
         self._csvdialect = csvdialect
 
 
+class Agg:
+    def __init__(self, indices: List[int], column_group: ColumnGroup, func,
+                 col_type):
+        self.indices = indices
+        self.column_group = column_group
+        self.func = func
+        self.col_type = col_type
+
+
 class DataGrouperHandle:
     def __init__(self, data_grouper: "DataGrouper", indices: List[int],
                  column_group: ColumnGroup):
@@ -42,8 +51,8 @@ class DataGrouperHandle:
         self._column_group = column_group
 
     def agg(self, func, col_type=None):
-        self._data_grouper._new_agg(self._indices, self._column_group, func,
-                                    col_type)
+        self._data_grouper._new_agg(Agg(
+            self._indices, self._column_group, func, col_type))
 
 
 class DataGrouper:
@@ -58,17 +67,17 @@ class DataGrouper:
             [self._data_column_group[i] for i in indices])
         return DataGrouperHandle(self, indices, column_group)
 
-    def _new_agg(self, indices: List[int], column_group: ColumnGroup, func,
-                 col_type):
-        self._aggs.append((indices, column_group, func, col_type))
+    def _new_agg(self, agg: Agg):
+        self._aggs.append(agg)
 
     def group(self):
+        indices = set(self._indices)
         funcs = {}
         col_types = {}
         for agg in self._aggs:
-            for c in agg[0]:
-                funcs[c] = agg[2]
-                col_type = agg[3]
+            for c in agg.indices:
+                funcs[c] = agg.func
+                col_type = agg.col_type
                 if col_type is not None:
                     col_types[c] = col_type
         agg_cols = sorted(funcs)
@@ -76,28 +85,27 @@ class DataGrouper:
             if c in agg_cols:
                 agg_cols.remove(c)
 
-        d = {}
+        vs_list_by_key = {}
         for row in self._data_column_group.rows():
-            key = tuple([row[i] for i in self._indices])
-            if key not in d:
-                d[key] = [[] for _ in agg_cols]
+            key = tuple([row[i] for i in indices])
+            if key not in vs_list_by_key:
+                vs_list_by_key[key] = [[] for _ in agg_cols]
             for c, col in enumerate(agg_cols):
-                d[key][c].append(row[col])
+                vs_list_by_key[key][c].append(row[col])
 
         new_rows = []
-        for key, values in d.items():
-            xs = []
-            for i, vs in enumerate(values):
-                func = funcs[agg_cols[i]]
-                v = func(vs)
-                xs.append(v)
+        for key, vs_list in vs_list_by_key.items():
+            xs = [None]*len(agg_cols)
+            for c, vs in enumerate(vs_list):
+                func = funcs[agg_cols[c]]
+                xs[c] = func(vs)
             new_rows.append(key + tuple(xs))
 
         columns = [col for i, col in enumerate(self._data_column_group) if
-                   i in self._indices or i in agg_cols]
-        for i in agg_cols:
-            if i in col_types:
-                columns[i].col_type = col_types[i]
+                   i in indices or i in agg_cols]
+        for c in agg_cols:
+            if c in col_types:
+                columns[c].col_type = col_types[c]
         for col, col_values in zip(columns, zip(*new_rows)):
             col.col_values = col_values
 
@@ -105,11 +113,9 @@ class DataGrouper:
 
 
 class DataHandle:
-    def __init__(self, data_column_group: ColumnGroup, indices: List[int],
-                 column_group: ColumnGroup):
+    def __init__(self, data_column_group: ColumnGroup, indices: List[int]):
         self._indices = indices
         self._data_column_group = data_column_group
-        # self._column_group = column_group
 
     def show(self, limit: int = 100):
         """
@@ -118,8 +124,12 @@ class DataHandle:
         """
         writer = csv.writer(sys.stdout, delimiter=',')
         begin_csv()
-        writer.writerow([col.col_type for i, col in enumerate(self._data_column_group) if i in self._indices])
-        writer.writerow([col.name for i, col in enumerate(self._data_column_group) if i in self._indices])
+        writer.writerow(
+            [col.col_type for i, col in enumerate(self._data_column_group) if
+             i in self._indices])
+        writer.writerow(
+            [col.name for i, col in enumerate(self._data_column_group) if
+             i in self._indices])
         writer.writerows(self._rows(limit))
         sys.stdout.flush()
         end_csv()
@@ -272,9 +282,8 @@ class DataHandle:
 
         columns = self._data_column_group.columns
         column = Column(col_name, col_type,
-                        [func(*[v for i, v in enumerate(vs) if
-                                i in self._indices]) for vs in
-                         self._data_column_group.rows()])
+                        [func(*vs) for vs in
+                         self._data_column_group.rows(self._indices)])
 
         if index is None:
             columns.append(column)
@@ -317,9 +326,8 @@ class DataHandle:
         columns = [col for i, col in enumerate(self._data_column_group.columns)
                    if i not in self._indices[1:]]
         column = Column(col_name, col_type,
-                        [func(*[v for i, v in enumerate(vs) if
-                                i in self._indices]) for vs in
-                         self._data_column_group.rows()])
+                        [func(*vs) for vs in
+                         self._data_column_group.rows(self._indices)])
 
         columns[self._indices[0]] = column
 
@@ -410,9 +418,10 @@ class DataHandle:
          A B C D
          5 2 2 7
         """
+        indices = set(self._indices)
         new_rows = []
         for row in self._data_column_group.rows():
-            handle_row = [row[i] for i in self._indices]
+            handle_row = [row[i] for i in indices]
             if func(*handle_row):
                 new_rows.append(row)
 
@@ -525,12 +534,14 @@ class DataHandle:
             def func(vs1, vs2):
                 return vs1 == vs2
 
+        indices = set(self._indices)
+        other_indices = set(other_handle._indices)
         new_rows = []
         for row in self._data_column_group.rows():
-            handle_row = tuple([row[i] for i in self._indices])
+            handle_row = tuple([row[i] for i in indices])
             for other_row in other_handle._data_column_group.rows():
                 other_handle_row = tuple(
-                    [other_row[i] for i in other_handle._indices])
+                    [other_row[i] for i in other_indices])
                 if func(handle_row, other_handle_row):
                     new_rows.append(row + other_row)
 
@@ -569,13 +580,15 @@ class DataHandle:
             def func(vs1, vs2):
                 return vs1 == vs2
 
+        indices = set(self._indices)
+        other_indices = set(other_handle._indices)
         new_rows = []
         for row in self._data_column_group.rows():
-            handle_row = tuple([row[i] for i in self._indices])
+            handle_row = tuple([row[i] for i in indices])
             found = False
             for other_row in other_handle._data_column_group.rows():
                 other_handle_row = tuple(
-                    [other_row[i] for i in other_handle._indices])
+                    [other_row[i] for i in other_indices])
                 if func(handle_row, other_handle_row):
                     found = True
                     new_rows.append(row + other_row)
@@ -617,13 +630,15 @@ class DataHandle:
             def func(vs1, vs2):
                 return vs1 == vs2
 
+        indices = set(self._indices)
+        other_indices = set(other_handle._indices)
         new_rows = []
         for other_row in other_handle._data_column_group.rows():
             other_handle_row = tuple(
-                [other_row[i] for i in other_handle._indices])
+                [other_row[i] for i in other_indices])
             found = False
             for row in self._data_column_group.rows():
-                handle_row = tuple([row[i] for i in self._indices])
+                handle_row = tuple([row[i] for i in indices])
                 if func(handle_row, other_handle_row):
                     found = True
                     new_rows.append(row + other_row)
@@ -667,15 +682,17 @@ class DataHandle:
             def func(vs1, vs2):
                 return vs1 == vs2
 
+        indices = set(self._indices)
+        other_indices = set(other_handle._indices)
         new_rows = []
         other_rows = list(other_handle._data_column_group.rows())
         other_rows_not_found = list(other_rows)
         for row in self._data_column_group.rows():
-            handle_row = tuple([row[i] for i in self._indices])
+            handle_row = tuple([row[i] for i in indices])
             found = False
             for i, other_row in enumerate(other_rows):
                 other_handle_row = tuple(
-                    [other_row[i] for i in other_handle._indices])
+                    [other_row[i] for i in other_indices])
                 if func(handle_row, other_handle_row):
                     found = True
                     other_rows_not_found[i] = None
@@ -731,15 +748,14 @@ class Data:
         indices = to_indices(len(self._column_group), item)
         column_group = ColumnGroup(
             [self._column_group[i] for i in indices])
-        return DataHandle(self._column_group, indices, column_group)
+        return DataHandle(self._column_group, indices)
 
     def show(self, limit: int = 100):
         self.as_handle().show(limit)
 
     def as_handle(self) -> DataHandle:
         return DataHandle(self._column_group,
-                          list(range(len(self._column_group))),
-                          self._column_group)
+                          list(range(len(self._column_group))))
 
     def copy(self) -> "Data":
         return Data(self._column_group.copy(), self._data_source)

@@ -309,6 +309,7 @@ class ColumnGroup(Sized):
         if indices is None:
             return zip(*self.columns)
         else:
+            indices = set(indices)
             return zip(*[col for i, col in enumerate(self.columns)
                          if i in indices])
 
