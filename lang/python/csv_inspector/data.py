@@ -95,7 +95,7 @@ class DataGrouper:
 
         new_rows = []
         for key, vs_list in vs_list_by_key.items():
-            xs = [None]*len(agg_cols)
+            xs = [None] * len(agg_cols)
             for c, vs in enumerate(vs_list):
                 func = funcs[agg_cols[c]]
                 xs[c] = func(vs)
@@ -421,8 +421,8 @@ class DataHandle:
         indices = set(self._indices)
         new_rows = []
         for row in self._data_column_group.rows():
-            handle_row = [row[i] for i in indices]
-            if func(*handle_row):
+            vs = [row[i] for i in indices]
+            if func(*vs):
                 new_rows.append(row)
 
         self._data_column_group.replace_rows(new_rows)
@@ -448,12 +448,13 @@ class DataHandle:
          1 3 2 4
          3 4 7 8
         """
+        indices = set(self._indices)
         if func is None:
             def key_func(row):
-                return tuple([row[i] for i in self._indices])
+                return tuple([row[i] for i in indices])
         else:
             def key_func(row):
-                handle_row = [row[i] for i in self._indices]
+                handle_row = [row[i] for i in indices]
                 return func(*handle_row)
 
         new_rows = sorted(self._data_column_group.rows(), key=key_func,
@@ -497,9 +498,9 @@ class DataHandle:
          1 3 2 4
          5 2 2 7
          3 4 7 8
-        >>> test_data[:].rename(["a", "b", "c", "d"])
+        >>> test_data[1, 3].rename(["b", "d"])
         >>> print(test_data)
-         a b c d
+         A b C d
          1 3 2 4
          5 2 2 7
          3 4 7 8
@@ -538,13 +539,16 @@ class DataHandle:
         other_indices = set(other_handle._indices)
         new_rows = []
         for row in self._data_column_group.rows():
-            handle_row = tuple([row[i] for i in indices])
+            key = tuple([row[i] for i in indices])
             for other_row in other_handle._data_column_group.rows():
-                other_handle_row = tuple(
-                    [other_row[i] for i in other_indices])
-                if func(handle_row, other_handle_row):
+                other_key = tuple([other_row[i] for i in other_indices])
+                if func(key, other_key):
                     new_rows.append(row + other_row)
 
+        self._append_other_columns_and_put_rows(other_handle, new_rows)
+
+    def _append_other_columns_and_put_rows(self, other_handle: "DataHandle",
+                                           new_rows):
         columns = [Column(col.name, col.col_type, []) for col in
                    itertools.chain(self._data_column_group,
                                    other_handle._data_column_group)]
@@ -584,24 +588,19 @@ class DataHandle:
         other_indices = set(other_handle._indices)
         new_rows = []
         for row in self._data_column_group.rows():
-            handle_row = tuple([row[i] for i in indices])
+            key = tuple([row[i] for i in indices])
             found = False
             for other_row in other_handle._data_column_group.rows():
-                other_handle_row = tuple(
+                other_key = tuple(
                     [other_row[i] for i in other_indices])
-                if func(handle_row, other_handle_row):
+                if func(key, other_key):
                     found = True
                     new_rows.append(row + other_row)
             if not found:
                 new_rows.append(
                     row + tuple([None] * len(other_handle._data_column_group)))
 
-        columns = [Column(col.name, col.col_type, []) for col in
-                   itertools.chain(self._data_column_group,
-                                   other_handle._data_column_group)]
-        column_group = ColumnGroup(columns)
-        column_group.replace_rows(new_rows)
-        self._data_column_group.replace_columns(column_group.columns)
+        self._append_other_columns_and_put_rows(other_handle, new_rows)
 
     def rjoin(self, other_handle: "DataHandle", func=None):
         """
@@ -634,24 +633,18 @@ class DataHandle:
         other_indices = set(other_handle._indices)
         new_rows = []
         for other_row in other_handle._data_column_group.rows():
-            other_handle_row = tuple(
-                [other_row[i] for i in other_indices])
+            other_key = tuple([other_row[i] for i in other_indices])
             found = False
             for row in self._data_column_group.rows():
-                handle_row = tuple([row[i] for i in indices])
-                if func(handle_row, other_handle_row):
+                key = tuple([row[i] for i in indices])
+                if func(key, other_key):
                     found = True
                     new_rows.append(row + other_row)
             if not found:
                 new_rows.append(
                     tuple([None] * len(self._data_column_group)) + other_row)
 
-        columns = [Column(col.name, col.col_type, []) for col in
-                   itertools.chain(self._data_column_group,
-                                   other_handle._data_column_group)]
-        column_group = ColumnGroup(columns)
-        column_group.replace_rows(new_rows)
-        self._data_column_group.replace_columns(column_group.columns)
+        self._append_other_columns_and_put_rows(other_handle, new_rows)
 
     def ojoin(self, other_handle: "DataHandle", func=None):
         """
@@ -688,12 +681,11 @@ class DataHandle:
         other_rows = list(other_handle._data_column_group.rows())
         other_rows_not_found = list(other_rows)
         for row in self._data_column_group.rows():
-            handle_row = tuple([row[i] for i in indices])
+            key = tuple([row[i] for i in indices])
             found = False
             for i, other_row in enumerate(other_rows):
-                other_handle_row = tuple(
-                    [other_row[i] for i in other_indices])
-                if func(handle_row, other_handle_row):
+                other_key = tuple([other_row[i] for i in other_indices])
+                if func(key, other_key):
                     found = True
                     other_rows_not_found[i] = None
                     new_rows.append(row + other_row)
@@ -705,12 +697,7 @@ class DataHandle:
             new_rows.append(
                 tuple([None] * len(self._data_column_group)) + other_row)
 
-        columns = [Column(col.name, col.col_type, []) for col in
-                   itertools.chain(self._data_column_group,
-                                   other_handle._data_column_group)]
-        column_group = ColumnGroup(columns)
-        column_group.replace_rows(new_rows)
-        self._data_column_group.replace_columns(column_group.columns)
+        self._append_other_columns_and_put_rows(other_handle, new_rows)
 
     def grouper(self):
         """

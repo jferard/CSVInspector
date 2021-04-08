@@ -38,43 +38,6 @@ class ColumnGroupTest(unittest.TestCase):
         self.assertEqual(ColumnGroup([Column("colA", int, [1, 2, 3]),
                                       Column("colB", str, ["a", "b", "c"])]), c)
 
-    def test_swap(self):
-        c1 = ColumnGroup.from_rows((int, str),
-                                   [("colA", "colB"), (1, "a"), (2, "b"),
-                                    (3, "c")])
-        c2 = ColumnGroup.from_rows((str, int),
-                                   [("colB", "colA"), ("a", 1), ("b", 2),
-                                    ("c", 3)])
-        c1.swap(0, 1)
-        self.assertEqual(c1, c2)
-
-    def test_insert_col(self):
-        c1 = ColumnGroup.from_rows((int, str),
-                                   [("colA", "colB"), (1, "a"), (2, "b"),
-                                    (3, "c")])
-        c1.insert_col("col0", str, ["4", "5", "6"], 0)
-        c2 = ColumnGroup.from_rows((str, int, str),
-                                   [("col0", "colA", "colB"), ("4", 1, "a"),
-                                    ("5", 2, "b"), ("6", 3, "c")])
-        self.assertEqual(c1, c2)
-
-    def test_insert_col_fail_type(self):
-        c1 = ColumnGroup.from_rows((int, str),
-                                   [("colA", "colB"), (1, "a"), (2, "b"),
-                                    (3, "c")])
-        with self.assertRaises(AssertionError):
-            c1.insert_col("col0", int, ["4", "5", "6"], 0)
-
-    def test_insert_col_big_index(self):
-        c1 = ColumnGroup.from_rows((int, str),
-                                   [("colA", "colB"), (1, "a"), (2, "b"),
-                                    (3, "c")])
-        c1.insert_col("col0", str, ["4", "5", "6"], 10)
-        c2 = ColumnGroup.from_rows((int, str, str),
-                                   [("colA", "colB", "col0"), (1, "a", "4"),
-                                    (2, "b", "5"), (3, "c", "6")])
-        self.assertEqual(c1, c2)
-
 
 class DataIntegrationTest(unittest.TestCase):
     def setUp(self) -> None:

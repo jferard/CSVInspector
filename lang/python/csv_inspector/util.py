@@ -267,44 +267,6 @@ class ColumnGroup(Sized):
     def __iter__(self):
         return iter(self.columns)
 
-    def swap(self, i: int, j: int):
-        c = self.columns[i]
-        self.columns[i] = self.columns[j]
-        self.columns[j] = c
-
-    def select_indices(self, js: Iterable[int]):
-        self.columns = [col for i, col in enumerate(self.columns) if i in js]
-
-    def drop_indices(self, js: Iterable[int]):
-        self.columns = [col for i, col in enumerate(self.columns) if
-                        i not in js]
-
-    def move_before(self, pivot_index: int, indices: Collection[int]):
-        r = range(pivot_index, len(self.columns))
-        self.columns = (
-                self.columns[:pivot_index] +
-                [self.columns[i] for i in indices if i in r] +
-                [self.columns[i] for i in r if i not in indices])
-
-    def move_after(self, pivot_index: int, indices: Collection[int]):
-        r = range(0, pivot_index + 1)
-        self.columns = (
-                [self.columns[i] for i in r if i not in indices] +
-                [self.columns[i] for i in indices if i in r] +
-                self.columns[pivot_index + 1:]
-        )
-
-    def apply(self, func: Callable[[Sequence[Any]], T]) -> List[T]:
-        return [func(values) for values in
-                zip(*[c.col_values for c in self.columns])]
-
-    def insert_col(self, name: str, col_type: Type[T], values: List[T],
-                   index: int):
-        column = Column(name, col_type, values)
-        self.columns = (
-                self.columns[:index] + [column] + self.columns[index:])
-        self.columns_by_name[name] = column
-
     def rows(self, indices: List[int] = None):
         if indices is None:
             return zip(*self.columns)
@@ -328,84 +290,9 @@ class ColumnGroup(Sized):
             for row in self.rows()]
         return "\n".join([header, *rows])
 
-    def merge(self, other: "ColumnGroup", how: str, lon: List[int],
-              ron: List[int]):
-        if len(lon) > len(ron):
-            lon = lon[:len(ron)]
-        elif len(lon) < len(ron):
-            ron = ron[:len(lon)]
-        assert len(lon) == len(ron)
-        llength = len(self.columns)
-        row_by_l = {}
-        for row in self.rows():
-            row_by_l.setdefault(tuple([row[i] for i in lon]), []).append(
-                row)
-
-        rlength = len(other)
-        row_by_r = {}
-        for row in other.rows():
-            row_by_r.setdefault(tuple([row[i] for i in ron]), []).append(
-                row)
-
-        new_rows = []
-        if how == "inner":
-            for lkey, lrows in row_by_l.items():
-                rrows = row_by_r.get(lkey, [])
-                for rrow in rrows:
-                    for lrow in lrows:
-                        new_rows.append(lrow + rrow)
-        elif how == "left":
-            R_EMPTY = (None,) * rlength
-            for lkey, lrows in row_by_l.items():
-                rrows = row_by_r.get(lkey, [])
-                if rrows:
-                    for rrow in rrows:
-                        for lrow in lrows:
-                            new_rows.append(lrow + rrow)
-                else:
-                    for lrow in lrows:
-                        new_rows.append(lrow + R_EMPTY)
-        elif how == "right":
-            L_EMPTY = (None,) * llength
-            for rkey, rrows in row_by_r.items():
-                lrows = row_by_l.get(rkey, [])
-                if lrows:
-                    for lrow in lrows:
-                        for rrow in rrows:
-                            new_rows.append(lrow + rrow)
-                else:
-                    for rrow in rrows:
-                        new_rows.append(L_EMPTY + rrow)
-        elif how == "outer":
-            pass  # TODO
-        else:
-            raise ValueError(f"Unknown join type: {how}")
-
-        self.columns += other.columns
-        self.replace_rows(new_rows)
-
-    def filter(self, func: Callable[[Sequence], bool]):
-        new_rows = [row for row in self.rows() if func(row)]
-        self.replace_rows(new_rows)
-
     def replace_rows(self, new_rows):
         for col, col_values in zip(self.columns, zip(*new_rows)):
             col.col_values = col_values
-
-    def map_if(self, index: int, test, if_true, if_false):
-        self.columns[index].col_values = [
-            if_true(row) if test(row[index]) else if_false(row)
-            for row in self.rows()]
-
-    def sort_values(self, indices, ascending):
-        if ascending:
-            new_rows = sorted(self.rows(),
-                              key=lambda row: tuple(row[i] for i in indices))
-        else:
-            new_rows = sorted(self.rows(),
-                              key=lambda row: tuple(row[i] for i in indices),
-                              reverse=True)
-        self.replace_rows(new_rows)
 
     def copy(self):
         return ColumnGroup([col.copy() for col in self.columns])
