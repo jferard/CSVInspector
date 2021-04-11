@@ -19,19 +19,68 @@ import csv
 import itertools
 import sys
 from itertools import islice
-from typing import List, Any
+from pathlib import Path
+from typing import List, Any, Mapping, Type, Union
 
-from csv_inspector.util import begin_csv, end_csv, ColumnGroup, to_indices, \
-    Column
+from mcsv import data_type_to_field_description
+from mcsv.field_description import DataType, FieldDescription, \
+    python_type_to_data_type
+from mcsv.field_descriptions import TextFieldDescription
+from mcsv.meta_csv_data import MetaCSVData, MetaCSVDataBuilder
+from mcsv.renderer import MetaCSVRenderer
+from mcsv.writer import MetaCSVWriterFactory
+
+from csv_inspector.util import (begin_csv, end_csv, ColumnGroup, to_indices,
+                                Column)
 
 
 class DataSource:
+    @staticmethod
+    def create(table_name: str, path: str,
+               meta_csv_data: MetaCSVData) -> "DataSource":
+        desc_by_dt = {
+            desc.get_data_type(): desc
+            for desc in meta_csv_data.field_description_by_index.values()
+        }
+        if DataType.DECIMAL not in desc_by_dt:
+            try:
+                desc_by_dt[DataType.DECIMAL] = desc_by_dt[
+                    DataType.CURRENCY_DECIMAL]._decimal_description
+            except KeyError:
+                pass
+            try:
+                desc_by_dt[DataType.DECIMAL] = desc_by_dt[
+                    DataType.PERCENTAGE_DECIMAL]._decimal_description
+            except KeyError:
+                pass
+        if DataType.FLOAT not in desc_by_dt:
+            try:
+                desc_by_dt[DataType.FLOAT] = desc_by_dt[
+                    DataType.PERCENTAGE_FLOAT]._float_description
+            except KeyError:
+                pass
+        if DataType.INTEGER not in desc_by_dt:
+            try:
+                desc_by_dt[DataType.INTEGER] = desc_by_dt[
+                    DataType.CURRENCY_INTEGER]._integer_description
+            except KeyError:
+                pass
+        return DataSource(table_name, path, meta_csv_data, desc_by_dt)
+
     def __init__(self, table_name: str, path: str,
-                 encoding: str, csvdialect: csv.Dialect) -> "DataSource":
+                 meta_csv_data: MetaCSVData,
+                 desc_by_dt: Mapping[
+                     DataType, FieldDescription]) -> "DataSource":
         self._table_name = table_name
         self._path = path
-        self._encoding = encoding
-        self._csvdialect = csvdialect
+        self.meta_csv_data = meta_csv_data
+        self._description_by_data_type = desc_by_dt
+
+    def get_description(self, data_type: DataType):
+        try:
+            return self._description_by_data_type[data_type]
+        except KeyError:  # datatype not present
+            return data_type_to_field_description(data_type)
 
 
 class Agg:
@@ -753,11 +802,45 @@ class Data:
     def __repr__(self) -> str:
         return f"Data{self._column_group}"
 
+    def save_as(self, path: Union[str, Path], canonical=True):
+        """
+        :param canonical: if true, fields format is canonical. If false,
+        CSVInspector will try to keep the data in the original format.
+        """
+        if isinstance(path, str):
+            path = Path(path)
+
+        if canonical:
+            b = MetaCSVDataBuilder()
+            for i, col in enumerate(self._column_group):
+                if isinstance(col.col_info, FieldDescription):
+                    description = col.col_info
+                elif isinstance(col.col_info, DataType):
+                    description = data_type_to_field_description(col.col_info)
+                elif isinstance(col.col_info, Type):
+                    description = data_type_to_field_description(
+                        python_type_to_data_type(col.col_info))
+                else:
+                    description = TextFieldDescription.INSTANCE
+                b.description_by_col_index(i,description)
+            meta_csv_data = b.build()
+        else:
+            meta_csv_data = self._data_source.meta_csv_data
+
+        meta_path = path.with_suffix(".mcsv")
+        MetaCSVRenderer.create(meta_path)._write_minimal(meta_csv_data)
+        writer = MetaCSVWriterFactory(meta_csv_data).writer(path)
+        writer.writeheader([col.name for col in self._column_group])
+        for row in self._column_group.rows():
+            writer.writerow(row)
+
 
 if __name__ == "__main__":
     import doctest
-
-    doctest.testmod(extraglobs={'original_test_data': Data(ColumnGroup([
-        Column("A", int, [1, 5, 3]), Column("B", int, [3, 2, 4]),
-        Column("C", int, [2, 2, 7]), Column("D", int, [4, 7, 8])
+    doctest.testmod(
+    extraglobs={'original_test_data': Data(ColumnGroup([
+        Column("A", int, [1, 5, 3]),
+        Column("B", int, [3, 2, 4]),
+        Column("C", int, [2, 2, 7]),
+        Column("D", int, [4, 7, 8])
     ]), None)})

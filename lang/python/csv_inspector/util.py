@@ -16,16 +16,14 @@
 #  You should have received a copy of the GNU General Public License along with
 #  this program. If not, see <http://www.gnu.org/licenses/>.
 #
-import itertools
 import sys
 import string
-import types
 from typing import (Union, Tuple, List, NewType, Callable, Any, Type,
                     Collection, Generic, TypeVar, Sequence, Sized, Iterable,
                     Iterator, Container)
 
-import numpy as np
-import pandas as pd
+from mcsv.field_description import FieldDescription, DataType, \
+    data_type_to_python_type
 from mcsv.field_processors import ReadError
 
 try:
@@ -140,83 +138,97 @@ def to_indices(length: int,
         raise ValueError(f"{item} is not a tuple, slice or int")
 
 
-def _dtype_to_sql(self, dtype: np.dtype) -> str:
-    if dtype.name.startswith('date'):
-        return "TIMESTAMP"
-    elif dtype.name.startswith('int') or dtype.name.startswith('uint'):
-        return "INT"
-    elif dtype.name.startswith('float'):
-        return "DECIMAL"
-    elif dtype.name.startswith('bool'):
-        return "BOOL"
-    else:
-        return "TEXT"
+# def _dtype_to_sql(self, dtype: np.dtype) -> str:
+#     if dtype.name.startswith('date'):
+#         return "TIMESTAMP"
+#     elif dtype.name.startswith('int') or dtype.name.startswith('uint'):
+#         return "INT"
+#     elif dtype.name.startswith('float'):
+#         return "DECIMAL"
+#     elif dtype.name.startswith('bool'):
+#         return "BOOL"
+#     else:
+#         return "TEXT"
 
 
-def _get_col_dtype(col):
-    """
-    Infer datatype of a pandas column_index, process only if the column_index dtype is object.
-    input:   col: a pandas Series representing a df column_index.
-    """
+# def _get_col_dtype(col):
+#     """
+#     Infer datatype of a pandas column_index, process only if the column_index dtype is object.
+#     input:   col: a pandas Series representing a df column_index.
+#     """
+#
+#     if col.dtype == "object":
+#         # try numeric
+#         unique_col = col.dropna().unique()
+#         try:
+#             col_new = pd.to_datetime(unique_col)
+#             return col_new.dtype
+#         except:
+#             try:
+#                 col_new = pd.to_numeric(unique_col)
+#                 return col_new.dtype
+#             except:
+#                 try:
+#                     col_new = pd.to_timedelta(unique_col)
+#                     return col_new.dtype
+#                 except:
+#                     return "object"
+#
+#     return col.dtype
 
-    if col.dtype == "object":
-        # try numeric
-        unique_col = col.dropna().unique()
-        try:
-            col_new = pd.to_datetime(unique_col)
-            return col_new.dtype
-        except:
-            try:
-                col_new = pd.to_numeric(unique_col)
-                return col_new.dtype
-            except:
-                try:
-                    col_new = pd.to_timedelta(unique_col)
-                    return col_new.dtype
-                except:
-                    return "object"
 
-    return col.dtype
-
-
-def apply_vectorized(f: Callable, *arrs: Any) -> Any:
-    """
-    >>> import numpy as np
-    >>> arr = np.array([1, 2, 3])
-    >>> apply_vectorized(np.sqrt, arr)
-    array([1.        , 1.41421356, 1.73205081])
-    >>> apply_vectorized(str, arr)
-    vetoz
-    array(['1', '2', '3'], dtype='<U1')
-    >>> arr2 = np.array([[1, 2, 3], [4, 5, 6]])
-    >>> f = lambda x: x[0] + x[1]
-    >>> apply_vectorized(f, arr2)
-    array([5, 7, 9])
-    >>> f(arr2)
-    array([5, 7, 9])
-
-    """
-    if isinstance(f, (np.vectorize, np.ufunc)):
-        try:
-            return f(*arrs)
-        except TypeError:
-            pass
-
-    print("vetoz")
-    return np.vectorize(f)(arrs)
+# def apply_vectorized(f: Callable, *arrs: Any) -> Any:
+#     """
+#     >>> import numpy as np
+#     >>> arr = np.array([1, 2, 3])
+#     >>> apply_vectorized(np.sqrt, arr)
+#     array([1.        , 1.41421356, 1.73205081])
+#     >>> apply_vectorized(str, arr)
+#     vetoz
+#     array(['1', '2', '3'], dtype='<U1')
+#     >>> arr2 = np.array([[1, 2, 3], [4, 5, 6]])
+#     >>> f = lambda x: x[0] + x[1]
+#     >>> apply_vectorized(f, arr2)
+#     array([5, 7, 9])
+#     >>> f(arr2)
+#     array([5, 7, 9])
+#
+#     """
+#     if isinstance(f, (np.vectorize, np.ufunc)):
+#         try:
+#             return f(*arrs)
+#         except TypeError:
+#             pass
+#
+#     print("vetoz")
+#     return np.vectorize(f)(arrs)
 
 
 S = TypeVar('S')
+ColInfo = Union[FieldDescription, DataType, Type]
 
 
 class Column(Generic[S]):
-    def __init__(self, name: str, col_type: Type[S], col_values: Collection[S]):
-        if col_type != Any:
-            assert all(isinstance(v, col_type) for v in
+    """
+    We try to keed the column description.
+    """
+
+    def __init__(self, name: str, col_info: ColInfo,
+                 col_values: Collection[S]):
+        if isinstance(col_info, Type):
+            self.col_type = col_info
+        elif isinstance(col_info, DataType):
+            self.col_type = data_type_to_python_type(col_info)
+        elif isinstance(col_info, FieldDescription):
+            self.col_type = col_info.get_python_type()
+        else:
+            self.col_type = Any
+        if self.col_type != Any:
+            assert all(isinstance(v, self.col_type) for v in
                        col_values if not (v is None or isinstance(v, ReadError))
-                       ), f"Expected {col_type}, got {set(type(v) for v in col_values)}"
+                       ), f"Expected {self.col_type}, got {set(type(v) for v in col_values)}"
         self.name = name
-        self.col_type = col_type
+        self.col_info = col_info
         self.col_values = col_values
 
     def standard_name(self):
@@ -226,28 +238,30 @@ class Column(Generic[S]):
         return iter(self.col_values)
 
     def __eq__(self, other: Any) -> bool:
-        return (self.name == other.name and self.col_type == other.col_type
+        return (self.name == other.name
+                and self.col_type == other.col_type
                 and self.col_values == other.col_values)
 
     def __repr__(self):
-        return f"Column({self.name}, {self.col_type}, {self.col_values}"
+        return f"Column({self.name}, {self.col_info}, {self.col_values}"
 
     def width(self):
         return max(len(self.name), *(len(str(v)) for v in self.col_values))
 
     def copy(self):
-        return Column(self.name, self.col_type, list(self.col_values))
+        return Column(self.name, self.col_info, list(self.col_values))
 
 
 class ColumnGroup(Sized):
     @staticmethod
-    def from_rows(types: Sequence[Type],
+    def from_rows(descriptions: Sequence[FieldDescription],
                   rows: Iterable[Sequence[Any]]) -> "ColumnGroup":
         it_rows = iter(rows)
         header = next(it_rows)
-        assert len(types) == len(header)
-        return ColumnGroup([Column(str(name), t, values) for name, t, *values in
-                            zip(header, types, *it_rows)])
+        assert len(descriptions) == len(header)
+        return ColumnGroup([Column(str(name), description, values)
+                            for name, description, *values
+                            in zip(header, descriptions, *it_rows)])
 
     def __init__(self, columns: List[Column]):
         self.columns = columns
@@ -291,6 +305,9 @@ class ColumnGroup(Sized):
         return "\n".join([header, *rows])
 
     def replace_rows(self, new_rows):
+        """
+        Do not affect the column names or descriptions.
+        """
         for col, col_values in zip(self.columns, zip(*new_rows)):
             col.col_values = col_values
 
@@ -315,4 +332,3 @@ if __name__ == "__main__":
     import doctest
 
     doctest.testmod(optionflags=doctest.ELLIPSIS)
-

@@ -44,11 +44,10 @@ def read_csv(csv_path: Union[str, Path],
     else:
         reader = mcsv_reader
     header = [to_standard(n) for n in next(reader)]
-    column_group = ColumnGroup([Column(name, col_type, values)
-                                for name, col_type, *values in
-                                zip(header, mcsv_reader.get_python_types(),
+    column_group = ColumnGroup([Column(name, description, values)
+                                for name, description, *values in
+                                zip(header, mcsv_reader.descriptions,
                                     *reader)])
 
-    return Data(column_group, DataSource(to_standard(csv_path.stem),
-                                         csv_path, mcsv_reader.data.encoding,
-                                         mcsv_reader.data.dialect))
+    return Data(column_group, DataSource.create(to_standard(csv_path.stem),
+                                         csv_path, mcsv_reader.meta_csv_data))

@@ -1,0 +1,324 @@
+id,title,slug,url,organization,organization_id,description,frequency,license,temporal_coveragestart,temporal_coverageend,spatialgranularity,spatialzones,private,featured,created_at,last_modified,tags,metricdiscussions,metricfollowers,metricreuses,metricissues,metricviews
+58234b4cc751df2a77c0bb7e,Compte administratif 2012 - vue générale d'ensemble,compte-administratif-2012-vue-generale-densemble-1,https://www.data.gouv.fr/fr/datasets/compte-administratif-2012-vue-generale-densemble-1/,Ville de Meudon,54d89442c751df1245467389,"Meudon ouvre ses comptes administratifs depuis 2012. Chaque tableau détaillant les dépenses et recettes, fonction par fonction, en fonctionnement et investissement, est ouvert sous forme de tableau CSV. Ce tableur regroupe d'une part les dépenses et recettes en fonctionnement et investissement de l'exercice budgétaire 2012 (y compris les sommes reportées de N-1 et les restes à reporter en N+1), et les restes à réaliser à savoir les dépenses mandatées non engagées et les titres restant à émettre.",punctual,Licence Ouverte / Open Licence,,,other,,false,false,2016-11-09T17:14:04,2016-11-09T17:14:40,"budget-2012,collectivites,compte-administratif,finances-locales,finances-publiques,ville",0,0,0,0,1
+582edbb8c751df56a1c0bb7e,Compte administratif 2012 - balance générale - titres émis,compte-administratif-2012-balance-generale-titres-emis,https://www.data.gouv.fr/fr/datasets/compte-administratif-2012-balance-generale-titres-emis/,Ville de Meudon,54d89442c751df1245467389,"Meudon ouvre ses comptes administratifs depuis 2012. Chaque tableau détaillant les dépenses et recettes, fonction par fonction, en fonctionnement et investissement, est ouvert sous forme de tableau CSV. Ce tableur présente la balance générale des titres de recette émis en fonctionnement et investissement, catégorisée pour chaque poste budgétaire, en opérations réelles et opérations d'ordre.",punctual,Licence Ouverte / Open Licence,,,fr:commune,,false,false,2016-11-18T11:45:12,2016-11-18T11:45:37,"budget-2012,collectivites,compte-administratif,finances-locales,finances-publiques,meudon,meudon-la-foret,ville",0,0,0,0,3
+582f0dfdc751df334cc0bb7e,Compte administratif 2012 - vote du budget-section de fonctionnement-détail des recettes,compte-administratif-2012-vote-du-budget-section-de-fonctionnement-detail-des-recettes,https://www.data.gouv.fr/fr/datasets/compte-administratif-2012-vote-du-budget-section-de-fonctionnement-detail-des-recettes/,Ville de Meudon,54d89442c751df1245467389,"Ce tableur regroupe les recettes de fonctionnement en détails : les atténuations de charge, les produits des services, du domaine et ventes directes, les impôts et taxes, les dotations et participations et les produits de gestion courante. Chaque poste budgétaire est détaillé en trois parties : les crédits ouverts, les crédits employés ou restant à employer et les crédits annulés. Meudon ouvre ses comptes administratifs depuis 2012. Chaque tableau détaillant les dépenses et recettes, fonction par fonction, en fonctionnement et investissement, est ouvert sous forme de tableau CSV.",punctual,Licence Ouverte / Open Licence,,,fr:commune,,false,false,2016-11-18T15:19:41,2016-11-18T15:20:09,"budget-2012,collectivites,compte-administratif,finance,finances-locales,finances-publiques,ville",0,0,0,0,0
+582f0f64c751df3724c0bb7e,Compte administratif 2012 - vote du budget-section de fonctionnement-détail des recettes 2,compte-administratif-2012-vote-du-budget-section-de-fonctionnement-detail-des-recettes-2,https://www.data.gouv.fr/fr/datasets/compte-administratif-2012-vote-du-budget-section-de-fonctionnement-detail-des-recettes-2/,Ville de Meudon,54d89442c751df1245467389,"Ce tableur regroupe la deuxième partie des recettes de fonctionnement en détails : les produits exceptionnels, les produits financiers et les opérations d'ordre de transferts entre sections. Chaque poste budgétaire est détaillé en trois parties : les crédits ouverts, les crédits employés ou restant à employer et les crédits annulés. Meudon ouvre ses comptes administratifs depuis 2012. Chaque tableau détaillant les dépenses et recettes, fonction par fonction, en fonctionnement et investissement, est ouvert sous forme de tableau CSV.",punctual,Licence Ouverte / Open Licence,,,fr:commune,,false,false,2016-11-18T15:25:40,2016-11-18T15:26:09,"budget-2012,collectivites,compte-administratif,finance,finances-locales,finances-publiques,ville",0,0,0,0,0
+582f250988ee38608cc65bbb,Compte administratif 2012 - vote du budget-section investissement-détail des recettes,compte-administratif-2012-vote-du-budget-section-investissement-detail-des-recettes,https://www.data.gouv.fr/fr/datasets/compte-administratif-2012-vote-du-budget-section-investissement-detail-des-recettes/,Ville de Meudon,54d89442c751df1245467389,"Ce tableur regroupe les recettes d'investissement en détails : les subventions d'investissement, les emprunts et dettes assimilées, les immobilisations corporelles, les dotations, fonds divers et réserves, les autres immobilisations financières et les produits de cessions. Chaque poste budgétaire est détaillé en quatre parties : les crédits ouverts, les titres émis, les restes à réaliser et les crédits annulés. Meudon ouvre ses comptes administratifs depuis 2012. Chaque tableau détaillant les dépenses et recettes, fonction par fonction, en fonctionnement et investissement, est ouvert sous forme de tableau CSV.",punctual,Licence Ouverte / Open Licence,,,fr:commune,,false,false,2016-11-18T16:58:01,2016-11-18T17:00:39,"budget-2012,collectivite,compte-administratif,finance,finances-locales,finances-publiques,investissement,recette,villes",0,0,0,0,0
+58386294c751df0cfdc0bb7e,Compte administratif 2012 - présentation croisée par fonction_vue d'ensemble,compte-administratif-2012-presentation-croisee-par-fonction-vue-densemble,https://www.data.gouv.fr/fr/datasets/compte-administratif-2012-presentation-croisee-par-fonction-vue-densemble/,Ville de Meudon,54d89442c751df1245467389,"Ce tableur regroupe le total des dépenses et recettes réelles et le total des restes à réaliser (RAR) des dépenses et recettes, en fonctionnement et investissement pour les postes budgétaires suivants : les opérations non ventilables, les services généraux des administrations publiques locales, la sécurité et la salubrité publiques, l'enseignement et la formation, la culture, le sport et la jeunesse, les interventions sociales et de santé, la famille, le logement, les aménagement de services urbain et environnement et pour finir, les actions économiques. Meudon ouvre ses comptes administratifs depuis 2012. Chaque tableau détaillant les dépenses et recettes, fonction par fonction, en fonctionnement et investissement, est ouvert sous forme de tableau CSV.",punctual,Licence Ouverte / Open Licence,,,fr:commune,,false,false,2016-11-25T17:11:00,2016-11-25T17:11:16,"budget-2012,collectivite,compte-administratif,finance,finances-locales,finances-publiques,ville",0,0,0,0,1
+5878ee2ba3a7291485cac7b4,Service-public.fr - Annuaire de l'administration,bdd-lv2-service-public-fr,https://www.data.gouv.fr/fr/datasets/bdd-lv2-service-public-fr/,NosDonnées.fr,534fff99a3a7292c64a78016,Base de données locales V2 de Service-public.fr compilée au format CSV. La documentation du jeu de données se trouve sur la page source.,,Open Data Commons Open Database License (ODbL),,,,,false,false,2013-07-14T00:00:00,2017-07-10T06:04:46,"administration,annuaire,csv,service-public",0,0,0,0,1
+5878ee39a3a7291485cac7c6,Déclarations d'intérêts des membres du gouvernement français,dclarations-dintrets-des-membres-du-gouvernement-francais,https://www.data.gouv.fr/fr/datasets/dclarations-dintrets-des-membres-du-gouvernement-francais/,NosDonnées.fr,534fff99a3a7292c64a78016,"Depuis avril 2011, les membres du gouvernement français doivent rendre publiques leurs déclarations d'intérêts sur le site gouvernement.fr
+
+Un rassemblement et une extration des documents pdf ont été réalisés afin de rendre cette information plus facilement interprétable.
+
+Un .csv données a été fait pour le gouvernement Fillon, un autre pour le gouvernement Ayrault",,Open Data Commons Open Database License (ODbL),,,,,false,false,2013-02-22T00:00:00,2017-07-10T06:04:58,"declaration,france,gouvernement,influence,interet,ministre",0,0,0,0,2
+5878ee81a3a7291484cac82b,Réserve parlementaire 2013 de l'Assemblée nationale,r-serve-parlementaire-2013-de-l-assembl-e-nationale,https://www.data.gouv.fr/fr/datasets/r-serve-parlementaire-2013-de-l-assembl-e-nationale/,NosDonnées.fr,534fff99a3a7292c64a78016,"Pour la première fois en 2014, l'Assemblée nationale publie e ligne l'intégralité des subeventions accordées aux collectivités et associations dans le cadre de la réserve parlementaire de 2013. Les tableaux html scrapés et complétés des informations tirées de NosDéputés sont rendus accessibles en CSV et mis à jour régulièrement.",,Open Data Commons Open Database License (ODbL),,,,,false,false,2014-01-30T00:00:00,2017-07-10T06:06:05,"2013,assemblee,assemblee-nationale,associations,collectivites,parlement,reserve,reserve-parlementaire,subventions",0,0,0,0,1
+5890e6a588ee3877209b81a4,Compte rendu du Conseil municipal de Mogneneins,compte-rendu-du-conseil-municipal-de-mogneneins,https://www.data.gouv.fr/fr/datasets/compte-rendu-du-conseil-municipal-de-mogneneins/,Mogneneins,5662c125c751df42e605bd61,"La commune de Mogneneins - Ain Région Auvergne Rhône Alpes - publie le compte rendu du conseil municipal à l'issue de chaque Conseil mensuellement, en open data, au format .csv",monthly,Licence Ouverte / Open Licence,2017-01-01,2019-12-19,fr:commune,Mogneneins,false,false,2017-01-31T20:33:57,2020-01-07T14:25:18,"administration-locale,ain,commune,commune-rurale,conseil-municipal,deliberation,democratie-locale,mairie,mogneneins",0,0,0,0,3
+58a196db88ee38678b9b81a4,Observatoire des sols à l'échelle communale de la zone Sud Est du département de la GIRONDE pour 2013 - Version Bêta - Données agrégées,observatoire-des-sols-a-lechelle-communale-de-la-zone-sud-est-du-departement-de-la-gironde-pour-2013-version-beta-donnees-agregees,https://www.data.gouv.fr/fr/datasets/observatoire-des-sols-a-lechelle-communale-de-la-zone-sud-est-du-departement-de-la-gironde-pour-2013-version-beta-donnees-agregees/,DRAAF Nouvelle Aquitaine,589af3ac88ee3877939b81a4,"Le descriptif de la donnée est disponible dans la fiche de métadonnées de lot de données &quot;Observatoire des sols à l&#x27;échelle communale de la région Nouvelle-Aquitaine pour 2013 - Version Bêta&quot; référencée ci-dessous et accessible par l&#x27;adresse suivante après insertion dans votre moteur de recherche :
+
+http://catalogue.geo-ide.developpement-durable.gouv.fr/catalogue/apps/search/?uuid&#x3D;fr-120066022-ldd-2bd25601-a8bc-4a19-a0b8-7ebf519da483
+
+La zone géographique couverte par les données accessibles ici est le quart Sud Est du département de la Gironde soit :
+- au sud d&#x27;un ligne allant de commune de Lège Cap Ferret (33236) à l&#x27;ouest à la commune de Pineuilh (33324) à l&#x27;est
+- à l&#x27;est d&#x27;une ligne allant de la commune de Daignac (33147) au nord à la commune de Captieux (33095) au sud.
+
+Lors de l&#x27;utilisation des données de l&#x27;OSCOM, il est conseillé de se référer au fichier N_OSCOM2013_TxVectMajic_033.csv.
+Si le taux de vectorisation des communes étudiées est bas il convient de vérifier la pertinence des données avant toute conclusion. 
+
+Les données sont également accessibles en WMS et WFS :
+Avertissements
+- Se positionner sur l&#x27;adresse, clic droit, copier l&#x27;adresse du lien puis coller dans la boite de dialogue de connexion à un serveur WMS, WFS. L&#x27;utilisation d&#x27;une autre méthode entraîne l&#x27;apparition d&#x27;espaces parasites.
+- Problèmes d&#x27;affichage des multi polygones via l&#x27;utilisation des WFS (en cours de résolution) - privilégier le téléchargement de la donnée si présence de multi polygones
+- Affichage de WFS de plus de 500 objets via le WFS impossible pour le moment
+
+Adresse WMS pour intégration dans un SIG depuis Geoide_Carto :
+http://data.geo-ide.application.developpement-durable.gouv.fr/WMS/228/OSCOM2013_033_donneesagr?
+
+Adresse WFS pour intégration dans un SIG ( Voir avertissement ci-dessus).
+http://ogc.geo-ide.developpement-durable.gouv.fr/cartes/mapserv?map&#x3D;/opt/data/carto/geoide-catalogue/REG072A/JDD.www.map
+
+__Origine__
+
+La généalogie de la données est décrite dans la partie &#x27;généalogie&#x27; de la fiche de lot &quot;Observatoire des sols à l&#x27;échelle communale de la région Nouvelle-Aquitaine pour 2013 - Version Bêta&quot; référencée ci dessous et accessible via l&#x27;adresse suivante après un copier/coller dans votre moteur de recherche.
+
+http://catalogue.geo-ide.developpement-durable.gouv.fr/catalogue/apps/search/?uuid&#x3D;fr-120066022-ldd-2bd25601-a8bc-4a19-a0b8-7ebf519da483.
+
+Lors de l&#x27;utilisation des données de l&#x27;OSCOM, il est conseillé de se référer au fichier N_OSCOM2013_TxVectMajic_033.csv.
+Si le taux de vectorisation des communes étudiées est bas il convient de vérifier la pertinence des données avant toute conclusion.
+
+
+__Organisations partenaires__
+
+DRAAF Nouvelle-Aquitaine, sig sriset alpc site de bordeaux
+
+__Liens annexes__
+
+ * [Vue XML des métadonnées](http://ogc.geo-ide.developpement-durable.gouv.fr/csw/all-dataset?REQUEST&#x3D;GetRecordById&amp;SERVICE&#x3D;CSW&amp;VERSION&#x3D;2.0.2&amp;RESULTTYPE&#x3D;results&amp;elementSetName&#x3D;full&amp;TYPENAMES&#x3D;gmd:MD_Metadata&amp;OUTPUTSCHEMA&#x3D;http://www.isotc211.org/2005/gmd&amp;ID&#x3D;fr-120066022-jdd-6fdea7c9-e3fe-4621-b046-93b48a4b10ba)
+ * [Carte OSCOM 2013 département de la GIRONDE](http://carto.geo-ide.application.developpement-durable.gouv.fr/228/OSCOM2013_033_donneesagr.map?&amp;extent&#x3D;358638,6348600,490437,6507470)
+ * [Vue XML des métadonnées](http://catalogue.geo-ide.developpement-durable.gouv.fr/catalogue/srv/fre/xml_iso19139?uuid&#x3D;fr-120066022-jdd-ed2f4b47-8a82-44a6-9ab6-8351a71d8da8)
+ * [Vue HTML des métadonnées sur internet](http://catalogue.geo-ide.developpement-durable.gouv.fr/catalogue/apps/search/?uuid&#x3D;fr-120066022-jdd-ed2f4b47-8a82-44a6-9ab6-8351a71d8da8)
+ * [URL de base des services wms/wfs sur internet](http://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map&#x3D;/opt/data/carto/geoide-catalogue/1.4/org_38206/d6d8b8b9-6141-45b4-8c18-3c0ba50eeb3e.internet.map)
+
+➞ [Consulter cette fiche sur geo.data.gouv.fr](https://geo.data.gouv.fr/fr/datasets/36a2e24a931af93e8f3de47cf94e6d979f803bca)",unknown,Licence Ouverte / Open Licence version 2.0,,,other,,false,false,2017-02-13T12:22:03,2020-02-19T06:38:33,"agriculture-zonages-agricoles,donnees-ouvertes,draaf,draaf-na,draaf-nouvelle-aquitaine,farming,occupation-des-terres,oscom,passerelle-inspire",0,0,0,0,0
+58a196dc88ee38678e9b81a4,Observatoire des sols à l'échelle communale de la zone Nord Est du département des Landes pour 2013 - Version Bêta - Données brutes,observatoire-des-sols-a-lechelle-communale-de-la-zone-nord-est-du-departement-des-landes-pour-2013-version-beta-donnees-brutes,https://www.data.gouv.fr/fr/datasets/observatoire-des-sols-a-lechelle-communale-de-la-zone-nord-est-du-departement-des-landes-pour-2013-version-beta-donnees-brutes/,DRAAF Nouvelle Aquitaine,589af3ac88ee3877939b81a4,"Le descriptif de la donnée est disponible dans la fiche de métadonnées de lot de données &quot;Observatoire des sols à l&#x27;échelle communale de la région Nouvelle-Aquitaine pour  2013 - Version Bêta&quot; référencée ci-dessous et accessible par l&#x27;adresse suivante après insertion dans votre moteur de recherche : 
+
+http://catalogue.geo-ide.developpement-durable.gouv.fr/catalogue/apps/search/?uuid&#x3D;fr-120066022-ldd-2bd25601-a8bc-4a19-a0b8-7ebf519da483
+
+La zone géographique couverte par les données accessibles ici est le quart Nord Est du département des Landes soit :
+- au nord d&#x27;un ligne allant de commune de Vieux Boucau (40328) à l&#x27;ouest à la commune de Lussagnet (40166) à l&#x27;est
+- à l&#x27;est d&#x27;une ligne allant de la commune de Mano (40171) au nord à la commune de Cauna (40076) au sud.
+
+Lors de l&#x27;utilisation des données de l&#x27;OSCOM, il est conseillé de se référer au fichier N_OSCOM2013_TxVectMajic_040.csv.
+Si le taux de vectorisation des communes étudiées est bas il convient de vérifier la pertinence des données avant toute conclusion. 
+
+Les données sont également accessibles en WMS et WFS : 
+Avertissements
+- Se positionner sur l&#x27;adresse, clic droit, copier l&#x27;adresse du lien puis coller dans la boite de dialogue de connexion à un serveur WMS, WFS. L&#x27;utilisation d&#x27;une autre méthode entraîne l&#x27;apparition d&#x27;espaces parasites. 
+- Problèmes d&#x27;affichage des multi polygones via l&#x27;utilisation des WFS (en cours de résolution) - privilégier le téléchargement de la donnée si présence de multi polygones
+- Affichage de WFS de plus de 500 objets via le WFS impossible pour le moment
+
+Adresse WMS pour intégration dans un SIG depuis Geoide_Carto :
+http://data.geo-ide.application.developpement-durable.gouv.fr/WMS/228/OSCOM2013_040_donneesbrutes?
+
+Adresse WFS pour intégration dans un SIG  ( Voir avertissement ci-dessus).
+http://ogc.geo-ide.developpement-durable.gouv.fr/cartes/mapserv?map&#x3D;/opt/data/carto/geoide-catalogue/REG072A/JDD.www.map
+
+__Origine__
+
+Les limites d&#x27;une zone sont représentées sur les documents graphiques des cartes communales. Elles correspondent généralement aux limites d&#x27;un agrégat de parcelles cadastrales. La géométrie des parcelles cadastrales est une donnée issue du référentiel géographique cadastral choisi au moment de l&#x27;élaboration du document d&#x27;urbanisme. Ce référentiel géographique cadastral peut être soit la BD Parcellaire fournie par l&#x27;IGN, soit le plan cadastral informatisé (PCI) fourni par la DGI.
+
+
+__Organisations partenaires__
+
+DRAAF Nouvelle-Aquitaine, DDT Meurthe-et-Moselle
+
+__Liens annexes__
+
+ * [Vue XML des métadonnées](http://ogc.geo-ide.developpement-durable.gouv.fr/csw/all-dataset?REQUEST&#x3D;GetRecordById&amp;SERVICE&#x3D;CSW&amp;VERSION&#x3D;2.0.2&amp;RESULTTYPE&#x3D;results&amp;elementSetName&#x3D;full&amp;TYPENAMES&#x3D;gmd:MD_Metadata&amp;OUTPUTSCHEMA&#x3D;http://www.isotc211.org/2005/gmd&amp;ID&#x3D;fr-120066022-jdd-ead78cbc-7b72-43fb-b752-7ab3147adba7)
+ * [URL de base des services wms/wfs sur internet](http://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map&#x3D;/opt/data/carto/geoide-catalogue/1.4/org_38050/39a31504-ac1c-46f2-8482-ad1010ff5487.internet.map)
+
+➞ [Consulter cette fiche sur geo.data.gouv.fr](https://geo.data.gouv.fr/fr/datasets/f26b1c25705b9351cc7b985e5bf485f47ed7b2ee)",unknown,Licence Ouverte / Open Licence version 2.0,,,other,,false,false,2017-02-13T12:22:04,2020-02-19T06:38:32,"carte-communale,ddt-54,donnees-ouvertes,passerelle-inspire,planning-cadastre,usage-des-sols",0,0,0,0,1
+58a196dd88ee38678d9b81a4,Observatoire des sols à l'échelle communale de la zone Sud Est du département des Pyrénées Atlantiques pour 2013 - Version Bêta - Données agrégées,observatoire-des-sols-a-lechelle-communale-de-la-zone-sud-est-du-departement-des-pyrenees-atlantiques-pour-2013-version-beta-donnees-agregees,https://www.data.gouv.fr/fr/datasets/observatoire-des-sols-a-lechelle-communale-de-la-zone-sud-est-du-departement-des-pyrenees-atlantiques-pour-2013-version-beta-donnees-agregees/,DRAAF Nouvelle Aquitaine,589af3ac88ee3877939b81a4,"Le descriptif de la donnée est disponible dans la fiche de métadonnées de lot de données &quot;Observatoire des sols à l&#x27;échelle communale de la région Nouvelle-Aquitaine pour 2013 - Version Bêta&quot; référencée ci-dessous et accessible par l&#x27;adresse suivante après insertion dans votre moteur de recherche :
+
+http://catalogue.geo-ide.developpement-durable.gouv.fr/catalogue/apps/search/?uuid&#x3D;fr-120066022-ldd-2bd25601-a8bc-4a19-a0b8-7ebf519da483
+
+La zone géographique couverte par les données accessibles ici est le quart Sud Est du département des Pyrénées Atlantiques soit :
+- au sud d&#x27;un ligne allant de commune de Aïnhoa (64014) à l&#x27;ouest à la commune de Montaner (64398) à l&#x27;est
+- à l&#x27;est d&#x27;une ligne allant de la commune de Lucq de Béarn (64359) au nord à la commune de Accous (64006) au sud.
+
+Lors de l&#x27;utilisation des données de l&#x27;OSCOM, il est conseillé de se référer au fichier N_OSCOM2013_TxVectMajic_064.csv.
+Si le taux de vectorisation des communes étudiées est bas il convient de vérifier la pertinence des données avant toute conclusion. 
+
+
+Les données sont également accessibles en WMS et WFS :
+Avertissements
+- Se positionner sur l&#x27;adresse, clic droit, copier l&#x27;adresse du lien puis coller dans la boite de dialogue de connexion à un serveur WMS, WFS. L&#x27;utilisation d&#x27;une autre méthode entraîne l&#x27;apparition d&#x27;espaces parasites.
+- Problèmes d&#x27;affichage des multi polygones via l&#x27;utilisation des WFS (en cours de résolution) - privilégier le téléchargement de la donnée si présence de multi polygones
+- Affichage de WFS de plus de 500 objets via le WFS impossible pour le moment
+
+Adresse WMS pour intégration dans un SIG depuis Geoide_Carto :
+http://data.geo-ide.application.developpement-durable.gouv.fr/WMS/228/OSCOM2013_064_donneesagr?
+
+Adresse WFS pour intégration dans un SIG ( Voir avertissement ci-dessus).
+http://ogc.geo-ide.developpement-durable.gouv.fr/cartes/mapserv?map&#x3D;/opt/data/carto/geoide-catalogue/REG072A/JDD.www.map
+
+__Origine__
+
+La généalogie de la données est décrite dans la partie &#x27;généalogie&#x27; de la fiche de lot &quot;Observatoire des sols à l&#x27;échelle communale de la région Nouvelle-Aquitaine 2013 - Version Bêta&quot; référencée ci dessous et accessible via l&#x27;adresse suivante après un copier/coller dans votre moteur de recherche.
+
+http://catalogue.geo-ide.developpement-durable.gouv.fr/catalogue/apps/search/?uuid&#x3D;fr-120066022-ldd-2bd25601-a8bc-4a19-a0b8-7ebf519da483.
+
+
+__Organisations partenaires__
+
+DRAAF Nouvelle-Aquitaine
+
+__Liens annexes__
+
+ * [Vue XML des métadonnées](http://ogc.geo-ide.developpement-durable.gouv.fr/csw/all-dataset?REQUEST&#x3D;GetRecordById&amp;SERVICE&#x3D;CSW&amp;VERSION&#x3D;2.0.2&amp;RESULTTYPE&#x3D;results&amp;elementSetName&#x3D;full&amp;TYPENAMES&#x3D;gmd:MD_Metadata&amp;OUTPUTSCHEMA&#x3D;http://www.isotc211.org/2005/gmd&amp;ID&#x3D;fr-120066022-jdd-07ef52e0-774c-4216-bf99-22afb51f7d92)
+ * [Vue HTML des métadonnées sur internet](http://catalogue.geo-ide.developpement-durable.gouv.fr/catalogue/apps/search/?uuid&#x3D;fr-120066022-jdd-ed2f4b47-8a82-44a6-9ab6-8351a71d8da8)
+ * [Vue XML des métadonnées](http://catalogue.geo-ide.developpement-durable.gouv.fr/catalogue/srv/fre/xml_iso19139?uuid&#x3D;fr-120066022-jdd-ed2f4b47-8a82-44a6-9ab6-8351a71d8da8)
+ * [Carte OSCOM 2013 département des Pyrénées Atlantiques](http://carto.geo-ide.application.developpement-durable.gouv.fr/228/OSCOM2013_064_donneesagr.map?&amp;extent&#x3D;307516,6191218,462838,6288294)
+ * [URL de base des services wms/wfs sur internet](http://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map&#x3D;/opt/data/carto/geoide-catalogue/1.4/org_38206/e25a4b92-940e-4457-a932-f7bd6450c981.internet.map)
+
+➞ [Consulter cette fiche sur geo.data.gouv.fr](https://geo.data.gouv.fr/fr/datasets/a009bfed3a7c2be941f21abac0b65943cbbf255f)",unknown,Licence Ouverte / Open Licence version 2.0,,,other,,false,false,2017-02-13T12:22:05,2020-02-19T06:38:32,"agriculture-zonages-agricoles,donnees-ouvertes,draaf,draaf-na,draaf-nouvelle-aquitaine,farming,occupation-des-terres,oscom,passerelle-inspire",0,0,0,0,0
+58a196dd88ee38678f9b81a4,Observatoire des sols à l'échelle communale de la zone Nord Est du département de la DORDOGNE pour 2013 - Version Bêta - Données agrégées,observatoire-des-sols-a-lechelle-communale-de-la-zone-nord-est-du-departement-de-la-dordogne-pour-2013-version-beta-donnees-agregees,https://www.data.gouv.fr/fr/datasets/observatoire-des-sols-a-lechelle-communale-de-la-zone-nord-est-du-departement-de-la-dordogne-pour-2013-version-beta-donnees-agregees/,DRAAF Nouvelle Aquitaine,589af3ac88ee3877939b81a4,"Le descriptif de la donnée est disponible dans la fiche de métadonnées de lot de données &quot;Observatoire des sols à l&#x27;échelle communale de la région Nouvelle-Aquitaine pour 2013 - Version Bêta&quot; référencée ci-dessous et accessible par l&#x27;adresse suivante après insertion dans votre moteur de recherche :
+
+http://catalogue.geo-ide.developpement-durable.gouv.fr/catalogue/apps/search/?uuid&#x3D;fr-120066022-ldd-2bd25601-a8bc-4a19-a0b8-7ebf519da483
+
+La zone géographique couverte par les données accessibles ici est le quart Nord Est du département de la Dordogne soit :
+- au nord d&#x27;un ligne allant de commune de Eygurande et Gardedeuil (24165) à l&#x27;ouest à la commune de Chavagnac (24117) à l&#x27;est
+- à l&#x27;est d&#x27;une ligne allant de la commune de Busseroles (24070) au nord à la commune de Eglise Neuve de Vergt (24160) au sud.
+
+Lors de l&#x27;utilisation des données de l&#x27;OSCOM, il est conseillé de se référer au fichier N_OSCOM2013_TxVectMajic_024.csv.
+Si le taux de vectorisation des communes étudiées est bas il convient de vérifier la pertinence des données avant toute conclusion. 
+
+Les données sont également accessibles en WMS et WFS :
+Avertissements
+- Se positionner sur l&#x27;adresse, clic droit, copier l&#x27;adresse du lien puis coller dans la boite de dialogue de connexion à un serveur WMS, WFS. L&#x27;utilisation d&#x27;une autre méthode entraîne l&#x27;apparition d&#x27;espaces parasites.
+- Problèmes d&#x27;affichage des multi polygones via l&#x27;utilisation des WFS (en cours de résolution) - privilégier le téléchargement de la donnée si présence de multi polygones
+- Affichage de WFS de plus de 500 objets via le WFS impossible pour le moment
+
+Adresse WMS pour intégration dans un SIG depuis Geoide_Carto :
+http://data.geo-ide.application.developpement-durable.gouv.fr/WMS/228/OSCOM2013_024_donneesagr?
+
+Adresse WFS pour intégration dans un SIG ( Voir avertissement ci-dessus).
+http://ogc.geo-ide.developpement-durable.gouv.fr/cartes/mapserv?map&#x3D;/opt/data/carto/geoide-catalogue/REG072A/JDD.www.map
+
+__Origine__
+
+La généalogie de la données est décrite dans la partie &#x27;généalogie&#x27; de la fiche de lot &quot;Observatoire des sols à l&#x27;échelle communale de la région Nouvelle-Aquitaine pour 2013 - Version Bêta&quot; référencée ci dessous et accessible via l&#x27;adresse suivante après un copier/coller dans votre moteur de recherche.
+
+http://catalogue.geo-ide.developpement-durable.gouv.fr/catalogue/apps/search/?uuid&#x3D;fr-120066022-ldd-2bd25601-a8bc-4a19-a0b8-7ebf519da483.
+
+
+__Organisations partenaires__
+
+DRAAF Nouvelle-Aquitaine
+
+__Liens annexes__
+
+ * [Vue XML des métadonnées](http://ogc.geo-ide.developpement-durable.gouv.fr/csw/all-dataset?REQUEST&#x3D;GetRecordById&amp;SERVICE&#x3D;CSW&amp;VERSION&#x3D;2.0.2&amp;RESULTTYPE&#x3D;results&amp;elementSetName&#x3D;full&amp;TYPENAMES&#x3D;gmd:MD_Metadata&amp;OUTPUTSCHEMA&#x3D;http://www.isotc211.org/2005/gmd&amp;ID&#x3D;fr-120066022-jdd-036ccbd0-7367-41ba-ad5d-80f6aaa7cb75)
+ * [Vue HTML des métadonnées sur internet](http://catalogue.geo-ide.developpement-durable.gouv.fr/catalogue/apps/search/?uuid&#x3D;fr-120066022-jdd-ed2f4b47-8a82-44a6-9ab6-8351a71d8da8)
+ * [Vue XML des métadonnées](http://catalogue.geo-ide.developpement-durable.gouv.fr/catalogue/srv/fre/xml_iso19139?uuid&#x3D;fr-120066022-jdd-ed2f4b47-8a82-44a6-9ab6-8351a71d8da8)
+ * [Carte OSCOM 2013 département de la DORDOGNE](http://carto.geo-ide.application.developpement-durable.gouv.fr/228/OSCOM2013_R75_donneesagr.map?&amp;extent&#x3D;462084,6384004,579995,6515561)
+ * [URL de base des services wms/wfs sur internet](http://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map&#x3D;/opt/data/carto/geoide-catalogue/1.4/org_38206/03ecad2b-16b5-4e9d-890a-6c268b31e98c.internet.map)
+
+➞ [Consulter cette fiche sur geo.data.gouv.fr](https://geo.data.gouv.fr/fr/datasets/161bb31c02836a298839292cae33f184c3c0237e)",unknown,Licence Ouverte / Open Licence version 2.0,,,other,,false,false,2017-02-13T12:22:05,2020-02-19T06:38:32,"agriculture-zonages-agricoles,donnees-ouvertes,draaf,draaf-na,draaf-nouvelle-aquitaine,farming,occupation-des-terres,oscom,passerelle-inspire",0,0,0,0,1
+58a196ddc751df67eaae0a66,Observatoire des sols à l'échelle communale de la zone Sud Est du département des LANDES pour 2013 - Version Bêta - Données agrégées,observatoire-des-sols-a-lechelle-communale-de-la-zone-sud-est-du-departement-des-landes-pour-2013-version-beta-donnees-agregees,https://www.data.gouv.fr/fr/datasets/observatoire-des-sols-a-lechelle-communale-de-la-zone-sud-est-du-departement-des-landes-pour-2013-version-beta-donnees-agregees/,DRAAF Nouvelle Aquitaine,589af3ac88ee3877939b81a4,"Le descriptif de la donnée est disponible dans la fiche de métadonnées de lot de données &quot;Observatoire des sols à l&#x27;échelle communale de la région Nouvelle-Aquitaine pour 2013 - Version Bêta&quot; référencée ci-dessous et accessible par l&#x27;adresse suivante après insertion dans votre moteur de recherche :
+
+http://catalogue.geo-ide.developpement-durable.gouv.fr/catalogue/apps/search/?uuid&#x3D;fr-120066022-ldd-2bd25601-a8bc-4a19-a0b8-7ebf519da483
+
+La zone géographique couverte par les données accessibles ici est le quart Sud Est du département de la LANDES soit :
+- au sud d&#x27;un ligne allant de commune de Vieux Boucau (40328) à l&#x27;ouest à la commune de Lussagnet (40166) à l&#x27;est
+- à l&#x27;est d&#x27;une ligne allant de la commune de Poyanne (40235) au nord à la commune de Arsague (40011) au sud.
+
+Lors de l&#x27;utilisation des données de l&#x27;OSCOM, il est conseillé de se référer au fichier N_OSCOM2013_TxVectMajic_040.csv.
+Si le taux de vectorisation des communes étudiées est bas il convient de vérifier la pertinence des données avant toute conclusion. 
+
+Les données sont également accessibles en WMS et WFS :
+Avertissements
+- Se positionner sur l&#x27;adresse, clic droit, copier l&#x27;adresse du lien puis coller dans la boite de dialogue de connexion à un serveur WMS, WFS. L&#x27;utilisation d&#x27;une autre méthode entraîne l&#x27;apparition d&#x27;espaces parasites.
+- Problèmes d&#x27;affichage des multi polygones via l&#x27;utilisation des WFS (en cours de résolution) - privilégier le téléchargement de la donnée si présence de multi polygones
+- Affichage de WFS de plus de 500 objets via le WFS impossible pour le moment
+
+Adresse WMS pour intégration dans un SIG depuis Geoide_Carto :
+http://data.geo-ide.application.developpement-durable.gouv.fr/WMS/228/OSCOM2013_040_donneesagr?
+
+Adresse WFS pour intégration dans un SIG ( Voir avertissement ci-dessus).
+http://ogc.geo-ide.developpement-durable.gouv.fr/cartes/mapserv?map&#x3D;/opt/data/carto/geoide-catalogue/REG072A/JDD.www.map
+
+__Origine__
+
+La généalogie de la données est décrite dans la partie &#x27;généalogie&#x27; de la fiche de lot &quot;Observatoire des sols à l&#x27;échelle communale de la région Nouvelle-Aquitaine pour 2013 - Version Bêta&quot; référencée ci dessous et accessible via l&#x27;adresse suivante après un copier/coller dans votre moteur de recherche.
+
+http://catalogue.geo-ide.developpement-durable.gouv.fr/catalogue/apps/search/?uuid&#x3D;fr-120066022-ldd-2bd25601-a8bc-4a19-a0b8-7ebf519da483.
+
+
+__Organisations partenaires__
+
+DRAAF Nouvelle-Aquitaine
+
+__Liens annexes__
+
+ * [Vue XML des métadonnées](http://ogc.geo-ide.developpement-durable.gouv.fr/csw/all-dataset?REQUEST&#x3D;GetRecordById&amp;SERVICE&#x3D;CSW&amp;VERSION&#x3D;2.0.2&amp;RESULTTYPE&#x3D;results&amp;elementSetName&#x3D;full&amp;TYPENAMES&#x3D;gmd:MD_Metadata&amp;OUTPUTSCHEMA&#x3D;http://www.isotc211.org/2005/gmd&amp;ID&#x3D;fr-120066022-jdd-9bb3d67f-231a-4105-9bee-1214e7ff2156)
+ * [Vue XML des métadonnées](http://catalogue.geo-ide.developpement-durable.gouv.fr/catalogue/srv/fre/xml_iso19139?uuid&#x3D;fr-120066022-jdd-ed2f4b47-8a82-44a6-9ab6-8351a71d8da8)
+ * [Vue HTML des métadonnées sur internet](http://catalogue.geo-ide.developpement-durable.gouv.fr/catalogue/apps/search/?uuid&#x3D;fr-120066022-jdd-ed2f4b47-8a82-44a6-9ab6-8351a71d8da8)
+ * [Carte OSCOM  2013 département des LANDES](http://carto.geo-ide.application.developpement-durable.gouv.fr/228/OSCOM2013_040_donneesagr.map?&amp;extent&#x3D;331266,6268686,473935,6391424)
+ * [URL de base des services wms/wfs sur internet](http://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map&#x3D;/opt/data/carto/geoide-catalogue/1.4/org_38206/1d00643c-4bd3-499c-accb-119c76cf01e4.internet.map)
+
+➞ [Consulter cette fiche sur geo.data.gouv.fr](https://geo.data.gouv.fr/fr/datasets/dd7191fdb4f354705a2e70c1fc57e25f6c845c66)",unknown,Licence Ouverte / Open Licence version 2.0,,,other,,false,false,2017-02-13T12:22:05,2020-02-19T06:38:31,"agriculture-zonages-agricoles,donnees-ouvertes,draaf,draaf-na,draaf-nouvelle-aquitaine,farming,occupation-des-terres,oscom,passerelle-inspire",0,0,0,0,0
+58a196ddc751df67ecae0a65,Observatoire des sols à l'échelle communale de la zone Nord Est du département des Pyrénées Atlantiques pour 2013 - Version Bêta - Données agrégées,observatoire-des-sols-a-lechelle-communale-de-la-zone-nord-est-du-departement-des-pyrenees-atlantiques-pour-2013-version-beta-donnees-agregees,https://www.data.gouv.fr/fr/datasets/observatoire-des-sols-a-lechelle-communale-de-la-zone-nord-est-du-departement-des-pyrenees-atlantiques-pour-2013-version-beta-donnees-agregees/,DRAAF Nouvelle Aquitaine,589af3ac88ee3877939b81a4,"Le descriptif de la donnée est disponible dans la fiche de métadonnées de lot de données &quot;Observatoire des sols à l&#x27;échelle communale de la région Nouvelle-Aquitaine pour 2013 - Version Bêta&quot; référencée ci-dessous et accessible par l&#x27;adresse suivante après insertion dans votre moteur de recherche :
+
+http://catalogue.geo-ide.developpement-durable.gouv.fr/catalogue/apps/search/?uuid&#x3D;fr-120066022-ldd-2bd25601-a8bc-4a19-a0b8-7ebf519da483
+
+La zone géographique couverte par les données accessibles ici est le quart Nord Est du département des Pyrénées Atlantiques soit :
+- au nord d&#x27;un ligne allant de commune de Aïnhoa (64014) à l&#x27;ouest à la commune de Montaner (64398) à l&#x27;est
+- à l&#x27;est d&#x27;une ligne allant de la commune de Saint Médard (64491) au nord à la commune d&#x27;Abos (64005) au sud.
+
+Lors de l&#x27;utilisation des données de l&#x27;OSCOM, il est conseillé de se référer au fichier N_OSCOM2013_TxVectMajic_064.csv.
+Si le taux de vectorisation des communes étudiées est bas il convient de vérifier la pertinence des données avant toute conclusion. 
+
+Les données sont également accessibles en WMS et WFS :
+Avertissements
+- Se positionner sur l&#x27;adresse, clic droit, copier l&#x27;adresse du lien puis coller dans la boite de dialogue de connexion à un serveur WMS, WFS. L&#x27;utilisation d&#x27;une autre méthode entraîne l&#x27;apparition d&#x27;espaces parasites.
+- Problèmes d&#x27;affichage des multi polygones via l&#x27;utilisation des WFS (en cours de résolution) - privilégier le téléchargement de la donnée si présence de multi polygones
+- Affichage de WFS de plus de 500 objets via le WFS impossible pour le moment
+
+Adresse WMS pour intégration dans un SIG depuis Geoide_Carto :
+http://data.geo-ide.application.developpement-durable.gouv.fr/WMS/228/OSCOM2013_064_donneesagr?
+
+Adresse WFS pour intégration dans un SIG ( Voir avertissement ci-dessus).
+http://ogc.geo-ide.developpement-durable.gouv.fr/cartes/mapserv?map&#x3D;/opt/data/carto/geoide-catalogue/REG072A/JDD.www.map
+
+__Origine__
+
+La généalogie de la données est décrite dans la partie &#x27;généalogie&#x27; de la fiche de lot &quot;Observatoire des sols à l&#x27;échelle communale de la région Nouvelle-Aquitaine pour 2013 - Version Bêta&quot; référencée ci dessous et accessible via l&#x27;adresse suivante après un copier/coller dans votre moteur de recherche.
+
+http://catalogue.geo-ide.developpement-durable.gouv.fr/catalogue/apps/search/?uuid&#x3D;fr-120066022-ldd-2bd25601-a8bc-4a19-a0b8-7ebf519da483.
+
+
+__Organisations partenaires__
+
+DRAAF Nouvelle-Aquitaine
+
+__Liens annexes__
+
+ * [Vue XML des métadonnées](http://ogc.geo-ide.developpement-durable.gouv.fr/csw/all-dataset?REQUEST&#x3D;GetRecordById&amp;SERVICE&#x3D;CSW&amp;VERSION&#x3D;2.0.2&amp;RESULTTYPE&#x3D;results&amp;elementSetName&#x3D;full&amp;TYPENAMES&#x3D;gmd:MD_Metadata&amp;OUTPUTSCHEMA&#x3D;http://www.isotc211.org/2005/gmd&amp;ID&#x3D;fr-120066022-jdd-9a87bd48-0cef-4520-9f66-22263fd4f4aa)
+ * [Vue HTML des métadonnées sur internet](http://catalogue.geo-ide.developpement-durable.gouv.fr/catalogue/apps/search/?uuid&#x3D;fr-120066022-jdd-ed2f4b47-8a82-44a6-9ab6-8351a71d8da8)
+ * [Vue XML des métadonnées](http://catalogue.geo-ide.developpement-durable.gouv.fr/catalogue/srv/fre/xml_iso19139?uuid&#x3D;fr-120066022-jdd-ed2f4b47-8a82-44a6-9ab6-8351a71d8da8)
+ * [Carte OSCOM 2013 département des Pyrénées Atlantiques](http://carto.geo-ide.application.developpement-durable.gouv.fr/228/OSCOM2013_064_donneesagr.map?&amp;extent&#x3D;307516,6191218,462838,6288294)
+ * [URL de base des services wms/wfs sur internet](http://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map&#x3D;/opt/data/carto/geoide-catalogue/1.4/org_38206/022f9026-c32c-4102-9b3d-ce8e09bc2a10.internet.map)
+
+➞ [Consulter cette fiche sur geo.data.gouv.fr](https://geo.data.gouv.fr/fr/datasets/88c35171a6d8bd4cdf9b8c5ff8b8a39d3726c34d)",unknown,Licence Ouverte / Open Licence version 2.0,,,other,,false,false,2017-02-13T12:22:05,2020-02-19T06:38:32,"agriculture-zonages-agricoles,donnees-ouvertes,draaf,draaf-na,draaf-nouvelle-aquitaine,farming,occupation-des-terres,oscom,passerelle-inspire",0,0,0,0,0
+58a196de88ee38678b9b81a5,Observatoire des sols à l'échelle communale de la zone Sud Est du département de la GIRONDE pour 2013 - Version Bêta - Données brutes,observatoire-des-sols-a-lechelle-communale-de-la-zone-sud-est-du-departement-de-la-gironde-pour-2013-version-beta-donnees-brutes,https://www.data.gouv.fr/fr/datasets/observatoire-des-sols-a-lechelle-communale-de-la-zone-sud-est-du-departement-de-la-gironde-pour-2013-version-beta-donnees-brutes/,DRAAF Nouvelle Aquitaine,589af3ac88ee3877939b81a4,"Le descriptif de la donnée est disponible dans la fiche de métadonnées de lot de données &quot;Observatoire des sols à l&#x27;échelle communale de la région Nouvelle-Aquitaine pour 2013 - Version Bêta&quot; référencée ci-dessous et accessible par l&#x27;adresse suivante après insertion dans votre moteur de recherche : 
+
+http://catalogue.geo-ide.developpement-durable.gouv.fr/catalogue/apps/search/?uuid&#x3D;fr-120066022-ldd-2bd25601-a8bc-4a19-a0b8-7ebf519da483
+
+La zone géographique couverte par les données accessibles ici est le quart Sud Est du département de la Gironde soit :
+- au sud d&#x27;une ligne allant de commune de Lège Cap Ferret (33236) à l&#x27;ouest à la commune de Pineuilh (33324) à l&#x27;est
+- à l&#x27;est d&#x27;une ligne allant de la commune de Daignac (33147) au nord à la commune de Captieux (33095) au sud.
+
+Lors de l&#x27;utilisation des données de l&#x27;OSCOM, il est conseillé de se référer au fichier N_OSCOM2013_TxVectMajic_033.csv.
+Si le taux de vectorisation des communes étudiées est bas il convient de vérifier la pertinence des données avant toute conclusion. 
+
+
+Les données sont également accessibles en WMS et WFS : 
+Avertissements
+- Se positionner sur l&#x27;adresse, clic droit, copier l&#x27;adresse du lien puis coller dans la boite de dialogue de connexion à un serveur WMS, WFS. L&#x27;utilisation d&#x27;une autre méthode entraîne l&#x27;apparition d&#x27;espaces parasites. 
+- Problèmes d&#x27;affichage des multi polygones via l&#x27;utilisation des WFS (en cours de résolution) - privilégier le téléchargement de la donnée si présence de multi polygones
+- Affichage de WFS de plus de 500 objets via le WFS impossible pour le moment
+
+Adresse WMS pour intégration dans un SIG depuis Geoide_Carto :
+http://data.geo-ide.application.developpement-durable.gouv.fr/WMS/228/OSCOM2013_033_donneesbrutes?
+
+Adresse WFS pour intégration dans un SIG  ( Voir avertissement ci-dessus).
+http://ogc.geo-ide.developpement-durable.gouv.fr/cartes/mapserv?map&#x3D;/opt/data/carto/geoide-catalogue/REG072A/JDD.www.map
+
+__Origine__
+
+La généalogie de la données est décrite dans la partie &#x27;généalogie&#x27; de la fiche de lot &quot;Observatoire des sols à l&#x27;échelle communale de la région Nouvelle-Aquitaine  pour 2013 - Version Bêta&quot; référencée ci dessous et accessible via l&#x27;adresse suivante après un copier/coller dans votre moteur de recherche. 
+
+http://catalogue.geo-ide.developpement-durable.gouv.fr/catalogue/apps/search/?uuid&#x3D;fr-120066022-ldd-2bd25601-a8bc-4a19-a0b8-7ebf519da483.
+
+
+__Organisations partenaires__
+
+DRAAF Nouvelle-Aquitaine, sig sriset alpc site de bordeaux
+
+__Liens annexes__
+
+ * [Vue XML des métadonnées](http://ogc.geo-ide.developpement-durable.gouv.fr/csw/all-dataset?REQUEST&#x3D;GetRecordById&amp;SERVICE&#x3D;CSW&amp;VERSION&#x3D;2.0.2&amp;RESULTTYPE&#x3D;results&amp;elementSetName&#x3D;full&amp;TYPENAMES&#x3D;gmd:MD_Metadata&amp;OUTPUTSCHEMA&#x3D;http://www.isotc211.org/2005/gmd&amp;ID&#x3D;fr-120066022-jdd-34d44caf-39a4-457c-8f7a-064c29207d14)
+ * [Téléchargement simple du jeu et des documents associés](http://atom.geo-ide.developpement-durable.gouv.fr/atomArchive/GetResource?id&#x3D;5d54d82b-ae1f-4b09-b51b-b858a5322be0&amp;dataType&#x3D;dataset)
+ * [Carte Oscom 2013 département de la GIRONDE](http://carto.geo-ide.application.developpement-durable.gouv.fr/228/OSCOM2013_033_donneesbrutes.map?&amp;extent&#x3D;358638,6348600,490437,6507470)
+ * [Accès au service de téléchargement simple du jeu et des documents associés](http://atom.geo-ide.developpement-durable.gouv.fr/atomMetadata/GetResourceDescription?id&#x3D;5d54d82b-ae1f-4b09-b51b-b858a5322be0&amp;scope&#x3D;INTERNET)
+ * [URL de base des services wms/wfs sur internet](http://ogc.geo-ide.developpement-durable.gouv.fr/wxs?map&#x3D;/opt/data/carto/geoide-catalogue/1.4/org_38206/a4adca30-093e-4087-978d-87cc4ce3046d.internet.map)
+
+➞ [Consulter cette fiche sur geo.data.gouv.fr](https://geo.data.gouv.fr/fr/datasets/2d081e61bf87db3a00f575fdcce012e5ed8f0811)",unknown,Licence Ouverte / Open Licence version 2.0,,,other,,false,false,2017-02-13T12:22:06,2020-02-19T06:38:31,"agriculture-zonages-agricoles,donnees-ouvertes,draaf,draaf-na,draaf-nouvelle-aquitaine,farming,occupation-des-terres,oscom,passerelle-inspire",0,0,0,0,0
+58b84db288ee3837f4054363,Compte administratif 2013 - Présentation budget principal - budget 01,compte-administratif-2013-presentation-budget-principal-budget-01,https://www.data.gouv.fr/fr/datasets/compte-administratif-2013-presentation-budget-principal-budget-01/,Ville de Meudon,54d89442c751df1245467389,"Meudon ouvre ses comptes administratifs depuis 2012. Chaque tableau détaille les informations générales, la présentation générale du budget, le vote du budget et les annexes, pour les différents budgets de la ville. Tous les tableaux de l'exercice 2013 sont ouverts sous forme de tableau CSV. Ce premier tableur est la présentation du budget principal - budget 01. Les chiffres sont donnés par rapport à la population meudonnaise et par rapport à la moyenne nationale.",punctual,Licence Ouverte / Open Licence,,,other,,false,false,2017-03-02T17:52:02,2017-03-08T15:46:03,"budget,budget-2013,collectivite-territoriale,compte-administratif,ville",0,0,0,0,0
+58c01187c751df3c4c3d49c3,Compte administratif 2013 - sommaire budget annexe 05 - Hotel d'activités artisanales du potager du dauphin.,compte-administratif-2013-sommaire-budget-annexe-05-hotel-dactivites-artisanales-du-potager-du-dauphin,https://www.data.gouv.fr/fr/datasets/compte-administratif-2013-sommaire-budget-annexe-05-hotel-dactivites-artisanales-du-potager-du-dauphin/,Ville de Meudon,54d89442c751df1245467389,"Meudon ouvre ses comptes administratifs depuis 2012. Chaque tableau détaille les informations générales, la présentation générale du budget, le vote du budget et les annexes, pour les différents budgets de la ville. Tous les tableaux de l'exercice 2013 sont ouverts sous forme de tableau CSV. Ce premier tableur est le sommaire du budget annexe 05 Hôtel d'activités artisanales du potager du dauphin. Les chiffres sont donnés par rapport à la population meudonnaise et par rapport à la moyenne nationale.",punctual,Licence Ouverte / Open Licence,,,fr:commune,,false,false,2017-03-08T15:13:27,2017-03-08T15:14:36,"artisanat,budget,budget-2013,budget-annexe,commune,compte-administratif",0,0,0,0,0
+58c01f66c751df40ec6f329d,Compte administratif 2013 - Vote du budget - section de fonctionnement - détail des dépenses,compte-administratif-2013-vote-du-budget-section-de-fonctionnement-detail-des-depenses,https://www.data.gouv.fr/fr/datasets/compte-administratif-2013-vote-du-budget-section-de-fonctionnement-detail-des-depenses/,Ville de Meudon,54d89442c751df1245467389,"Meudon ouvre ses comptes administratifs depuis 2012. Chaque tableau détaille les informations générales, la présentation générale du budget, le vote du budget et les annexes, pour les différents budgets de la ville. Tous les tableaux de l'exercice 2013 sont ouverts sous forme de tableau CSV. Ce premier tableur présente le vote du budget - section de fonctionnement - détail des dépenses. Les chiffres sont donnés par rapport à la population meudonnaise et par rapport à la moyenne nationale.",punctual,Licence Ouverte / Open Licence,,,fr:commune,,false,false,2017-03-08T16:12:38,2017-03-08T16:13:32,"budget,budget-2013,commune,compte-administratif,depenses,fonctionnement,ville",0,0,0,0,0
+58c0251cc751df431d5f8ee2,Compte administratif 2013 - Vote du budget - section de fonctionnement - détail des recettes,compte-administratif-2013-vote-du-budget-section-de-fonctionnement-detail-des-recettes,https://www.data.gouv.fr/fr/datasets/compte-administratif-2013-vote-du-budget-section-de-fonctionnement-detail-des-recettes/,Ville de Meudon,54d89442c751df1245467389,"Meudon ouvre ses comptes administratifs depuis 2012. Chaque tableau détaille les informations générales, la présentation générale du budget, le vote du budget et les annexes, pour les différents budgets de la ville. Tous les tableaux de l'exercice 2013 sont ouverts sous forme de tableau CSV. Ce premier tableur présente le vote du budget - section de fonctionnement - détail des recettes. Les chiffres sont donnés par rapport à la population meudonnaise et par rapport à la moyenne nationale.",punctual,Licence Ouverte / Open Licence,,,fr:commune,,false,false,2017-03-08T16:37:00,2017-03-08T16:37:54,"budget,budget-2013,commune,compte-administratif,fonctionnement,recette,ville",0,0,0,0,0
+58c025dcc751df43b062442e,Compte administratif 2013 - Vote du budget - section de fonctionnement - détail des recettes,compte-administratif-2013-vote-du-budget-section-de-fonctionnement-detail-des-recettes-1,https://www.data.gouv.fr/fr/datasets/compte-administratif-2013-vote-du-budget-section-de-fonctionnement-detail-des-recettes-1/,Ville de Meudon,54d89442c751df1245467389,"Meudon ouvre ses comptes administratifs depuis 2012. Chaque tableau détaille les informations générales, la présentation générale du budget, le vote du budget et les annexes, pour les différents budgets de la ville. Tous les tableaux de l'exercice 2013 sont ouverts sous forme de tableau CSV. Ce premier tableur présente le vote du budget - section de fonctionnement - détail des recettes. Les chiffres sont donnés par rapport à la population meudonnaise et par rapport à la moyenne nationale.",punctual,Licence Ouverte / Open Licence,,,fr:commune,,false,false,2017-03-08T16:40:12,2017-03-08T16:41:01,"budget,budget-2013,commune,compte-administratif,fonctionnement,recettes,ville",0,0,0,0,0
+58c02746c751df449f89963f,Compte administratif 2013 - Vote du budget - section d'investissement - détail des dépenses,compte-administratif-2013-vote-du-budget-section-dinvestissement-detail-des-depenses-1,https://www.data.gouv.fr/fr/datasets/compte-administratif-2013-vote-du-budget-section-dinvestissement-detail-des-depenses-1/,Ville de Meudon,54d89442c751df1245467389,"Meudon ouvre ses comptes administratifs depuis 2012. Chaque tableau détaille les informations générales, la présentation générale du budget, le vote du budget et les annexes, pour les différents budgets de la ville. Tous les tableaux de l'exercice 2013 sont ouverts sous forme de tableau CSV. Ce premier tableur présente le vote du budget - section d'investissement - détail des dépenses. Les chiffres sont donnés par rapport à la population meudonnaise et par rapport à la moyenne nationale.",punctual,Licence Ouverte / Open Licence,,,fr:commune,,false,false,2017-03-08T16:46:14,2017-03-08T16:46:53,"budget,budget-2013,commune,compte-administratif,depenses,investissement,ville",0,0,0,0,2
+58c1780dc751df0e5b8c69f6,Compte administratif 2013 - Annexes - éléments du bilan - détail fonctionnement - logement,compte-administratif-2013-annexes-elements-du-bilan-detail-fonctionnement-logement,https://www.data.gouv.fr/fr/datasets/compte-administratif-2013-annexes-elements-du-bilan-detail-fonctionnement-logement/,Ville de Meudon,54d89442c751df1245467389,"Meudon ouvre ses comptes administratifs depuis 2012. Chaque tableau détaille les informations générales, la présentation générale du budget, le vote du budget et les annexes, pour les différents budgets de la ville. Tous les tableaux de l'exercice 2013 sont ouverts sous forme de tableau CSV. Ce premier tableur présente les annexes - éléments du bilan - détail fonctionnement - logement. Les chiffres sont donnés par rapport à la population meudonnaise et par rapport à la moyenne nationale.",punctual,Licence Ouverte / Open Licence,,,fr:commune,,false,false,2017-03-09T16:43:09,2017-03-09T16:43:47,"annexes,bilan,budget,budget-2013,commune,compte-administratif,fonctionnement,logement,ville",0,0,0,0,3
+58c182e3c751df11f58f7833,Compte administratif 2013 - Annexes - éléments du bilan - détail investissement - logement,compte-administratif-2013-annexes-elements-du-bilan-detail-investissement-logement,https://www.data.gouv.fr/fr/datasets/compte-administratif-2013-annexes-elements-du-bilan-detail-investissement-logement/,Ville de Meudon,54d89442c751df1245467389,"Meudon ouvre ses comptes administratifs depuis 2012. Chaque tableau détaille les informations générales, la présentation générale du budget, le vote du budget et les annexes, pour les différents budgets de la ville. Tous les tableaux de l'exercice 2013 sont ouverts sous forme de tableau CSV. Ce premier tableur présente les annexes - éléments du bilan - détail investissement - logement. Les chiffres sont donnés par rapport à la population meudonnaise et par rapport à la moyenne nationale.",punctual,Licence Ouverte / Open Licence,,,fr:commune,,false,false,2017-03-09T17:29:23,2017-03-09T17:29:57,"annexes,bilan,budget,budget-2013,commune,compte-administratif,investissement,logement,ville",0,0,0,0,1
