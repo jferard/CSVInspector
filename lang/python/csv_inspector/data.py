@@ -22,7 +22,7 @@ from itertools import islice
 from pathlib import Path
 from typing import List, Any, Mapping, Type, Union
 
-from mcsv import data_type_to_field_description
+from mcsv import data_type_to_field_description, open_csv
 from mcsv.field_description import DataType, FieldDescription, \
     python_type_to_data_type
 from mcsv.field_descriptions import TextFieldDescription
@@ -810,6 +810,14 @@ class Data:
         if isinstance(path, str):
             path = Path(path)
 
+        meta_csv_data = self._get_meta_csv_data(canonical)
+
+        with open_csv(path, "w", data=meta_csv_data) as writer:
+            writer.writeheader([col.name for col in self._column_group])
+            for row in self._column_group.rows():
+                writer.writerow(row)
+
+    def _get_meta_csv_data(self, canonical):
         if canonical:
             b = MetaCSVDataBuilder()
             for i, col in enumerate(self._column_group):
@@ -822,17 +830,11 @@ class Data:
                         python_type_to_data_type(col.col_info))
                 else:
                     description = TextFieldDescription.INSTANCE
-                b.description_by_col_index(i,description)
+                b.description_by_col_index(i, description)
             meta_csv_data = b.build()
         else:
             meta_csv_data = self._data_source.meta_csv_data
-
-        meta_path = path.with_suffix(".mcsv")
-        MetaCSVRenderer.create(meta_path)._write_minimal(meta_csv_data)
-        writer = MetaCSVWriterFactory(meta_csv_data).writer(path)
-        writer.writeheader([col.name for col in self._column_group])
-        for row in self._column_group.rows():
-            writer.writerow(row)
+        return meta_csv_data
 
 
 if __name__ == "__main__":

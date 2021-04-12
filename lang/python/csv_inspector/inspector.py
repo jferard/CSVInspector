@@ -38,16 +38,17 @@ def read_csv(csv_path: Union[str, Path],
         missing_mcsv(csv_path)  # util command to open a window
         return None
 
-    mcsv_reader = mcsv.open_csv(csv_path, mcsv_path)
-    if nrows >= 0:
-        reader = islice(mcsv_reader, nrows)
-    else:
-        reader = mcsv_reader
-    header = [to_standard(n) for n in next(reader)]
-    column_group = ColumnGroup([Column(name, description, values)
-                                for name, description, *values in
-                                zip(header, mcsv_reader.descriptions,
-                                    *reader)])
+    with mcsv.open_csv(csv_path, "r", mcsv_path) as mcsv_reader:
+        if nrows >= 0:
+            reader = islice(mcsv_reader, nrows)
+        else:
+            reader = mcsv_reader
+        header = [to_standard(n) for n in next(reader)]
+        column_group = ColumnGroup([Column(name, description, values)
+                                    for name, description, *values in
+                                    zip(header, mcsv_reader.descriptions,
+                                        *reader)])
 
-    return Data(column_group, DataSource.create(to_standard(csv_path.stem),
-                                         csv_path, mcsv_reader.meta_csv_data))
+        return Data(column_group, DataSource.create(to_standard(csv_path.stem),
+                                                    csv_path,
+                                                    mcsv_reader.meta_csv_data))
