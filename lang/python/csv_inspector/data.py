@@ -23,15 +23,13 @@ from pathlib import Path
 from typing import List, Any, Mapping, Type, Union
 
 from mcsv import data_type_to_field_description, open_csv
-from mcsv.field_description import DataType, FieldDescription, \
-    python_type_to_data_type
+from mcsv.field_description import (DataType, FieldDescription,
+    python_type_to_data_type)
 from mcsv.field_descriptions import TextFieldDescription
 from mcsv.meta_csv_data import MetaCSVData, MetaCSVDataBuilder
-from mcsv.renderer import MetaCSVRenderer
-from mcsv.writer import MetaCSVWriterFactory
 
 from csv_inspector.util import (begin_csv, end_csv, ColumnGroup, to_indices,
-                                Column)
+                                Column, ColInfo)
 
 
 class DataSource:
@@ -76,7 +74,14 @@ class DataSource:
         self.meta_csv_data = meta_csv_data
         self._description_by_data_type = desc_by_dt
 
-    def get_description(self, data_type: DataType):
+    def get_description(self, col_info: ColInfo) -> FieldDescription:
+        if isinstance(col_info, FieldDescription):
+            return col_info
+        if isinstance(col_info, DataType):
+            data_type = col_info
+        else:
+            data_type = python_type_to_data_type(col_info)
+
         try:
             return self._description_by_data_type[data_type]
         except KeyError:  # datatype not present
@@ -833,7 +838,15 @@ class Data:
                 b.description_by_col_index(i, description)
             meta_csv_data = b.build()
         else:
-            meta_csv_data = self._data_source.meta_csv_data
+            b = MetaCSVDataBuilder()
+            cur_data = self._data_source.meta_csv_data
+            b.encoding(cur_data.encoding)
+            b.bom(cur_data.bom)
+            b._dialect = cur_data.dialect
+            for i, col in enumerate(self._column_group):
+                description = self._data_source.get_description(col.col_info)
+                b.description_by_col_index(i, description)
+            meta_csv_data = b.build()
         return meta_csv_data
 
 
