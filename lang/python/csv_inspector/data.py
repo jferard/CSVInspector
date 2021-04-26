@@ -17,6 +17,7 @@
 #
 import csv
 import itertools
+import statistics
 import sys
 from itertools import islice
 from pathlib import Path
@@ -24,7 +25,7 @@ from typing import List, Any, Mapping, Type, Union
 
 from mcsv import data_type_to_field_description, open_csv
 from mcsv.field_description import (DataType, FieldDescription,
-    python_type_to_data_type)
+                                    python_type_to_data_type)
 from mcsv.field_descriptions import TextFieldDescription
 from mcsv.meta_csv_data import MetaCSVData, MetaCSVDataBuilder
 
@@ -779,6 +780,50 @@ class DataHandle:
         """
         return DataGrouper(self._data_column_group, self._indices)
 
+    def stats(self):
+        """
+        Show stats on the data
+        """
+
+        def aggregate(func, vs):
+            try:
+                return func(vs)
+            except:
+                return "-"
+
+        writer = csv.writer(sys.stdout, delimiter=',')
+        begin_csv()
+        writer.writerow(
+            ["str", "object", "type", "int", "comparable", "comparable",
+             "comparable", "comparable"])
+        writer.writerow(
+            ["key", "value", "type", "null count", "min", "max", "mean",
+             "median"])
+        writer.writerow(
+            ["line count", len(self._data_column_group.columns[0]),
+             "-", "-", "-", "-", "-"])
+        writer.writerow(
+            ["column count", len(self._data_column_group),
+             "-", "-", "-", "-", "-"])
+        for i, column in enumerate(self._data_column_group):
+            vs = [v for v in column.col_values if v is not None]
+            null_count = len(column.col_values) - len(vs)
+            if column.col_type == str:
+                writer.writerow(
+                    [f"column {i}", column.name, column.col_type, null_count,
+                     "-", "-", "-", "-"])
+            else:
+                vs_min = aggregate(min, vs)
+                vs_max = aggregate(max, vs)
+                vs_mean = aggregate(statistics.mean, vs)
+                vs_median = aggregate(statistics.median, vs)
+                writer.writerow(
+                    [f"column {i}", column.name, column.col_type, null_count,
+                     vs_min, vs_max, vs_mean, vs_median])
+
+        sys.stdout.flush()
+        end_csv()
+
 
 class Data:
     def __init__(self, column_group: ColumnGroup, data_source: DataSource):
@@ -793,6 +838,12 @@ class Data:
 
     def show(self, limit: int = 100):
         self.as_handle().show(limit)
+
+    def stats(self):
+        """
+        Show stats on the data
+        """
+        self.as_handle().stats()
 
     def as_handle(self) -> DataHandle:
         return DataHandle(self._column_group,
@@ -852,10 +903,11 @@ class Data:
 
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod(
-    extraglobs={'original_test_data': Data(ColumnGroup([
-        Column("A", int, [1, 5, 3]),
-        Column("B", int, [3, 2, 4]),
-        Column("C", int, [2, 2, 7]),
-        Column("D", int, [4, 7, 8])
-    ]), None)})
+        extraglobs={'original_test_data': Data(ColumnGroup([
+            Column("A", int, [1, 5, 3]),
+            Column("B", int, [3, 2, 4]),
+            Column("C", int, [2, 2, 7]),
+            Column("D", int, [4, 7, 8])
+        ]), None)})

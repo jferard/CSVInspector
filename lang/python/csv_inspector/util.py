@@ -171,6 +171,9 @@ class Column(Generic[S]):
     def __iter__(self) -> Iterator[S]:
         return iter(self.col_values)
 
+    def __len__(self) -> int:
+        return len(self.col_values)
+
     def __eq__(self, other: Any) -> bool:
         return (self.name == other.name
                 and self.col_type == other.col_type
