@@ -754,7 +754,7 @@ class DataHandle:
 
         self._append_other_columns_and_put_rows(other_handle, new_rows)
 
-    def grouper(self):
+    def grouper(self) -> DataGrouper:
         """
         Group some rows.
 
@@ -844,6 +844,12 @@ class Data:
         Show stats on the data
         """
         self.as_handle().stats()
+
+    def grouper(self) -> DataGrouper:
+        """
+        Return a grouper
+        """
+        return DataGrouper(self._column_group, [])
 
     def as_handle(self) -> DataHandle:
         return DataHandle(self._column_group,
