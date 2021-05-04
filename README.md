@@ -5,7 +5,7 @@ Copyright (C) 2020 J. Férard <https://github.com/jferard>
 License: GPLv3
 
 # Quick start
-CSVInspector needs JRE8 (with embedded JavaFX):
+CSVInspector needs JRE8 (with embedded JavaFX) or JRE11 and Python 3.8:
 
     $ mvn clean install
     $ PYTHONPATH=lang/python:$PYTHONPATH /path/to/jre8/java -jar target/csv_inspector-0.0.1-SNAPSHOT.jar
@@ -49,93 +49,164 @@ Kotlin:
 # Usage 
 ## Code sample
 
-    #!/usr/bin/env python3.7
+    #!/usr/bin/env python3.8
     
     from csv_inspector import *
     
-    info = inspect("fixtures/datasets-2020-02-22-12-33.csv")
-    info.show()
-    
-    data = info.open()
+    data = read_csv("fixtures/datasets-2020-02-22-12-33.csv") # this will open a MetaCSV panel to create/save the .mcsv file
+    data.show() # show the data
     # do whatever you want here
     data.show()
-    # do whatever you want here
-    data.show()
-    data.save("fixtures/datasets-2020-02-22-12-33-new.csv")
+    data.save_as("fixtures/datasets-2020-02-22-12-33-new.csv")
  
 ## Main commands
 The wrapper provides the following instructions:
 
-`inspect(path)`
-> finds the encoding, csv format and column types of a file. Returns an `Inspection` object. 
+### `read_csv(path.csv)`
+* `path.csv` is the path to a csv file.
+> If the MetaCSV file `path.mcsv` exists, return a `Data` object.
+> Else, detects the encoding, csv format and column types of `path.csv` and generate a sample MetaCSV file that may be edited and saved. (Will return a `Data` object on next call.)
 
-`info.show()`
-> Shows the result of `inspect` in a window.
-> `info` is an `Inspection` object. 
-    
-`info.open()`
-> Opens the CSV file and returns a `Data` object.
-
-`data.show()`
+### `data.show()`
 > Shows the `Data` object in a window.
 
-`data.save(path)`
+### `data.stats()`
+> Shows the stats of the `Data` object in a window.
+
+### `data.copy()`
+> Returns a copy of the `Data` object in a window.
+
+### `data.save_as(path.csv)`
+* `path.csv` is the path to a csv file.
 > Saves the `Data` object to a file.
-
-The `Data` class is just a wrapper around a Pandas DataFrame. Hence, you can do:
-
-    df = data.df
-    # work with df
-    data = Data(df)
 
 ## Other Commands
 Note the square brackets.
 
-`data.swap[x][y]`
-> `x` and `y` are indices, slices or tuples of slices/indices
+### `data[x].create(func, col_name, [col_type, [index]])`
+> Create a new col
 
-`data.add[func, name, index]`
-> `func` is a function of `Data` (use numeric indices)
-> `name` is the name of the new column
-> `index` (opt) is the index of the new column 
+* `x` is an index, slice or tuple of slices/indices of column_index
+* `func` is the function to apply to `x` values
+* `col_name` is the name of the new column
+* `col_type` is the type of the new column
+* `index` is the index of the new column
 
-`data.merge[x][func, name]`
-> Same as `add`, but removes the merged columns and place the new column at the first merged index.
+### `data[x].drop()`
+> Drop the indices of the handle and select the other indices.
 
-`data.groupby[w][x, func_x, y, func_y, ..., last_func]`
-> `w`, `x`, `y`, ... are indices, slices or tuples of slices/indices
-> `func_x`, `func_y`, ... are functions of `Data` (use numeric indices)
-> `last_func` (opt) is a function for the remaining cols
+* `x` is an index, slice or tuple of slices/indices
 
-`data1.ljoin[data2][x][y]`
-`data1.rjoin[data2][x][y]`
-`data1.ojoin[data2][x][y]`
-`data1.ijoin[data2][x][y]`
-> `x` and `y` are indices, slices or tuples of slices/indices
-> `data1` and `data2` are `Data` instances
+### `data[x].filter(func)`
+> Filter data on a function.
 
-`data.filter[func1, func2]`
-> `func1` and `func1` are functions of `Data` (use numeric indices)
+* `x` is an index, slice or tuple of slices/indices.
+* `func` is a function that takes the `x` values and returns a boolean
 
-`data.move_before[idx][x]`
-`data.move_after[idx][x]`
-> `idx` is an index
-> `x` is an index, slice or tuple of slices/indices
+### `g = data[x].grouper()`
+> Create a grouper on some rows.
+>
+> ```
+> g = data[x].grouper()
+> g[y].agg(func)
+> g.group()
+> ```
 
-`data.select[x]`
-> Select some of the columns.
-> `x` is an index, slice or tuple of slices/indices
+* `x` is the index, slice or tuple of slices/indices of the rows
+* `y` is the index, slice or tuple of slices/indices of the aggregate columns
+* `func` is aggregate function
 
-`data.drop[x]`
-> Drop some of the columns.
-> `x` is an index, slice or tuple of slices/indices
+### `data1[x].ijoin(data2[y], func)`
+> Make an inner join between two data sets.
 
-`data.map[x][func]`
-> Map some columns using a function.
-> `x` is an index, slice or tuple of slices/indices
-> `func` is a function of `Data` (use numeric indices)
+* `x` is the index, slice or tuple of slices/indices of the key
+* `data2` is another `Data` object
+* `y` is the index, slice or tuple of slices/indices of the other key
+* `func` is the function to compare the `x` and `y` values
 
-`data.sort[x]`
-`data.rsort[x]`
+### `data1[x].ljoin(data2[y], func)`
+> Make an inner join between two data sets.
+
+* `x` is the index, slice or tuple of slices/indices of the key
+* `data2` is another `Data` object
+* `y` is the index, slice or tuple of slices/indices of the other key
+* `func` is the function to compare the `x` and `y` values
+
+### `data[x].merge(func, col_name, [col_type])`
+> Create a new col by merging some columns. Those columns are
+> consumed during the process.
+
+* `x` is an index, slice or tuple of slices/indices of column_index
+* `func` is the function to apply to `x` values
+* `col_name` is the name of the new column
+* `col_type` is the type of the new column
+
+### `data[x].move_after(idx)`
+> Move some column_group after a given index.
+
+* `x` is an index, slice or tuple of slices/indices of column_index
+* `idx` is the destination index
+
+### `data[x].move_before(idx)`
+> Move some column_group before a given index.
+
+* `x` is an index, slice or tuple of slices/indices of column_index
+* `idx` is the destination index
+
+### `data1[x].ojoin(data2[y], func)`
+> Make an outer join between two data sets.
+
+* `x` is the index, slice or tuple of slices/indices of the key
+* `data2` is another `Data` object
+* `y` is the index, slice or tuple of slices/indices of the other key
+* `func` is the function to compare the `x` and `y` values
+
+### `data[x].rename(names)`
+> Rename one or more columns
+
+* `x` is the index, slice or tuple of slices/indices of the key
+* `names` is a list of new names
+
+### `data1[x].rjoin(data2[y], func)`
+> Make an right join between two data sets.
+
+* `x` is the index, slice or tuple of slices/indices of the key
+* `data2` is another `Data` object
+* `y` is the index, slice or tuple of slices/indices of the other key
+* `func` is the function to compare the `x` and `y` values
+
+### `data[x].rsort(func)`
+> Sort the rows in reverse order.
+
+* `x` is the index, slice or tuple of slices/indices of the key
+* `func` is the key function
+
+### `data[x].select()`
+> Select the indices of the handle and drop the other indices.
+
+* `x` is an index, slice or tuple of slices/indices
+
+### `data[x].rsort(func)`
+> Show the first rows of this DataHandle.
+> Expected format: CSV with comma
+>
+> sort(self, func=None, reverse=False)
 > Sort the rows.
-> `x` is the index, slice or tuple of slices/indices of the key
+
+* `x` is the index, slice or tuple of slices/indices of the key
+* `func` is the key function
+
+### `data.stats()`
+> Show stats on the data
+
+### `data1[x].swap(data2[y])
+> swap(self, other_handle: 'DataHandle')
+> Swap two handles. Those handles may be backed by the same data or not.
+
+* `x` and `y` are indices, slices or tuples of slices/indices
+
+### `data[x].update(func)`
+> Update some column using a function.
+
+* `x` is an index
+* `func` is a function of `data[x]` (use numeric indices)

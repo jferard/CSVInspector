@@ -106,6 +106,9 @@ class DataGrouperHandle:
         self._column_group = column_group
 
     def agg(self, func, col_type=None):
+        """
+        Add a new aggregation.
+        """
         self._data_grouper._new_agg(Agg(
             self._indices, self._column_group, func, col_type))
 
@@ -126,6 +129,9 @@ class DataGrouper:
         self._aggs.append(agg)
 
     def group(self):
+        """
+        Group the agg columns by Grouper columns.
+        """
         indices = set(self._indices)
         funcs = {}
         col_types = {}
@@ -198,9 +204,9 @@ class DataHandle:
         """
         Select the indices of the handle and drop the other indices.
 
-        Syntax: `data[x].drop()`.
+        Syntax: `data[x].select()`
 
-        `x` is an index, slice or tuple of slices/indices
+        * `x` is an index, slice or tuple of slices/indices
 
         >>> test_data = original_test_data.copy()
         >>> print(test_data)
@@ -223,9 +229,9 @@ class DataHandle:
         """
         Drop the indices of the handle and select the other indices.
 
-        Syntax: `data[x].drop()`.
+        Syntax: `data[x].drop()`
 
-        `x` is an index, slice or tuple of slices/indices
+        * `x` is an index, slice or tuple of slices/indices
 
         >>> test_data = original_test_data.copy()
         >>> print(test_data)
@@ -248,9 +254,9 @@ class DataHandle:
         """
         Swap two handles. Those handles may be backed by the same data or not.
 
-        Syntax: `data1[x].swap(data2[y])
+        Syntax: `data1[x].swap(data2[y])`
 
-        `x` and `y` are indices, slices or tuples of slices/indices
+        * `x` and `y` are indices, slices or tuples of slices/indices
 
         >>> test_data = original_test_data.copy()
         >>> print(test_data)
@@ -287,6 +293,7 @@ class DataHandle:
 
         * `x` is an index
         * `func` is a function of `data[x]` (use numeric indices)
+
         >>> test_data = original_test_data.copy()
         >>> print(test_data)
          A B C D
@@ -317,8 +324,13 @@ class DataHandle:
         """
         Create a new col
 
-        Syntax: data[x].create(func, col_name, [col_type, [index]])
+        Syntax: `data[x].create(func, col_name, [col_type, [index]])`
 
+        * `x` is an index, slice or tuple of slices/indices of column_index
+        * `func` is the function to apply to `x` values
+        * `col_name` is the name of the new column
+        * `col_type` is the type of the new column
+        * `index` is the index of the new column
         >>> test_data = original_test_data.copy()
         >>> print(test_data)
          A B C D
@@ -359,7 +371,12 @@ class DataHandle:
         Create a new col by merging some columns. Those columns are
         consumed during the process.
 
-        Syntax: data[x].merge(func, col_name, [col_type])
+        Syntax: `data[x].merge(func, col_name, [col_type])`
+
+        * `x` is an index, slice or tuple of slices/indices of column_index
+        * `func` is the function to apply to `x` values
+        * `col_name` is the name of the new column
+        * `col_type` is the type of the new column
 
         >>> test_data = original_test_data.copy()
         >>> print(test_data)
@@ -390,12 +407,11 @@ class DataHandle:
 
     def move_after(self, index):
         """
-        Move some column_group before a given index.
+        Move some column_group after a given index.
 
-        Syntax `data[x].move_before(x)`
+        Syntax `data[x].move_after(idx)`
 
-        * `x` is an index, slice or tuple of slices/indices of column_index that
-        should move before `idx`.
+        * `x` is an index, slice or tuple of slices/indices of column_index
         * `idx` is the destination index
 
         >>> test_data = original_test_data.copy()
@@ -417,10 +433,9 @@ class DataHandle:
         """
         Move some column_group before a given index.
 
-        Syntax `data[x].move_before(x)`
+        Syntax `data[x].move_before(idx)`
 
-        * `x` is an index, slice or tuple of slices/indices of column_index that
-        should move before `idx`.
+        * `x` is an index, slice or tuple of slices/indices of column_index
         * `idx` is the destination index
 
         >>> test_data = original_test_data.copy()
@@ -457,10 +472,10 @@ class DataHandle:
         """
         Filter data on a function.
 
-        Syntax: `data[x].filter(func)`.
+        Syntax: `data[x].filter(func)`
 
         * `x` is an index, slice or tuple of slices/indices.
-        * `func` is a function
+        * `func` is a function that takes the `x` values and returns a boolean
 
         >>> test_data = original_test_data.copy()
         >>> print(test_data)
@@ -484,11 +499,12 @@ class DataHandle:
 
     def sort(self, func=None, reverse=False):
         """
-        Sort the rows in reverse order.
+        Sort the rows.
 
         Syntax: `data[x].rsort(func)`
 
-        `x` is the index, slice or tuple of slices/indices of the key
+        * `x` is the index, slice or tuple of slices/indices of the key
+        * `func` is the key function
 
         >>> test_data = original_test_data.copy()
         >>> print(test_data)
@@ -522,7 +538,8 @@ class DataHandle:
 
         Syntax: `data[x].rsort(func)`
 
-        `x` is the index, slice or tuple of slices/indices of the key
+        * `x` is the index, slice or tuple of slices/indices of the key
+        * `func` is the key function
 
         >>> test_data = original_test_data.copy()
         >>> print(test_data)
@@ -545,7 +562,8 @@ class DataHandle:
 
         Syntax: `data[x].rename(names)`
 
-        `x` is the index, slice or tuple of slices/indices of the key
+        * `x` is the index, slice or tuple of slices/indices of the key
+        * `names` is a list of new names
 
         >>> test_data = original_test_data.copy()
         >>> print(test_data)
@@ -570,7 +588,10 @@ class DataHandle:
 
         Syntax: `data1[x].ijoin(data2[y], func)`
 
-        `x` is the index, slice or tuple of slices/indices of the key
+        * `x` is the index, slice or tuple of slices/indices of the key
+        * `data2` is another `Data` object
+        * `y` is the index, slice or tuple of slices/indices of the other key
+        * `func` is the function to compare the `x` and `y` values
 
         >>> test_data1 = original_test_data.copy()
         >>> test_data2 = original_test_data.copy()
@@ -613,11 +634,14 @@ class DataHandle:
 
     def ljoin(self, other_handle: "DataHandle", func=None):
         """
-        Make an left join between two data sets.
+        Make an inner join between two data sets.
 
         Syntax: `data1[x].ljoin(data2[y], func)`
 
-        `x` is the index, slice or tuple of slices/indices of the key
+        * `x` is the index, slice or tuple of slices/indices of the key
+        * `data2` is another `Data` object
+        * `y` is the index, slice or tuple of slices/indices of the other key
+        * `func` is the function to compare the `x` and `y` values
 
         >>> test_data1 = original_test_data.copy()
         >>> test_data2 = original_test_data.copy()
@@ -663,7 +687,10 @@ class DataHandle:
 
         Syntax: `data1[x].rjoin(data2[y], func)`
 
-        `x` is the index, slice or tuple of slices/indices of the key
+        * `x` is the index, slice or tuple of slices/indices of the key
+        * `data2` is another `Data` object
+        * `y` is the index, slice or tuple of slices/indices of the other key
+        * `func` is the function to compare the `x` and `y` values
 
         >>> test_data1 = original_test_data.copy()
         >>> test_data2 = original_test_data.copy()
@@ -707,7 +734,10 @@ class DataHandle:
 
         Syntax: `data1[x].ojoin(data2[y], func)`
 
-        `x` is the index, slice or tuple of slices/indices of the key
+        * `x` is the index, slice or tuple of slices/indices of the key
+        * `data2` is another `Data` object
+        * `y` is the index, slice or tuple of slices/indices of the other key
+        * `func` is the function to compare the `x` and `y` values
 
         >>> test_data1 = original_test_data.copy()
         >>> test_data2 = original_test_data.copy()
@@ -756,11 +786,19 @@ class DataHandle:
 
     def grouper(self) -> DataGrouper:
         """
-        Group some rows.
+        Create a grouper on some rows.
+
+        ```
+        g = data[x].grouper()
+        g[y].agg(func)
+        g.group()
+        ```
 
         Syntax: `g = data[x].grouper()`
 
-        `x` is the index, slice or tuple of slices/indices of the key
+        * `x` is the index, slice or tuple of slices/indices of the rows
+        * `y` is the index, slice or tuple of slices/indices of the aggregate columns
+        * `func` is aggregate function
 
         >>> test_data = original_test_data.copy()
         >>> test_data[0].update(lambda x: x%2)
@@ -783,6 +821,8 @@ class DataHandle:
     def stats(self):
         """
         Show stats on the data
+
+        Syntax: `data.stats()`
         """
 
         def aggregate(func, vs):
@@ -837,6 +877,10 @@ class Data:
         return DataHandle(self._column_group, indices)
 
     def show(self, limit: int = 100):
+        """
+        Show the first rows of this DataHandle.
+        Expected format: CSV with comma
+        """
         self.as_handle().show(limit)
 
     def stats(self):
@@ -856,6 +900,9 @@ class Data:
                           list(range(len(self._column_group))))
 
     def copy(self) -> "Data":
+        """
+        Return a copy of this data object.
+        """
         return Data(self._column_group.copy(), self._data_source)
 
     def __str__(self) -> str:
